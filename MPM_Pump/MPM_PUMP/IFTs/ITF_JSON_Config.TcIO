@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <Itf Name="ITF_JSON_Config" Id="{ed85c0be-08c8-4391-9b9a-3e595c9bd750}">
+    <Declaration><![CDATA[INTERFACE ITF_JSON_Config
+]]></Declaration>
+    <Method Name="F_Recipe" Id="{8551aa4c-e2be-46a7-ae54-d8847dd1138f}">
+      <Declaration><![CDATA[METHOD F_Recipe : HResult
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="F_System" Id="{d8787886-4d55-46ad-bb86-1b8e03161701}">
+      <Declaration><![CDATA[METHOD F_System : HResult
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+    <Method Name="M_system_config" Id="{447b2874-a712-45af-9a47-eb5ea66fc61b}">
+      <Declaration><![CDATA[METHOD M_system_config : HResult
+VAR_INPUT
+END_VAR
+]]></Declaration>
+    </Method>
+  </Itf>
+</TcPlcObject>

@@ -1,0 +1,63 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_IOMapping" Id="{938865eb-17c6-4888-921e-9dfa510c66c7}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_IOMapping
+VAR_OUTPUT
+	ip : I_IOMapping;
+END_VAR
+
+VAR
+	{attribute 'displaymode':='hex'}
+	nObjId AT%I* : OTCID; 	// Instance configured to be retrieved
+	iid : IID := TC_GLOBAL_IID_LIST.IID_I_IOMapping;
+	
+
+	
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="FB_exit" Id="{4425bfd4-0e58-4211-b7e7-261a826f9d42}">
+      <Declaration><![CDATA[{attribute 'hide'}
+METHOD FB_exit : BOOL
+VAR_INPUT
+	bInCopyCode : BOOL; // if TRUE, the exit method is called for exiting an instance that is copied afterwards (online change).
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF NOT bInCopyCode THEN // if not online change
+	FW_SafeRelease(ADR(ip));
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="GetInterfacePointer" Id="{2b485e96-c4b1-44d1-bf47-e931e8f4a88c}">
+      <Declaration><![CDATA[METHOD GetInterfacePointer : HRESULT
+VAR
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF nObjID <> 0 THEN
+	IF (ip = 0) THEN // only get interface pointer if it is not already existing
+		GetInterfacePointer := FW_ObjMgr_GetObjectInstance(oid:=nObjID, iid:=iid, pipUnk:=ADR(ip));
+	ELSE
+		GetInterfacePointer := E_HRESULTAdsErr.EXISTS;
+	END_IF
+ELSE
+	GetInterfacePointer := E_HRESULTAdsErr.INVALIDOBJID;
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_IOMapping">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_IOMapping.FB_exit">
+      <LineId Id="3" Count="1" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_IOMapping.GetInterfacePointer">
+      <LineId Id="3" Count="8" />
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,322 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_IOMappingJson" Id="{968e0526-87bd-43a3-9481-27cbde56a774}" SpecialFunc="None">
+    <Declaration><![CDATA[{attribute 'call_after_init'}
+FUNCTION_BLOCK FB_IOMappingJson EXTENDS FB_JsonSchemaEx_OLD
+VAR_OUTPUT
+	P_sJsonid			: MPM_JsonParser.DUT_JsonSchema := (member := '_id', typeClass := E_TypeClassEx.TYPE_STRING,jsonValueRoot := jsonRoot);
+	P_sJsonTimeStamp	: MPM_JsonParser.DUT_JsonSchema := (member := 'time_stamp', typeClass := E_TypeClassEx.TYPE_FILETIME,jsonValueRoot := jsonRoot);		
+	P_sJsonValues		: MPM_JsonParser.DUT_JsonSchema := (member := 'values', typeClass := E_TypeClassEx.TYPE_JSON,jsonValueRoot := jsonRoot);
+END_VAR
+VAR
+	jsonRoot : SJsonValue;	
+END_VAR
+VAR_OUTPUT
+	//stIOMappingEthercat : ARRAY [0..NUM_OF_VARS] OF ST_IOMappingEthercatJson;	
+END_VAR
+VAR CONSTANT
+	//NUM_OF_VARS : DINT := -1 + (SIZEOF(ST_Vars_IO_Mapping_Ethercat)/8) ;// 8 is SIZEOF(PVOID) (SIZEOF(ST_IO_Mapping)/SIZEOF(PVOID)) -1 won't complie
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Folder Name="Protected" Id="{b763cb27-a438-4539-88cf-8606754f6eb0}" />
+    <Method Name="M_Add1" Id="{dbabb5bf-50a4-4da3-bb26-04dfb18d71d3}" FolderPath="Protected\">
+      <Declaration><![CDATA[METHOD INTERNAL M_Add1 : UDINT
+VAR_INPUT
+	x : REFERENCE TO UDINT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[M_Add1 := x;
+x := x + 1;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_CreateSchemaJson" Id="{3c46d5e4-1d88-47c1-8fab-14a7ed2c9fdc}">
+      <Declaration><![CDATA[METHOD PUBLIC  M_CreateSchemaJson : BOOL
+VAR_IN_OUT
+END_VAR
+VAR
+	json : sJsonValue;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[jsonRoot := THIS^.NewDocument();
+M_SetJsonSchema(jsonRoot,P_sJsonid);
+//M_SetJsonSchema(P_sJsonid.jsonValue,P_sJsonRecipe);
+M_SetJsonSchema(jsonRoot,P_sJsonValues);
+M_SetJsonSchema(jsonRoot,P_sJsonTimeStamp);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_GetIOMappingJson" Id="{e3d0a72b-79c2-4ef9-9f9e-050402784e03}">
+      <Declaration><![CDATA[METHOD PUBLIC M_GetIOMappingJson : HRESULT
+VAR_INPUT
+	lastResult : HRESULT;
+END_VAR
+VAR_INPUT
+	path : STRING;
+END_VAR
+VAR_IN_OUT
+	stIOMapping : ARRAY [*] OF ST_IOMappingJson;
+END_VAR
+VAR_INPUT
+	fbIOMapping : POINTER TO FB_IOMapping;	
+END_VAR
+VAR
+	pJson : SJsonValue;
+	upperBound : DINT; 
+END_VAR
+VAR_INST
+	loadFile : BOOL;		
+	x : UDINT;
+	fileName : STRING;
+	_state			: DINT;
+	_fbResult		: FB_ResultHelper;	
+	errorCode : HRESULT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//THIS^.CopyDocument(aStringJson,SIZEOF(aStringJson));
+
+IF _fbResult.M_MethodResult(M_GetIOMappingJson,lastResult) = FALSE THEN
+	RETURN;
+ELSE
+	
+	IF _fbResult.P_Result = E_Result.S_OK THEN //Reset
+		_state := 0;	
+		x := 0;
+		fileName := path;
+		loadFile := FALSE;
+		THIS^.LoadDocumentFromFile(fileName,loadFile,hrErrorCode => errorCode);
+		loadFile := TRUE;
+	END_IF 
+	
+	_fbResult.P_Result := E_Result.S_WORKING; //Working	
+	
+	CASE _state OF
+		0:	
+			THIS^.LoadDocumentFromFile(fileName,loadFile,hrErrorCode => errorCode);
+			IF loadFile = FALSE AND errorCode = 0 THEN
+				_state := 1;
+			ELSIF loadFile = FALSE AND errorCode < 0 THEN
+				_fbResult.P_Result := E_Result.S_FAILED; //Working	
+			END_IF		
+		1:
+			THIS^.M_PraseSchemaJson();
+			upperBound := UPPER_BOUND(stIOMapping,1);
+			FOR x := 0 TO upperBound BY 1 DO
+				pJson := THIS^.FindMember(P_sJsonValues.jsonValue,stIOMapping[x].name);	
+				IF pJson > 0 THEN
+					THIS^.M_GetIOMappingJson_Values(pJson,ADR(stIOMapping[x]),fbIOMapping);
+				END_IF	
+			END_FOR
+			_fbResult.P_Result := E_Result.S_OK; //Working
+	END_CASE	
+
+END_IF	
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_GetIOMappingJson_Values" Id="{25fa4365-bd8e-4b91-b974-56469712982f}" FolderPath="Protected\">
+      <Declaration><![CDATA[METHOD PROTECTED M_GetIOMappingJson_Values : HRESULT
+VAR_INPUT
+	pJson : SJsonValue;
+	stIOMapping : POINTER TO ST_IOMappingJson;	
+	fbIOMapping : POINTER TO FB_IOMapping;
+END_VAR
+VAR
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.M_GetJsonMemberValue(pJson,'deviceNum',stIOMapping^.deviceNum);
+THIS^.M_GetJsonMemberValue(pJson,'channel',stIOMapping^.channel);
+
+THIS^.M_GetJsonMemberValue(pJson,'ethercatDeviceNum',stIOMapping^.ethercatDeviceNum);
+THIS^.M_GetJsonMemberValue(pJson,'ioLinkDevice',stIOMapping^.ioLinkDevice);
+THIS^.M_GetJsonMemberValue(pJson,'ioLinkSlaveChannel',stIOMapping^.ioLinkSlaveChannel);
+
+
+IF stIOMapping^.deviceNum > 0 AND_THEN fbIOMapping^.ip.M_GetRef_PVOID((stIOMapping^.pAny.pvalue),stIOMapping^.deviceNum,stIOMapping^.channel) = MPM_FBResult.E_Result.S_FAILED THEN
+	M_GetIOMappingJson_Values := E_Result.S_FAILED;
+ELSIF stIOMapping^.ethercatDeviceNum > 0 AND_THEN fbIOMapping^.ip.M_GetRefIOLink_PVOID((stIOMapping^.pAny.pvalue),stIOMapping^.ethercatDeviceNum,stIOMapping^.ioLinkDevice,stIOMapping^.ioLinkSlaveChannel) = MPM_FBResult.E_Result.S_FAILED THEN
+	M_GetIOMappingJson_Values :=  E_Result.S_FAILED;;	
+END_IF
+
+M_GetIOMappingJson_Values :=  E_Result.S_OK;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_PraseSchemaJson" Id="{6d4af479-2ba9-44db-b820-4b91b6a16946}">
+      <Declaration><![CDATA[METHOD PUBLIC  M_PraseSchemaJson : BOOL
+VAR_INPUT
+END_VAR
+VAR
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[jsonRoot := THIS^.GetDocumentRoot();
+IF jsonRoot > 0 THEN
+	M_PraseJsonSchema(jsonRoot,P_sJsonid);
+	//M_SetJsonSchema(P_sJsonid.jsonValue,P_sJsonRecipe);
+	M_PraseJsonSchema(jsonRoot,P_sJsonValues);
+	M_PraseJsonSchema(jsonRoot,P_sJsonTimeStamp);
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_SetIOMappingJson" Id="{b9332636-1be0-465b-a801-3c6bee232a52}">
+      <Declaration><![CDATA[METHOD PUBLIC M_SetIOMappingJson : HResult
+VAR_INPUT
+	lastResult : HRESULT;
+END_VAR
+VAR_INPUT
+	path : STRING(255);
+END_VAR
+VAR_IN_OUT
+	stIOMapping : ARRAY [*] OF ST_IOMappingJson;
+END_VAR
+VAR
+	pJson : SJsonValue;
+	upperBound : DINT; 
+END_VAR
+VAR_INST
+	saveFile : BOOL;		
+	x : UDINT;
+	fileName : STRING(255);
+	_state			: DINT;
+	_fbResult		: FB_ResultHelper;	
+	errorCode : HRESULT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF _fbResult.M_MethodResult(M_SetIOMappingJson,lastResult) = FALSE THEN
+	RETURN;
+ELSE
+	
+	IF _fbResult.P_Result = E_Result.S_OK THEN //Reset
+		_state := 0;	
+		x := 0;
+		fileName := path;
+		saveFile := FALSE;
+		THIS^.SaveDocumentToFile(fileName,saveFile,hrErrorCode => errorCode);
+		saveFile := TRUE;
+	END_IF 
+	
+	_fbResult.P_Result := E_Result.S_WORKING; //Working	
+	
+	CASE _state OF
+		0:	
+			upperBound := UPPER_BOUND(stIOMapping,1);
+			THIS^.M_CreateSchemaJson();
+			
+			FOR x := 0 TO upperBound BY 1 DO
+				pJson := THIS^.M_SetJsonMember(P_sJsonValues.jsonValue,stIOMapping[x].name);		(* 3 Inches *)			
+				THIS^.M_SetIOMappingJson_Values(pJson);
+			END_FOR
+			
+			_state := 1;
+		1:	
+			THIS^.SaveDocumentToFile(fileName,saveFile,hrErrorCode => errorCode);
+			IF saveFile = FALSE AND errorCode = 0 THEN
+				_fbResult.P_Result := E_Result.S_OK; //Working	
+			ELSIF saveFile = FALSE AND errorCode < 0 THEN
+				_fbResult.P_Result := E_Result.S_FAILED; //Working	
+			END_IF		
+	END_CASE		
+END_IF	
+
+
+
+(*
+
+
+*)]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_SetIOMappingJson_Values" Id="{d0eac7ea-4c8d-4908-9165-e7764edfc234}" FolderPath="Protected\">
+      <Declaration><![CDATA[METHOD PROTECTED M_SetIOMappingJson_Values : BOOL
+VAR_INPUT
+	pJson : SJsonValue;
+END_VAR
+VAR
+	stIOMapping : ST_IOMappingJson;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THIS^.M_SetJsonMemberValue(pJson,'deviceNum',stIOMapping.deviceNum);
+THIS^.M_SetJsonMemberValue(pJson,'channel',stIOMapping.channel);
+
+THIS^.M_SetJsonMemberValue(pJson,'ethercatDeviceNum',stIOMapping.ethercatDeviceNum);
+THIS^.M_SetJsonMemberValue(pJson,'ioLinkDevice',stIOMapping.ioLinkDevice);
+THIS^.M_SetJsonMemberValue(pJson,'ioLinkSlaveChannel',stIOMapping.ioLinkSlaveChannel);]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_IOMappingJson">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_IOMappingJson.M_Add1">
+      <LineId Id="5" Count="0" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_IOMappingJson.M_CreateSchemaJson">
+      <LineId Id="11" Count="0" />
+      <LineId Id="6" Count="3" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_IOMappingJson.M_GetIOMappingJson">
+      <LineId Id="179" Count="1" />
+      <LineId Id="238" Count="15" />
+      <LineId Id="181" Count="0" />
+      <LineId Id="258" Count="4" />
+      <LineId Id="254" Count="0" />
+      <LineId Id="263" Count="0" />
+      <LineId Id="265" Count="0" />
+      <LineId Id="272" Count="0" />
+      <LineId Id="266" Count="4" />
+      <LineId Id="264" Count="0" />
+      <LineId Id="297" Count="0" />
+      <LineId Id="255" Count="0" />
+      <LineId Id="257" Count="0" />
+      <LineId Id="256" Count="0" />
+      <LineId Id="40" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_IOMappingJson.M_GetIOMappingJson_Values">
+      <LineId Id="30" Count="4" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="50" Count="7" />
+      <LineId Id="49" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_IOMappingJson.M_PraseSchemaJson">
+      <LineId Id="12" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="9" Count="2" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="16" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_IOMappingJson.M_SetIOMappingJson">
+      <LineId Id="546" Count="3" />
+      <LineId Id="607" Count="6" />
+      <LineId Id="554" Count="1" />
+      <LineId Id="449" Count="0" />
+      <LineId Id="558" Count="0" />
+      <LineId Id="557" Count="0" />
+      <LineId Id="556" Count="0" />
+      <LineId Id="564" Count="0" />
+      <LineId Id="450" Count="0" />
+      <LineId Id="565" Count="0" />
+      <LineId Id="451" Count="4" />
+      <LineId Id="566" Count="1" />
+      <LineId Id="572" Count="4" />
+      <LineId Id="456" Count="0" />
+      <LineId Id="560" Count="0" />
+      <LineId Id="460" Count="0" />
+      <LineId Id="324" Count="0" />
+      <LineId Id="495" Count="1" />
+      <LineId Id="494" Count="0" />
+      <LineId Id="500" Count="1" />
+      <LineId Id="497" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_IOMappingJson.M_SetIOMappingJson_Values">
+      <LineId Id="25" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="27" Count="2" />
+      <LineId Id="26" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>
