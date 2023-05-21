@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_JsonFile" Id="{7d9f6882-413f-46ef-ad72-6dae3775019a}" SpecialFunc="None">
+    <Declaration><![CDATA[(*
+used to write all values to and from json files. Will add to lib later
+*)
+
+FUNCTION_BLOCK ABSTRACT FB_JsonFile EXTENDS FB_JsonSchemaEx_OLD
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <LineIds Name="FB_JsonFile">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

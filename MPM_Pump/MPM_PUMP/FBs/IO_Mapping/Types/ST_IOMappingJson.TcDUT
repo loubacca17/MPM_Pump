@@ -9,7 +9,7 @@ STRUCT
 	ethercatDeviceNum : WORD;
 	ioLinkDevice : USINT;
 	ioLinkSlaveChannel : USINT;	
-	//pAny : MPM_JsonParser.ST_AnyType_User;
+	pAny : MPM_JsonParser.ST_AnyType_User;
 END_STRUCT
 END_TYPE
 ]]></Declaration>

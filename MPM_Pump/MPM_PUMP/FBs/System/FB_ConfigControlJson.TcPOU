@@ -1,0 +1,71 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_ConfigControlJson" Id="{fd6fc35a-3532-4b43-8957-b75eb939e4ec}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_ConfigControlJson EXTENDS FB_JsonSchemaEx_OLD
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+	P_sJsonid			: MPM_JsonParser.DUT_JsonSchema := (member := '_id', typeClass := E_TypeClassEx.TYPE_STRING,jsonValueRoot := jsonRoot);
+	P_sJsonTimeStamp	: MPM_JsonParser.DUT_JsonSchema := (member := 'time_stamp', typeClass := E_TypeClassEx.TYPE_FILETIME,jsonValueRoot := jsonRoot);		
+	P_sJsonRecipe		: MPM_JsonParser.DUT_JsonSchema := (member := 'Recipe', typeClass := E_TypeClassEx.TYPE_JSON,jsonValueRoot := jsonRoot);
+	P_sJsonSystem		: MPM_JsonParser.DUT_JsonSchema := (member := 'System', typeClass := E_TypeClassEx.TYPE_JSON,jsonValueRoot := jsonRoot);
+	P_sJsonIOValues		: MPM_JsonParser.DUT_JsonSchema := (member := 'IO', typeClass := E_TypeClassEx.TYPE_JSON,jsonValueRoot := jsonRoot);
+END_VAR
+VAR
+	jsonRoot : SJsonValue;	
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="M_CreateSchemaJson" Id="{7317fc8b-58ff-4f51-8cc3-8f88c1719a9d}">
+      <Declaration><![CDATA[METHOD PUBLIC  M_CreateSchemaJson : BOOL
+VAR_IN_OUT
+END_VAR
+VAR
+	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[jsonRoot := THIS^.NewDocument();
+M_SetJsonSchema(jsonRoot,P_sJsonid);
+M_SetJsonSchema(jsonRoot,P_sJsonRecipe);
+M_SetJsonSchema(jsonRoot,P_sJsonSystem);
+M_SetJsonSchema(jsonRoot,P_sJsonIOValues);
+M_SetJsonSchema(jsonRoot,P_sJsonTimeStamp);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_PraseSchemaJson" Id="{664025a6-1001-4bee-b12f-66995b59e06c}">
+      <Declaration><![CDATA[METHOD PUBLIC  M_PraseSchemaJson : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[jsonRoot := THIS^.GetDocumentRoot();
+IF jsonRoot > 0 THEN
+	M_PraseJsonSchema(jsonRoot,P_sJsonid);
+	M_PraseJsonSchema(jsonRoot,P_sJsonRecipe);
+	M_PraseJsonSchema(jsonRoot,P_sJsonSystem);
+	M_PraseJsonSchema(jsonRoot,P_sJsonIOValues);
+	M_PraseJsonSchema(jsonRoot,P_sJsonTimeStamp);
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_ConfigControlJson">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ConfigControlJson.M_CreateSchemaJson">
+      <LineId Id="6" Count="1" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="13" Count="1" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ConfigControlJson.M_PraseSchemaJson">
+      <LineId Id="6" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="9" Count="3" />
+      <LineId Id="7" Count="1" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

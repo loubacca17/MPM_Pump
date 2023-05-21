@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_TimeEvents" Id="{67b3410e-360f-4a3a-95e0-d47352cef831}" SpecialFunc="None">
+    <Declaration><![CDATA[(*
+Standard way to set up time events in a system. might make an interface
+*)
+FUNCTION_BLOCK ABSTRACT FB_TimeEvents
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <LineIds Name="FB_TimeEvents">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

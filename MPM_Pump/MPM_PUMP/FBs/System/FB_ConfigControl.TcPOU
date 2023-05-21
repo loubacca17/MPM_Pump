@@ -1,0 +1,115 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_ConfigControl" Id="{40efb18b-3f60-4fa1-aa5b-c43795a06346}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_ConfigControl
+VAR_INPUT
+	a_pFBConfigJson : POINTER TO POINTER TO FB_ConfigJson; //pointer to pointer is an array
+	ua_pFBConfigJson : UDINT;
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	fbConfigControlJson : FB_ConfigControlJson;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="M_CreateSchemaJson" Id="{f44aea64-e5fe-4d14-8dfa-bbb974027d26}">
+      <Declaration><![CDATA[METHOD PUBLIC M_CreateSchemaJson : HResult
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbConfigControlJson.M_CreateSchemaJson();]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_GetJsonString" Id="{6c0a32eb-aa79-412c-a85a-e47532b90cb3}">
+      <Declaration><![CDATA[METHOD PUBLIC M_GetJsonString : HResult
+VAR_IN_OUT CONSTANT
+	pDoc : STRING(10000);
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbConfigControlJson.CopyDocument(pDoc,SIZEOF(pDoc));
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_SetJsonRecipe" Id="{bfd8563a-59ab-4c37-958b-6beb44e7770e}">
+      <Declaration><![CDATA[METHOD PUBLIC M_SetJsonRecipe : HResult
+VAR_IN_OUT
+	
+END_VAR
+
+VAR CONSTANT
+	uSizeOfStAnyType : UDINT := SIZEOF(PVOID);
+END_VAR
+
+VAR_INST
+	uSizeOfArray : DINT;
+	x : DINT;
+	pFBConfigJson : POINTER TO POINTER TO FB_ConfigJson;	
+	lastResult : HRESULT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+
+uSizeOfArray := ua_pFBConfigJson/uSizeOfStAnyType - 1; //get number of items in array
+
+
+FOR x := 0 TO uSizeOfArray BY 1 DO
+	pFBConfigJson := a_pFBConfigJson + uSizeOfStAnyType*x;
+	lastResult := pFBConfigJson^^.F_Recipe(lastResult,fbConfigControlJson.P_sJsonRecipe.jsonValue,ADR(fbConfigControlJson),FALSE);
+END_FOR]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_SetJsonSystem" Id="{aa4bbf75-637c-4be0-bbe1-fa1addb2eb27}">
+      <Declaration><![CDATA[METHOD PUBLIC M_SetJsonSystem : HResult
+VAR_INPUT
+END_VAR
+VAR CONSTANT
+	uSizeOfStAnyType : UDINT := SIZEOF(PVOID);
+END_VAR
+VAR_INST
+	uSizeOfArray : DINT;
+	x : DINT;
+	pFBConfigJson : POINTER TO POINTER TO FB_ConfigJson;	
+	lastResult : HRESULT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+uSizeOfArray := ua_pFBConfigJson/uSizeOfStAnyType - 1; //get number of items in array
+
+
+
+FOR x := 0 TO uSizeOfArray BY 1 DO
+	pFBConfigJson := a_pFBConfigJson + uSizeOfStAnyType*x;
+	lastResult := pFBConfigJson^^.F_System(lastResult,fbConfigControlJson.P_sJsonSystem.jsonValue,ADR(fbConfigControlJson),FALSE);
+END_FOR]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_ConfigControl">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ConfigControl.M_CreateSchemaJson">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ConfigControl.M_GetJsonString">
+      <LineId Id="5" Count="0" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ConfigControl.M_SetJsonRecipe">
+      <LineId Id="14" Count="1" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="22" Count="1" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="25" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ConfigControl.M_SetJsonSystem">
+      <LineId Id="14" Count="7" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_DiscreteEvents" Id="{a9950c77-75c4-4565-9d6a-64f0c0ce1cfe}" SpecialFunc="None">
+    <Declaration><![CDATA[(*
+Standard way to set up events to be tied to other parts of the project. might make an interface
+*)
+
+FUNCTION_BLOCK ABSTRACT FB_DiscreteEvents
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <LineIds Name="FB_DiscreteEvents">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

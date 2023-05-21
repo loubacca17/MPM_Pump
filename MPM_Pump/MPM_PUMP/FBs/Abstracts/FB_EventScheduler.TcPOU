@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_EventScheduler" Id="{b24ddb6a-18e7-4e58-a78a-64df0d31999b}" SpecialFunc="None">
+    <Declaration><![CDATA[(*
+used to create event schedulers
+*)
+
+FUNCTION_BLOCK ABSTRACT FB_EventScheduler
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <LineIds Name="FB_EventScheduler">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

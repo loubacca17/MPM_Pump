@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_AxisControl" Id="{5be60846-58a1-496b-ab38-aa8e689397e9}" SpecialFunc="None">
+    <Declaration><![CDATA[(*
+Standard control for FB_AxisRef
+*)
+
+FUNCTION_BLOCK ABSTRACT FB_AxisControl
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <LineIds Name="FB_AxisControl">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

@@ -1,0 +1,229 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_ConfigJson" Id="{3ccc0d41-27f9-41ab-b33f-1e963a615b44}" SpecialFunc="None">
+    <Declaration><![CDATA[(*
+Will be an abstract class that will be used to configure all parts of the machine through json
+*)
+
+FUNCTION_BLOCK ABSTRACT FB_ConfigJson
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR 
+	_fbName : STRING; //name of FB set on init
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="_F_Recipe" Id="{acb8c5d6-5487-4d41-9ec0-f4a34dd65731}">
+      <Declaration><![CDATA[(*
+return the list of vars that want to be saved and loaded 
+*)
+
+METHOD PROTECTED ABSTRACT _F_Recipe : HResult
+VAR_IN_OUT
+	a_pstAnyTypeUser : POINTER TO MPM_JsonParser.ST_AnyType_User; //pointer to array
+	uAnyTypeUser : UDINT; //size of array	
+END_VAR
+VAR_OUTPUT
+
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_F_System" Id="{c67585fa-6db9-4ba3-8b65-2665a130374f}">
+      <Declaration><![CDATA[METHOD PROTECTED ABSTRACT _F_System : HResult
+VAR_IN_OUT
+	a_pstAnyTypeUser : POINTER TO MPM_JsonParser.ST_AnyType_User; //pointer to array
+	uAnyTypeUser : UDINT; //size of array	
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="F_IO" Id="{3a02837e-fabe-4f90-b88e-c4f1e99bdab4}">
+      <Declaration><![CDATA[METHOD PUBLIC FINAL F_IO : HRESULT
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="F_Recipe" Id="{23f9deca-2586-4a9d-b0ee-68078bcc9c57}">
+      <Declaration><![CDATA[METHOD PUBLIC FINAL F_Recipe : HRESULT
+VAR_INPUT
+	lastResult : HRESULT;
+	sJson : SJsonValue;
+	pfbJsonSchema : POINTER TO FB_JsonSchemaEx_OLD;	
+	bGet : BOOL; //Read in values vs set
+END_VAR
+
+VAR_INST
+	_fbResult : FB_ResultHelper_V2;
+	pResult : POINTER TO HRESULT;
+END_VAR
+
+VAR
+	a_stAnyUser : POINTER TO MPM_JsonParser.ST_AnyType_User; // pointer to array of vars
+	uAnyTypeUser : UDINT; //number of bytes in a_stAnyUser
+	
+	uSizeOfArray : UDINT;
+	pstAnyUser : POINTER TO MPM_JsonParser.ST_AnyType_User; //pointer for loop
+	x : UDINT;
+END_VAR
+
+VAR CONSTANT
+	uSizeOfStAnyType : UDINT := SIZEOF(MPM_JsonParser.ST_AnyType_User);
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF _fbResult.M_MethodResult(F_Recipe,ADR(pResult),lastResult) = FALSE THEN
+	RETURN;
+END_IF
+
+
+pResult^ := _F_Recipe(a_stAnyUser,uAnyTypeUser);
+
+
+pResult^ := MPM_FBResult.E_Result.S_WORKING;
+sJson := pfbJsonSchema^.M_SetJsonMember(sJson,_fbName);
+IF a_stAnyUser > 0 AND_THEN uAnyTypeUser > 0 AND uSizeOfStAnyType > 0 THEN //make sure all values are vaild
+	uSizeOfArray := uAnyTypeUser/uSizeOfStAnyType - 1; //get number of items in array
+	FOR x := 0 TO uSizeOfArray BY 1 DO //loop through all items 
+		pstAnyUser := a_stAnyUser + uSizeOfStAnyType*x; // get array position
+			IF bGet = FALSE THEN
+				pfbJsonSchema^.M_SetJsonMemberValue_AnyType(sJson,pstAnyUser^.name,pstAnyUser^); //set json value
+			END_IF
+	END_FOR
+	pResult^ := MPM_FBResult.E_Result.S_OK;
+ELSE
+	pResult^ := MPM_FBResult.E_Result.S_FAILED;
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="F_System" Id="{4f92d8d9-026e-4619-8a71-a0cfc6eb2eed}">
+      <Declaration><![CDATA[METHOD PUBLIC FINAL F_System : HRESULT
+VAR_INPUT
+	lastResult : HRESULT;
+	sJson : SJsonValue;
+	pfbJsonSchema : POINTER TO FB_JsonSchemaEx_OLD;	
+	bGet : BOOL; //Read in values vs set
+END_VAR
+
+VAR_INST
+	_fbResult : FB_ResultHelper_V2;
+	pResult : POINTER TO HRESULT;
+END_VAR
+
+VAR
+	a_stAnyUser : POINTER TO MPM_JsonParser.ST_AnyType_User; // pointer to array of vars
+	uAnyTypeUser : UDINT; //number of bytes in a_stAnyUser
+	
+	uSizeOfArray : UDINT;
+	pstAnyUser : POINTER TO MPM_JsonParser.ST_AnyType_User; //pointer for loop
+	x : UDINT;
+END_VAR
+
+
+VAR CONSTANT
+	uSizeOfStAnyType : UDINT := SIZEOF(MPM_JsonParser.ST_AnyType_User);
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF _fbResult.M_MethodResult(F_System,ADR(pResult),lastResult) = FALSE THEN
+	RETURN;
+END_IF
+
+
+pResult^ := _F_System(a_stAnyUser,uAnyTypeUser);
+
+
+pResult^ := MPM_FBResult.E_Result.S_WORKING;
+sJson := pfbJsonSchema^.M_SetJsonMember(sJson,_fbName);
+IF a_stAnyUser > 0 AND_THEN uAnyTypeUser > 0 AND uSizeOfStAnyType > 0 THEN //make sure all values are vaild
+	uSizeOfArray := uAnyTypeUser/uSizeOfStAnyType - 1; //get number of items in array
+	FOR x := 0 TO uSizeOfArray BY 1 DO //loop through all items 
+		pstAnyUser := a_stAnyUser + uSizeOfStAnyType*x; // get array position
+			IF bGet = FALSE THEN
+				pfbJsonSchema^.M_SetJsonMemberValue_AnyType(sJson,pstAnyUser^.name,pstAnyUser^); //set json value
+			END_IF
+	END_FOR
+	pResult^ := MPM_FBResult.E_Result.S_OK;
+ELSE
+	pResult^ := MPM_FBResult.E_Result.S_FAILED;
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_init" Id="{39c76da8-be3f-4311-946f-56a7e0460487}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+	fbName : STRING;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[_fbName := fbName;]]></ST>
+      </Implementation>
+    </Method>
+    <Property Name="P_fbName" Id="{5a2b393b-8b77-4ed7-a71a-7e64119bd062}">
+      <Declaration><![CDATA[PROPERTY PUBLIC P_fbName : STRING]]></Declaration>
+      <Get Name="Get" Id="{831f96df-87bd-4bb9-ad06-74017936567e}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_fbName := _fbName;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <LineIds Name="FB_ConfigJson">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ConfigJson._F_Recipe">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ConfigJson._F_System">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ConfigJson.F_IO">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ConfigJson.F_Recipe">
+      <LineId Id="44" Count="0" />
+      <LineId Id="52" Count="0" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="54" Count="0" />
+      <LineId Id="53" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="55" Count="2" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="34" Count="2" />
+      <LineId Id="40" Count="1" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="42" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="24" Count="1" />
+      <LineId Id="21" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ConfigJson.F_System">
+      <LineId Id="6" Count="21" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ConfigJson.FB_init">
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ConfigJson.P_fbName.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

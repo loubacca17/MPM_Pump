@@ -1457,7 +1457,17 @@ External Setpoint Generation:
 		<ImageData Id="1002">424dd6020000000000003600000028000000100000000e0000000100180000000000a0020000c40e0000c40e00000000000000000000ff00ffff00ffff00ffff00ffff00ffff00ff808080808080808080ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffc0c0c0c0c0c0808080ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffc0c0c0c0c0c0808080ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffc0c0c0c0c0c0808080ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffc0c0c0c0c0c0808080ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffc0c0c0c0c0c0808080ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffc0c0c0c0c0c0808080ff00ffff00ffff00ffff00ffff00ffff00ffff00ff007fff007fff007fff007fff007fff007fffc0c0c0c0c0c0808080ff00ffff00ffff00ffff00ffff00ffff00ffff00ff007fff007fff007fff007fff007fff007fffc0c0c0c0c0c0808080ff00ffff00ffff00ffff00ffff00ffff00ffff00ff007fff007fff007fff007fff007fff007fffc0c0c0c0c0c0808080ff00ffff00ffff00ffff00ffff00ffff00ffff00ff007fff007fff007fff007fff007fff007fffc0c0c0c0c0c0808080ff00ffff00ffff00ffff00ffff00ffff00ffff00ff007fff007fff007fff007fff007fff007fffc0c0c0c0c0c0808080ff00ffff00ffff00ffff00ffff00ffff00ffff00ff007fff007fff007fff007fff007fff007fffc0c0c0c0c0c0808080ff00ffff00ffff00ffff00ffff00ffff00ffff00ff007fff007fff007fff007fff007fff007fffc0c0c0c0c0c0808080ff00ffff00ffff00ffff00ffff00ffff00ffff00ff</ImageData>
 		<ImageData Id="1003">424dd6020000000000003600000028000000100000000e0000000100180000000000a002000000000000000000000000000000000000ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ff808080808080808080808080808080ff00ffff00ffff00ffff00ffff00ffff00ffff00ff000000ff00ffff00ffff00ffc0c0c0c0c0c0c0c0c0c0c0c08080800000ff000000000000000000000000000000000000000000ff00ffff00ffff00ffc0c0c0c0c0c0c0c0c0c0c0c08080800000ff0000000000000000000000000000000000000000000000ff0000ffff00ffc0c0c0c0c0c0c0c0c0c0c0c08080800000ff000000000000000000000000000000000000000000ff00ffff00ffff00ffff0000ff0000ff0000ff00008080800000ffff00ffff00ffff00ff000000ff00ffff00ff000000ff00ffff00ffff00ffff0000c0c0c0c0c0c0c0c0c0808080000000000000000000000000000000ff00ffff00ffff00ffff00ffff00ffff00ffc0c0c0ff0000c0c0c0c0c0c0808080000000ff00ffff00ffff00ffff00ffff00ffff00ff000000ff00ffff00ffff00ffc0c0c0c0c0c0ff0000c0c0c0808080000000000000000000000000000000000000000000000000ff00ffff00ffff00ffc0c0c0c0c0c0c0c0c0ff00008080800000000000000000000000000000000000000000000000000000ff0000ffff00ffff0000c0c0c0c0c0c0ff0000808080000000000000000000000000000000000000000000000000ff00ffff00ffff00ffc0c0c0ff0000ff0000c0c0c0808080000000ff00ffff00ffff00ff000000ff00ffff00ff000000ff00ffff00ffff00ffc0c0c0c0c0c0c0c0c0c0c0c0808080000000000000000000000000000000ff00ffff00ffff00ffff00ffff00ffff00ffc0c0c0c0c0c0c0c0c0c0c0c0808080000000ff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffff00ffc0c0c0c0c0c0c0c0c0c0c0c0808080</ImageData>
 	</ImageDatas>
-	<Project ProjectGUID="{E4A68459-CBF3-4077-9FC7-1B12EB6050A2}" TargetNetId="5.125.204.206.1.1" Target64Bit="true" ShowHideConfigurations="#x106">
+	<Project ProjectGUID="{E4A68459-CBF3-4077-9FC7-1B12EB6050A2}" Target64Bit="true" ShowHideConfigurations="#x106">
+		<System>
+			<Settings MaxCpus="32" NonWinCpus="1" RouterMemory="1073741824" MaxStackSize="1024">
+				<Cpu CpuId="31"/>
+			</Settings>
+			<Tasks>
+				<Task Id="5" Priority="20" CycleTime="100000" AmsPort="350" AdtTasks="true">
+					<Name>PlcTask</Name>
+				</Task>
+			</Tasks>
+		</System>
 		<Motion>
 			<NC>
 				<SafTask Priority="4" CycleTime="20000" AmsPort="501" IoAtBegin="true" SafTaskInfo="256">
@@ -1619,8 +1629,30 @@ External Setpoint Generation:
 				</Axis>
 			</NC>
 		</Motion>
+		<Plc>
+			<Project GUID="{73B3D93F-7C7A-449B-A407-BEAC4D1CF568}" Name="MPM_PUMP" PrjFilePath="MPM_PUMP\MPM_PUMP.plcproj" TmcFilePath="MPM_PUMP\MPM_PUMP.tmc" ReloadTmc="true" AmsPort="851" FileArchiveSettings="#x000e" SymbolicMapping="true">
+				<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcPath="MPM_PUMP\MPM_PUMP.tmc" TmcHash="{DA46803B-582C-E398-8B16-85B1005438A0}">
+					<Name>MPM_PUMP Instance</Name>
+					<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
+					<Contexts>
+						<Context>
+							<Id NeedCalleeCall="true">0</Id>
+							<Name>PlcTask</Name>
+							<ManualConfig>
+								<OTCID>#x02010050</OTCID>
+							</ManualConfig>
+							<Priority>20</Priority>
+							<CycleTime>10000000</CycleTime>
+						</Context>
+					</Contexts>
+					<TaskPouOids>
+						<TaskPouOid Prio="20" OTCID="#x08502001"/>
+					</TaskPouOids>
+				</Instance>
+			</Project>
+		</Plc>
 		<Io>
-			<Device Id="1" DevType="111" DevFlags="#x0003" AmsPort="28673" AmsNetId="5.125.204.206.2.1" RemoteName="Device 1 (EtherCAT)" InfoImageId="2">
+			<Device Id="1" Disabled="true" DevType="111" DevFlags="#x0003" AmsPort="28673" AmsNetId="5.125.204.206.2.1" RemoteName="Device 1 (EtherCAT)" InfoImageId="2">
 				<Name>Device 1 (EtherCAT)</Name>
 				<AddressInfo>
 					<Ccat>
@@ -1942,7 +1974,7 @@ External Setpoint Generation:
 				</Box>
 				<EtherCAT/>
 			</Device>
-			<Device Id="2" DevType="111" DevFlags="#x0003" AmsPort="28674" AmsNetId="5.125.204.206.3.1" RemoteName="Device 2 (EtherCAT)" InfoImageId="4">
+			<Device Id="2" Disabled="true" DevType="111" DevFlags="#x0003" AmsPort="28674" AmsNetId="5.125.204.206.3.1" RemoteName="Device 2 (EtherCAT)" InfoImageId="4">
 				<Name>Device 2 (EtherCAT)</Name>
 				<AddressInfo>
 					<Pnp>
@@ -3428,7 +3460,7 @@ External Setpoint Generation:
 						<SyncMan>001880002600010001000000800080008000001826010000</SyncMan>
 						<SyncMan>001a80002200010002000000800080008000001a22010000</SyncMan>
 						<SyncMan>00100c002400010003000000000000000000001024010000</SyncMan>
-						<SyncMan>001116002200010004000000000000000000001122010000</SyncMan>
+						<SyncMan>00111c002200010004000000000000000000001122010000</SyncMan>
 						<SyncMan>002000002400010005000000000000000000002024010000</SyncMan>
 						<SyncMan>002400002000010006000000000000000000002420010000</SyncMan>
 						<Fmmu>0000000000000000001000020100000001000000000000000000000000000000</Fmmu>
@@ -3503,6 +3535,15 @@ External Setpoint Generation:
 							<Entry Name="Torque/force feedback value" BitLen="16" Index="#x0054">
 								<Type>INT</Type>
 							</Entry>
+							<Entry Name="Thermal motor utilization" BitLen="16" Index="#x803f">
+								<Type>UINT</Type>
+							</Entry>
+							<Entry Name="Application nominal utilization" BitLen="16" Index="#x813e">
+								<Type>UINT</Type>
+							</Entry>
+							<Entry Name="Actual absolute current" BitLen="16" Index="#x81cd">
+								<Type>INT</Type>
+							</Entry>
 						</Pdo>
 						<Pdo Name="AT 2" Index="#x1010" Flags="#x0001" SyncMan="3">
 							<Entry Name="Drive status word" BitLen="16" Index="#x0087" Flags="#x00000800">
@@ -3538,8 +3579,6 @@ External Setpoint Generation:
 		</Io>
 	</Project>
 	<Mappings>
-		<MappingInfo Identifier="{00000000-0030-0304-5000-040330000403}" Id="#x02030010"/>
-		<MappingInfo Identifier="{00000000-0040-0304-5000-040341000403}" Id="#x02030020"/>
 		<OwnerA Name="TINC^NC-Task 1 SAF^Axes^Axis 1">
 			<OwnerB Name="TIID^Device 2 (EtherCAT)^Drive 5 (AX5206-0000-0214)">
 				<Link VarA="Drive^Inputs^In^nDataIn1" VarB="AT 1^Following distance"/>

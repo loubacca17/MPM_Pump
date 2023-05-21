@@ -17,18 +17,45 @@
     <LibraryReferences>{8eac3bfb-93e0-4987-80ba-c825e42abf74}</LibraryReferences>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="FBs\Abstracts\FB_AxisControl.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FBs\Abstracts\FB_ConfigJson.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FBs\Abstracts\FB_DiscreteEvents.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FBs\Abstracts\FB_EventScheduler.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FBs\Abstracts\FB_PackMLControl.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FBs\Abstracts\FB_TimeEvents.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="FBs\IO_Mapping\FB_IOMappingJson.TcPOU">
       <SubType>Code</SubType>
-      <LinkAlways>true</LinkAlways>
+      <ExcludeFromBuild>true</ExcludeFromBuild>
     </Compile>
     <Compile Include="FBs\IO_Mapping\TcCom\FB_IOMapping.TcPOU">
       <SubType>Code</SubType>
-      <LinkAlways>true</LinkAlways>
+      <ExcludeFromBuild>true</ExcludeFromBuild>
     </Compile>
     <Compile Include="FBs\IO_Mapping\Types\ST_IOMappingJson.TcDUT">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="IFTs\ITF_JSON_Config.TcIO">
+    <Compile Include="FBs\Main\FB_JsonFile.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FBs\Main\FB_Pump.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FBs\System\FB_ConfigControlJson.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FBs\System\FB_ConfigControl.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="PlcTask.TcTTO">
@@ -44,6 +71,9 @@
     <Folder Include="FBs\IO_Mapping\TcCom" />
     <Folder Include="FBs\IO_Mapping\Types" />
     <Folder Include="FBs\JSON" />
+    <Folder Include="FBs\Abstracts" />
+    <Folder Include="FBs\Main" />
+    <Folder Include="FBs\System" />
     <Folder Include="GVLs" />
     <Folder Include="FBs" />
     <Folder Include="IFTs" />
@@ -70,6 +100,16 @@
       <DefaultResolution>Tc3_Module, * (Beckhoff Automation GmbH)</DefaultResolution>
       <Namespace>Tc3_Module</Namespace>
     </PlaceholderReference>
+  </ItemGroup>
+  <ItemGroup>
+    <SubObject Include="FB_ConfigJson.F_IO">
+      <ExcludeFromBuild>true</ExcludeFromBuild>
+    </SubObject>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="MPM_PUMP.tmc">
+      <SubType>Content</SubType>
+    </None>
   </ItemGroup>
   <ProjectExtensions>
     <PlcProjectOptions>
