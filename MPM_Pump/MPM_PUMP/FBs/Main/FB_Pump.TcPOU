@@ -9,11 +9,40 @@ END_VAR
 VAR
 	var1 : DINT;
 	var2 : STRING;
+	ioVar : POINTER TO BOOL;
+	ioVar2 : POINTER TO REAL;
 END_VAR
 ]]></Declaration>
     <Implementation>
       <ST><![CDATA[]]></ST>
     </Implementation>
+    <Method Name="_F_IO" Id="{8d18df3f-e12a-48c9-9bf2-8f499f7d4a3c}">
+      <Declaration><![CDATA[METHOD PUBLIC  _F_IO : HResult
+VAR_IN_OUT
+	a_pstIOMappingJson : POINTER TO ST_IOMappingJson; //pointer to array
+	ustIOMappingJson : UDINT; 		
+END_VAR
+VAR_INST
+	stIOMappingJson : ARRAY [0..1] OF ST_IOMappingJson;
+END_VAR
+VAR
+	x : DINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//	ioVar : POINTER TO BOOL;
+//	ioVar2 : POINTER TO REAL;
+F_Map_ST_IOMappingJson(ADR(a_pstIOMappingJson[F_add1(x)]),'ioVar',ADR(ioVar));
+F_Map_ST_IOMappingJson(ADR(a_pstIOMappingJson[F_add1(x)]),'ioVar2',ADR(ioVar2));
+
+a_pstIOMappingJson := ADR(stIOMappingJson);
+ustIOMappingJson := SIZEOF(stIOMappingJson);
+
+
+
+
+_F_IO := MPM_FBResult.E_Result.S_OK;]]></ST>
+      </Implementation>
+    </Method>
     <Method Name="_F_Recipe" Id="{234c8d91-ea4d-413b-922f-4a0a4767e40f}">
       <Declaration><![CDATA[(*
 return the list of vars that want to be saved and loaded 
@@ -26,12 +55,15 @@ VAR_IN_OUT
 END_VAR
 VAR_OUTPUT
 END_VAR
+VAR
+	x : DINT;
+END_VAR
 VAR_INST
 	a_stAnyTypeUser : ARRAY [0..1] OF MPM_JsonParser.ST_AnyType_User;
 END_VAR]]></Declaration>
       <Implementation>
-        <ST><![CDATA[MPM_JsonParser.F_Map_ST_AnyType_User('var1',var1,a_stAnyTypeUser[0]);
-MPM_JsonParser.F_Map_ST_AnyType_User('var2',var2,a_stAnyTypeUser[1]);
+        <ST><![CDATA[MPM_JsonParser.F_Map_ST_AnyType_User('var1',var1,a_stAnyTypeUser[F_Add1(x)]);
+MPM_JsonParser.F_Map_ST_AnyType_User('var2',var2,a_stAnyTypeUser[F_Add1(x)]);
 
 
 a_pstAnyTypeUser := ADR(a_stAnyTypeUser);
@@ -48,10 +80,13 @@ VAR_IN_OUT
 END_VAR
 VAR_INST
 	a_stAnyTypeUser : ARRAY [0..1] OF MPM_JsonParser.ST_AnyType_User;
+END_VAR
+VAR
+	x : DINT;
 END_VAR]]></Declaration>
       <Implementation>
-        <ST><![CDATA[MPM_JsonParser.F_Map_ST_AnyType_User('var1',var1,a_stAnyTypeUser[0]);
-MPM_JsonParser.F_Map_ST_AnyType_User('var2',var2,a_stAnyTypeUser[1]);
+        <ST><![CDATA[MPM_JsonParser.F_Map_ST_AnyType_User('var1',var1,a_stAnyTypeUser[F_Add1(x)]);
+MPM_JsonParser.F_Map_ST_AnyType_User('var2',var2,a_stAnyTypeUser[F_Add1(x)]);
 
 
 a_pstAnyTypeUser := ADR(a_stAnyTypeUser);
@@ -61,6 +96,16 @@ _F_System := MPM_FBResult.E_Result.S_OK;]]></ST>
       </Implementation>
     </Method>
     <LineIds Name="FB_Pump">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pump._F_IO">
+      <LineId Id="21" Count="0" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="36" Count="2" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="39" Count="2" />
+      <LineId Id="16" Count="0" />
       <LineId Id="9" Count="0" />
     </LineIds>
     <LineIds Name="FB_Pump._F_Recipe">

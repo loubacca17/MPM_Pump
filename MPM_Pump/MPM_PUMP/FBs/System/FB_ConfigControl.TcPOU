@@ -35,6 +35,31 @@ END_VAR
 ]]></ST>
       </Implementation>
     </Method>
+    <Method Name="M_SetJsonIO" Id="{132bf0dc-f494-4655-8dce-d202cd22afc3}">
+      <Declaration><![CDATA[METHOD PUBLIC M_SetJsonIO : HResult
+VAR_INPUT
+END_VAR
+VAR CONSTANT
+	uSizeOfStAnyType : UDINT := SIZEOF(PVOID);
+END_VAR
+VAR_INST
+	uSizeOfArray : DINT;
+	x : DINT;
+	pFBConfigJson : POINTER TO POINTER TO FB_ConfigJson;	
+	lastResult : HRESULT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+uSizeOfArray := ua_pFBConfigJson/uSizeOfStAnyType - 1; //get number of items in array
+
+
+
+FOR x := 0 TO uSizeOfArray BY 1 DO
+	pFBConfigJson := a_pFBConfigJson + uSizeOfStAnyType*x;
+	lastResult := pFBConfigJson^^.F_IO(lastResult,fbConfigControlJson.P_sJsonSystem.jsonValue,ADR(fbConfigControlJson),FALSE);
+END_FOR]]></ST>
+      </Implementation>
+    </Method>
     <Method Name="M_SetJsonRecipe" Id="{bfd8563a-59ab-4c37-958b-6beb44e7770e}">
       <Declaration><![CDATA[METHOD PUBLIC M_SetJsonRecipe : HResult
 VAR_IN_OUT
@@ -97,6 +122,10 @@ END_FOR]]></ST>
     <LineIds Name="FB_ConfigControl.M_GetJsonString">
       <LineId Id="5" Count="0" />
       <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ConfigControl.M_SetJsonIO">
+      <LineId Id="14" Count="7" />
+      <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_ConfigControl.M_SetJsonRecipe">
       <LineId Id="14" Count="1" />

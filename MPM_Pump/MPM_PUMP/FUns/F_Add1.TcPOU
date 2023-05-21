@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="F_Add1" Id="{c2100bb4-51ae-4094-aef7-50eb2de6985c}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION F_Add1 : DINT
+VAR_INPUT
+	x : REFERENCE TO DINT;
+END_VAR
+
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[F_Add1 := x;
+x := x + 1;]]></ST>
+    </Implementation>
+    <LineIds Name="F_Add1">
+      <LineId Id="13" Count="0" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

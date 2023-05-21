@@ -25,6 +25,7 @@ fbConfigControl.ua_pFBConfigJson := SIZEOF(a_pFBConfigJson);
 fbConfigControl.M_CreateSchemaJson();
 fbConfigControl.M_SetJsonRecipe();
 fbConfigControl.M_SetJsonSystem();
+fbConfigControl.M_SetJsonIO();
 fbConfigControl.M_GetJsonString(jsonDoc);]]></ST>
       </Implementation>
     </Action>
@@ -48,6 +49,7 @@ a_pFBConfigJson[2] := ADR(fbPump2);
       <LineId Id="6" Count="0" />
       <LineId Id="3" Count="0" />
       <LineId Id="5" Count="0" />
+      <LineId Id="7" Count="0" />
       <LineId Id="4" Count="0" />
     </LineIds>
     <LineIds Name="MAIN.A_INIT">

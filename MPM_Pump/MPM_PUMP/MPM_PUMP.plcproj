@@ -43,6 +43,9 @@
       <SubType>Code</SubType>
       <ExcludeFromBuild>true</ExcludeFromBuild>
     </Compile>
+    <Compile Include="FBs\IO_Mapping\Types\ST_IOMappingJson_OLD.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="FBs\IO_Mapping\Types\ST_IOMappingJson.TcDUT">
       <SubType>Code</SubType>
     </Compile>
@@ -56,6 +59,9 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="FBs\System\FB_ConfigControl.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FUns\F_Add1.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="PlcTask.TcTTO">
@@ -77,6 +83,7 @@
     <Folder Include="GVLs" />
     <Folder Include="FBs" />
     <Folder Include="IFTs" />
+    <Folder Include="FUns" />
     <Folder Include="VISUs" />
     <Folder Include="POUs" />
   </ItemGroup>
@@ -100,11 +107,6 @@
       <DefaultResolution>Tc3_Module, * (Beckhoff Automation GmbH)</DefaultResolution>
       <Namespace>Tc3_Module</Namespace>
     </PlaceholderReference>
-  </ItemGroup>
-  <ItemGroup>
-    <SubObject Include="FB_ConfigJson.F_IO">
-      <ExcludeFromBuild>true</ExcludeFromBuild>
-    </SubObject>
   </ItemGroup>
   <ItemGroup>
     <None Include="MPM_PUMP.tmc">

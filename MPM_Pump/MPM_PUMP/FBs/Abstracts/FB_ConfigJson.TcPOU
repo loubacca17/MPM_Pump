@@ -17,6 +17,18 @@ END_VAR
     <Implementation>
       <ST><![CDATA[]]></ST>
     </Implementation>
+    <Folder Name="Protected" Id="{d31bea82-4c8d-4864-8213-7cfbba3c0754}" />
+    <Method Name="_F_IO" Id="{25f7451c-b2be-4782-91c3-53451c901d29}">
+      <Declaration><![CDATA[METHOD PUBLIC ABSTRACT _F_IO : HResult
+VAR_IN_OUT
+	a_pstIOMappingJson : POINTER TO ST_IOMappingJson; //pointer to array
+	ustIOMappingJson : UDINT; 		
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
     <Method Name="_F_Recipe" Id="{acb8c5d6-5487-4d41-9ec0-f4a34dd65731}">
       <Declaration><![CDATA[(*
 return the list of vars that want to be saved and loaded 
@@ -48,6 +60,67 @@ END_VAR
     <Method Name="F_IO" Id="{3a02837e-fabe-4f90-b88e-c4f1e99bdab4}">
       <Declaration><![CDATA[METHOD PUBLIC FINAL F_IO : HRESULT
 VAR_INPUT
+	lastResult : HRESULT;
+	sJson : SJsonValue;
+	pfbJsonSchema : POINTER TO FB_JsonSchemaEx_OLD;	
+	bGet : BOOL; //Read in values vs set
+END_VAR
+
+VAR_INST
+	_fbResult : FB_ResultHelper_V2;
+	pResult : POINTER TO HRESULT;
+END_VAR
+
+VAR
+	a_pstIOMappingJson : POINTER TO ST_IOMappingJson; // pointer to array of vars
+	uAnyTypeUser : UDINT; //number of bytes in a_stAnyUser
+	
+	uSizeOfArray : UDINT;
+	pstIOMappingJson : POINTER TO ST_IOMappingJson; //pointer for loop
+	x : UDINT;
+END_VAR
+
+
+VAR CONSTANT
+	uSizeOfStAnyType : UDINT := SIZEOF(ST_IOMappingJson);
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF _fbResult.M_MethodResult(F_IO,ADR(pResult),lastResult) = FALSE THEN
+	RETURN;
+END_IF
+
+
+pResult^ := _F_IO(a_pstIOMappingJson,uAnyTypeUser);
+
+
+pResult^ := MPM_FBResult.E_Result.S_WORKING;
+sJson := pfbJsonSchema^.M_SetJsonMember(sJson,_fbName);
+IF a_pstIOMappingJson > 0 AND_THEN uAnyTypeUser > 0 AND uSizeOfStAnyType > 0 THEN //make sure all values are vaild
+	uSizeOfArray := uAnyTypeUser/uSizeOfStAnyType - 1; //get number of items in array
+	FOR x := 0 TO uSizeOfArray BY 1 DO //loop through all items 
+		pstIOMappingJson := a_pstIOMappingJson + uSizeOfStAnyType*x; // get array position
+			IF bGet = FALSE THEN
+				sJson := pfbJsonSchema^.M_SetJsonMember(sJson,pstIOMappingJson^.name); //set json value
+				pfbJsonSchema^.M_SetJsonMemberValue(sJson,'channel',pstIOMappingJson^.channel); //set json value
+				pfbJsonSchema^.M_SetJsonMemberValue(sJson,'deviceNum',pstIOMappingJson^.deviceNum); //set json value
+				pfbJsonSchema^.M_SetJsonMemberValue(sJson,'ethercatDeviceNum',pstIOMappingJson^.ethercatDeviceNum); //set json value
+				pfbJsonSchema^.M_SetJsonMemberValue(sJson,'ioLinkDevice',pstIOMappingJson^.ioLinkDevice); //set json value
+				pfbJsonSchema^.M_SetJsonMemberValue(sJson,'ioLinkSlaveChannel',pstIOMappingJson^.ioLinkSlaveChannel); //set json value
+			END_IF
+	END_FOR
+	pResult^ := MPM_FBResult.E_Result.S_OK;
+ELSE
+	pResult^ := MPM_FBResult.E_Result.S_FAILED;
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="F_Map_ST_IOMappingJson" Id="{5c1ae8e3-b5c1-4247-821a-ef4678ae72df}" FolderPath="Protected\">
+      <Declaration><![CDATA[METHOD PROTECTED F_Map_ST_IOMappingJson : HRESULT
+VAR_INPUT
+	stIOMappingJson : POINTER TO ST_IOMappingJson;
+	name : STRING;
+	pPVoid : POINTER TO PVOID;
 END_VAR
 ]]></Declaration>
       <Implementation>
@@ -187,6 +260,9 @@ END_VAR
     <LineIds Name="FB_ConfigJson">
       <LineId Id="9" Count="0" />
     </LineIds>
+    <LineIds Name="FB_ConfigJson._F_IO">
+      <LineId Id="5" Count="0" />
+    </LineIds>
     <LineIds Name="FB_ConfigJson._F_Recipe">
       <LineId Id="5" Count="0" />
     </LineIds>
@@ -194,6 +270,14 @@ END_VAR
       <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_ConfigJson.F_IO">
+      <LineId Id="36" Count="7" />
+      <LineId Id="58" Count="7" />
+      <LineId Id="95" Count="4" />
+      <LineId Id="66" Count="3" />
+      <LineId Id="56" Count="1" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ConfigJson.F_Map_ST_IOMappingJson">
       <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_ConfigJson.F_Recipe">
