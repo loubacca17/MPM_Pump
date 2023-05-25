@@ -6,5 +6,10 @@
       <From>M_Add1</From>
       <To>F_Add1</To>
     </RenamedType>
+    <RenamedSymbol>
+      <Type guid="8a4a8626-7eae-45de-981b-850b72ae5299">_F_Axis</Type>
+      <From>a_pstAxisMapping</From>
+      <To>a_pstAxisParameterSet</To>
+    </RenamedSymbol>
   </Renames>
 </Refactors>

@@ -11,11 +11,30 @@ VAR
 	var2 : STRING;
 	ioVar : POINTER TO BOOL;
 	ioVar2 : POINTER TO REAL;
+	axis : TC2_MC2.AXIS_REF;
 END_VAR
 ]]></Declaration>
     <Implementation>
       <ST><![CDATA[]]></ST>
     </Implementation>
+    <Method Name="_F_Axis" Id="{8a4a8626-7eae-45de-981b-850b72ae5299}">
+      <Declaration><![CDATA[METHOD _F_Axis : HRESULT
+VAR_IN_OUT
+	a_pstAxisParameterSet : POINTER TO Tc2_MC2.ST_AxisParameterSet; //pointer to array
+	pstAxisMapping : UDINT;
+END_VAR
+VAR_INST
+	stAxisParameterSet : Tc2_MC2.ST_AxisParameterSet;  
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[stAxisParameterSet.AxisId := axis.NcToPlc.AxisId;
+a_pstAxisParameterSet := ADR(stAxisParameterSet);
+pstAxisMapping := SIZEOF(stAxisParameterSet);
+
+_F_Axis := MPM_FBResult.E_Result.S_OK;
+]]></ST>
+      </Implementation>
+    </Method>
     <Method Name="_F_IO" Id="{8d18df3f-e12a-48c9-9bf2-8f499f7d4a3c}">
       <Declaration><![CDATA[METHOD PUBLIC  _F_IO : HResult
 VAR_IN_OUT
@@ -31,8 +50,8 @@ END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[//	ioVar : POINTER TO BOOL;
 //	ioVar2 : POINTER TO REAL;
-F_Map_ST_IOMappingJson(ADR(a_pstIOMappingJson[F_Add1.F_Add1(x)]),'ioVar',ADR(ioVar));
-F_Map_ST_IOMappingJson(ADR(a_pstIOMappingJson[F_Add1.F_Add1(x)]),'ioVar2',ADR(ioVar2));
+F_Map_ST_IOMappingJson(ADR(a_pstIOMappingJson[F_Add1(x)]),'ioVar',ADR(ioVar));
+F_Map_ST_IOMappingJson(ADR(a_pstIOMappingJson[F_Add1(x)]),'ioVar2',ADR(ioVar2));
 
 a_pstIOMappingJson := ADR(stIOMappingJson);
 ustIOMappingJson := SIZEOF(stIOMappingJson);
@@ -62,8 +81,8 @@ VAR_INST
 	a_stAnyTypeUser : ARRAY [0..1] OF MPM_JsonParser.ST_AnyType_User;
 END_VAR]]></Declaration>
       <Implementation>
-        <ST><![CDATA[MPM_JsonParser.F_Map_ST_AnyType_User('var1',var1,a_stAnyTypeUser[F_Add1.F_Add1(x)]);
-MPM_JsonParser.F_Map_ST_AnyType_User('var2',var2,a_stAnyTypeUser[F_Add1.F_Add1(x)]);
+        <ST><![CDATA[MPM_JsonParser.F_Map_ST_AnyType_User('var1',var1,a_stAnyTypeUser[F_Add1(x)]);
+MPM_JsonParser.F_Map_ST_AnyType_User('var2',var2,a_stAnyTypeUser[F_Add1(x)]);
 
 
 a_pstAnyTypeUser := ADR(a_stAnyTypeUser);
@@ -85,8 +104,8 @@ VAR
 	x : DINT;
 END_VAR]]></Declaration>
       <Implementation>
-        <ST><![CDATA[MPM_JsonParser.F_Map_ST_AnyType_User('var1',var1,a_stAnyTypeUser[F_Add1.F_Add1(x)]);
-MPM_JsonParser.F_Map_ST_AnyType_User('var2',var2,a_stAnyTypeUser[F_Add1.F_Add1(x)]);
+        <ST><![CDATA[MPM_JsonParser.F_Map_ST_AnyType_User('var1',var1,a_stAnyTypeUser[F_Add1(x)]);
+MPM_JsonParser.F_Map_ST_AnyType_User('var2',var2,a_stAnyTypeUser[F_Add1(x)]);
 
 
 a_pstAnyTypeUser := ADR(a_stAnyTypeUser);
@@ -97,6 +116,12 @@ _F_System := MPM_FBResult.E_Result.S_OK;]]></ST>
     </Method>
     <LineIds Name="FB_Pump">
       <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pump._F_Axis">
+      <LineId Id="27" Count="0" />
+      <LineId Id="22" Count="2" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="25" Count="0" />
     </LineIds>
     <LineIds Name="FB_Pump._F_IO">
       <LineId Id="21" Count="0" />

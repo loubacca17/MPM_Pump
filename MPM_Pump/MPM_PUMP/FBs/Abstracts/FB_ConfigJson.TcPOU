@@ -20,9 +20,10 @@ END_VAR
     <Folder Name="ABSTRACT" Id="{d3f0e259-1061-426a-b7a1-3591a9d5be2f}" />
     <Folder Name="Protected" Id="{d31bea82-4c8d-4864-8213-7cfbba3c0754}" />
     <Method Name="_F_Axis" Id="{7fa39416-568e-4119-8393-652fc6472acb}" FolderPath="ABSTRACT\">
-      <Declaration><![CDATA[METHOD _F_Axis : BOOL
-VAR_INPUT
-	
+      <Declaration><![CDATA[METHOD _F_Axis : HRESULT
+VAR_IN_OUT
+	a_pstAxisMapping : POINTER TO Tc2_MC2.ST_AxisParameterSet;; //pointer to array
+	pstAxisMapping : UDINT;
 END_VAR
 ]]></Declaration>
       <Implementation>
@@ -96,15 +97,21 @@ VAR CONSTANT
 	uSizeOfStAnyType : UDINT := SIZEOF(ST_IOMappingJson);
 END_VAR]]></Declaration>
       <Implementation>
-        <ST><![CDATA[IF _fbResult.M_MethodResult(F_IO,ADR(pResult),lastResult) = FALSE THEN
+        <ST><![CDATA[IF _fbResult.M_MethodResult(F_AXIS,ADR(pResult),lastResult) = FALSE THEN
 	RETURN;
 END_IF
 
 
-pResult^ := _F_IO(a_pstIOMappingJson,uAnyTypeUser);
+pResult^ := _F_Axis(a_pstIOMappingJson,uAnyTypeUser);
 pResult^ := MPM_FBResult.E_Result.S_WORKING;
 sJson := pfbJsonSchema^.M_SetJsonMember(sJson,_fbName);
-]]></ST>
+
+IF a_stAnyUser > 0 AND_THEN uAnyTypeUser > 0 AND uSizeOfStAnyType > 0 THEN //make sure all values are vaild
+	uSizeOfArray := uAnyTypeUser/uSizeOfStAnyType - 1; //get number of items in array
+	FOR x := 0 TO uSizeOfArray BY 1 DO //loop through all items 
+		
+	END_FOR
+END_IF	]]></ST>
       </Implementation>
     </Method>
     <Method Name="F_IO" Id="{3a02837e-fabe-4f90-b88e-c4f1e99bdab4}">
@@ -325,7 +332,10 @@ END_VAR
     <LineIds Name="FB_ConfigJson.F_AXIS">
       <LineId Id="28" Count="5" />
       <LineId Id="5" Count="0" />
-      <LineId Id="34" Count="1" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="63" Count="2" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="66" Count="2" />
     </LineIds>
     <LineIds Name="FB_ConfigJson.F_IO">
       <LineId Id="36" Count="7" />
