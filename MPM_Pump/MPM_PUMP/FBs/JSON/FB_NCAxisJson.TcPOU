@@ -1,0 +1,659 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_NCAxisJson" Id="{095cd519-d1cc-4e2b-abad-5e734331a5b3}" SpecialFunc="None">
+    <Declaration><![CDATA[{attribute 'call_after_init'}
+FUNCTION_BLOCK FB_NCAxisJson EXTENDS FB_JsonSchemaEx_OLD
+VAR_INPUT
+		
+END_VAR
+VAR_OUTPUT
+	P_sJsonid			: MPM_JsonParser.DUT_JsonSchema := (member := '_id', typeClass := E_TypeClassEx.TYPE_STRING,jsonValueRoot := jsonRoot);
+	P_sJsonTimeStamp	: MPM_JsonParser.DUT_JsonSchema := (member := 'time_stamp', typeClass := E_TypeClassEx.TYPE_FILETIME,jsonValueRoot := jsonRoot);		
+	P_sJsonValues		: MPM_JsonParser.DUT_JsonSchema := (member := 'values', typeClass := E_TypeClassEx.TYPE_JSON,jsonValueRoot := jsonRoot);
+END_VAR
+VAR
+	jsonRoot : SJsonValue;
+	adsRead : ADSReadEX;
+	saveTemplete : BOOL := FALSE;
+	stAxisMappingJson : ARRAY [0..NUM_OF_VARS] OF  ST_AxisMapping;
+END_VAR
+VAR_OUTPUT
+	//stIOMappingEthercat : ARRAY [0..NUM_OF_VARS] OF ST_IOMappingEthercatJson;	
+END_VAR
+VAR CONSTANT
+	NUM_OF_VARS : DINT := 67 ;// 8 is SIZEOF(PVOID) (SIZEOF(ST_IO_Mapping)/SIZEOF(PVOID)) -1 won't complie
+	INDEX_BASE : DINT :=  16384;
+	PORT : UINT := 501;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Folder Name="Protected" Id="{de86d22f-613a-4130-b078-b8a9f161cf68}" />
+    <Method Name="_M_MapJsonValues" Id="{dc2b3767-a9e6-4e80-a448-03f0849114f4}" FolderPath="Protected\">
+      <Declaration><![CDATA[METHOD PROTECTED _M_MapJsonValues : HRESULT
+VAR_INPUT
+	stAxisMappingJson : REFERENCE TO ST_AxisMapping;
+	name : STRING;
+	indexOffset : UDINT;
+	pAny : ANY;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[stAxisMappingJson.name := name;
+stAxisMappingJson.indexOffset := indexOffset;
+stAxisMappingJson.pAny.typeclass := TO_INT(pAny.TypeClass);
+stAxisMappingJson.pAny.pvalue := pAny.pValue;
+stAxisMappingJson.pAny.diSize := pAny.diSize;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="F_Add1" Id="{7a334520-5eb4-4d73-90ae-6ae03962642a}" FolderPath="Protected\">
+      <Declaration><![CDATA[METHOD INTERNAL F_Add1 : UDINT
+VAR_INPUT
+	x : REFERENCE TO UDINT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[F_Add1.F_Add1 := x;
+x := x + 1;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_CreateSchemaJson" Id="{9e24c98a-4ba9-49b3-929c-63b3c5866c10}">
+      <Declaration><![CDATA[METHOD PUBLIC  M_CreateSchemaJson : BOOL
+VAR_IN_OUT
+END_VAR
+VAR
+	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[jsonRoot := THIS^.NewDocument();
+M_SetJsonSchema(jsonRoot,P_sJsonid);
+//M_SetJsonSchema(P_sJsonid.jsonValue,P_sJsonRecipe);
+M_SetJsonSchema(jsonRoot,P_sJsonValues);
+M_SetJsonSchema(jsonRoot,P_sJsonTimeStamp);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_GetAxisJson" Id="{fcd33b8c-4d10-493e-a47c-ffd3819f72bb}">
+      <Declaration><![CDATA[METHOD PUBLIC M_GetAxisJson : HRESULT
+VAR_INPUT
+	lastResult : HRESULT;
+END_VAR
+VAR_INPUT
+	path : STRING(255);
+END_VAR
+VAR_INPUT
+	pAxisParamters : POINTER TO Tc2_MC2.ST_AxisParameterSet;
+END_VAR
+VAR_INST
+	loadFile : BOOL;		
+	x : UDINT;
+	aStringJson : STRING(10000);
+	fileName : STRING(255);
+	_state			: DINT;
+	_fbResult		: FB_ResultHelper;	
+	errorCode : HRESULT;
+END_VAR
+
+VAR
+	pJson : SJsonValue;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF _fbResult.M_MethodResult(M_GetAxisJson,lastResult) = FALSE THEN
+	RETURN;
+ELSE
+
+	IF _fbResult.P_Result = E_Result.S_OK THEN //Reset
+		_state := 0;	
+		x := 0;
+		loadFile := FALSE;
+		THIS^.LoadDocumentFromFile(fileName,loadFile,hrErrorCode => errorCode);
+		loadFile := TRUE;
+		errorCode := 0;
+	END_IF 
+
+	_fbResult.P_Result := E_Result.S_WORKING; //Working	
+	
+	CASE _state OF
+		0:
+			fileName := path;
+			THIS^.LoadDocumentFromFile(fileName,loadFile,hrErrorCode => errorCode);
+			IF loadFile = FALSE AND errorCode = 0 THEN
+				_state := 1;	
+			ELSIF loadFile = FALSE AND errorCode < 0 THEN
+				_fbResult.P_Result := E_Result.S_FAILED; //Working	
+			END_IF
+		1:
+			THIS^.M_PraseSchemaJson();
+			FOR x := 0 TO NUM_OF_VARS BY 1 DO
+				pJson := THIS^.FindMember(P_sJsonValues.jsonValue,stAxisMappingJson[x].name);	
+				IF pJson > 0 THEN
+					THIS^.M_GetAxisJson_Values(pJson,ADR(stAxisMappingJson[x]),pAxisParamters);
+				END_IF	
+			END_FOR	
+			_fbResult.P_Result := E_Result.S_OK; //OK				
+		END_CASE
+END_IF	
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_GetAxisJson_Values" Id="{d30b7f34-65be-465e-9b07-de7543081f30}" FolderPath="Protected\">
+      <Declaration><![CDATA[METHOD PROTECTED M_GetAxisJson_Values : HResult
+VAR_INPUT
+	sJson : SJsonValue;
+	stAxisMapping : POINTER TO ST_AxisMapping;
+	pAxisParamters : POINTER TO Tc2_MC2.ST_AxisParameterSet;	
+END_VAR
+
+VAR
+	pAny : MPM_JsonParser.ST_AnyType_User;	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[pAny := stAxisMapping^.pAny;
+pAny.pvalue := pAny.pvalue + pAxisParamters;
+THIS^.M_GetJsonMemberValue_AnyType(sJson,'value',pAny);
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_GetParametersFromAxis" Id="{a4e68d0f-08cc-4a45-a4e9-7287b035449a}">
+      <Declaration><![CDATA[METHOD PUBLIC M_GetParametersFromAxis : HResult
+VAR_INPUT
+	lastResult : HRESULT;
+	axisID : DINT;
+	pAxisParamters : POINTER TO Tc2_Mc2.ST_AxisParameterSet;
+END_VAR	
+
+
+VAR_INST
+	adsRead : ADSRead;	
+	_state			: DINT;
+	_fbResult		: FB_ResultHelper;
+	x : DINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF _fbResult.M_MethodResult(M_GetParametersFromAxis,lastResult) = FALSE THEN
+	RETURN;
+ELSE
+	
+	IF _fbResult.P_Result = E_Result.S_OK THEN //Reset
+		_state := 0;	
+		adsRead(READ := FALSE);
+		x := 0;
+	END_IF 
+	
+	_fbResult.P_Result := E_Result.S_WORKING; //Working	
+	
+	CASE _state OF
+		0:
+			adsRead.port := PORT;
+			adsRead.IDXGRP := INDEX_BASE + axisID;
+			adsRead.IDXOFFS :=stAxisMappingJson[x].indexOffset;
+			adsRead.LEN := stAxisMappingJson[x].pAny.diSize;
+			adsRead.DESTADDR := stAxisMappingJson[x].pAny.pvalue + pAxisParamters; //very important how this works
+			adsRead(READ := TRUE);
+			_state := 1;
+		1:
+			adsRead(READ := TRUE);
+			IF adsRead.READ = TRUE AND adsRead.BUSY = FALSE AND adsRead.ERR = FALSE THEN
+				IF x < NUM_OF_VARS THEN
+					x := x + 1;
+					adsRead(READ := FALSE);
+					_state := 0;
+				ELSIF x >= NUM_OF_VARS THEN
+					_fbResult.P_Result := E_Result.S_OK;
+				END_IF
+			ELSIF adsRead.READ = TRUE AND adsRead.BUSY = FALSE AND adsRead.ERR = TRUE THEN
+				ADSLOGSTR(msgCtrlMask := ADSLOG_MSGTYPE_ERROR,
+					msgFmtStr := 'Error in %s',
+					strArg := stAxisMappingJson[x].name);
+				ADSLOGSTR(msgCtrlMask := ADSLOG_MSGTYPE_ERROR,
+					msgFmtStr := 'ErrorID %s',
+					strArg := TO_STRING(adsRead.ERRID));
+				_fbResult.P_Result := E_Result.S_FAILED;	
+			END_IF	
+	END_CASE
+END_IF
+
+
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_MapJsonValues" Id="{0eee0006-eb40-4786-9ea9-fa2d383fadbb}" FolderPath="Protected\">
+      <Declaration><![CDATA[METHOD PUBLIC M_MapJsonValues : HResult
+VAR_INPUT
+END_VAR
+
+VAR
+	x : UDINT;
+	pAxisParamters : POINTER TO TC2_MC2.ST_AxisParameterSet;;	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[(* AXIS: *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'AxisId',16#1,pAxisParamters^.AxisId); // AxisId                      : DWORD; (* 0x00000001 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'sAxisName',16#2,pAxisParamters^.sAxisName);// sAxisName                   : STRING(31); (* 0x00000002 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'nAxisType',16#3,pAxisParamters^.nAxisType); // nAxisType                   : DWORD;      (* 0x00000003 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'bEnablePositionAreaControl',16#F,pAxisParamters^.bEnablePositionAreaControl);// bEnablePositionAreaControl  : WORD;       (* 0x0000000F *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fPositionAreaControlRange',16#10,pAxisParamters^.fPositionAreaControlRange);// fPositionAreaControlRange   : LREAL;      (* 0x00000010 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'bEnableMotionControl',16#11,pAxisParamters^.bEnableMotionControl);// bEnableMotionControl        : WORD;       (* 0x00000011 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fMotionControlTime',16#12,pAxisParamters^.fMotionControlTime);// fMotionControlTime          : LREAL;      (* 0x00000012 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'bEnableLoop',16#13,pAxisParamters^.bEnableLoop);//   bEnableLoop                 : WORD;       (* 0x00000013 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fLoopDistance',16#14,pAxisParamters^.fLoopDistance);// fLoopDistance               : LREAL;      (* 0x00000014 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'bEnableTargetPosControl',16#15,pAxisParamters^.bEnableTargetPosControl);// bEnableTargetPosControl     : WORD;       (* 0x00000015 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fTargetPosControlRange',16#16,pAxisParamters^.fTargetPosControlRange);// fTargetPosControlRange      : LREAL;      (* 0x00000016 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fTargetPosControlTime',16#17,pAxisParamters^.fTargetPosControlTime);// fTargetPosControlTime       : LREAL;      (* 0x00000017 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fVeloMaximum',16#27,pAxisParamters^.fVeloMaximum);// fVeloMaximum                : LREAL;      (* 0x00000027 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fMotionControlRange',16#28,pAxisParamters^.fMotionControlRange);// fMotionControlRange         : LREAL;      (* 0x00000028 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'bEnablePEHTimeControl',16#29,pAxisParamters^.bEnablePEHTimeControl);// bEnablePEHTimeControl       : WORD;       (* 0x00000029 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fPEHControlTime',16#2A,pAxisParamters^.fPEHControlTime);// fPEHControlTime             : LREAL;      (* 0x0000002A *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'bEnableBacklashCompensation',16#2B,pAxisParamters^.bEnableBacklashCompensation);// bEnableBacklashCompensation : WORD;       (* 0x0000002B *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fBacklash',16#2C,pAxisParamters^.fBacklash);// fBacklash                   : LREAL;      (* 0x0000002C *))
+//_M_MapJsonValues(stAxisMappingJson[M_Add1(x)],'sAmsNetId',16#31,pAxisParamters^.sAmsNetId);// sAmsNetId : WORD;       (* 0x00000031 *)
+//_M_MapJsonValues(stAxisMappingJson[M_Add1(x)],'nPort',16#31,pAxisParamters^.nPort);// nPort : WORD;       (* 0x00000031 *)*)
+//_M_MapJsonValues(stAxisMappingJson[M_Add1(x)],'fDeceleration',16#102,pAxisParamters^.fDeceleration);//fDeceleration               : LREAL;      (* 0x00000101
+//_M_MapJsonValues(stAxisMappingJson[M_Add1(x)],'nChnNo',16#31,pAxisParamters^.nChnNo);// nChnNo : WORD;       (* 0x00000031 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fAcceleration',16#101,pAxisParamters^.fAcceleration);//fAcceleration               : LREAL;      (* 0x00000101 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fDeceleration',16#102,pAxisParamters^.fDeceleration);//fDeceleration               : LREAL;      (* 0x00000102  *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fAccelerationMax',16#F1,pAxisParamters^.fAccelerationMax);//fAcceleration               : LREAL;      (* 0x00000101 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fDecelerationMax',16#F2,pAxisParamters^.fDecelerationMax);//fDeceleration               : LREAL;      (* 0x00000102  *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fJerk',16#103,pAxisParamters^.fJerk);//fJerk                       : LREAL;      (* 0x00000103 *)
+(* ENCODER: *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'nEncId',16#10001,pAxisParamters^.nEncId);//nEncId                      : DWORD;      (* 0x00010001 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'sEncName',16#10002,pAxisParamters^.sEncName);//sEncName                    : STRING(31); (* 0x00010002 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'nEncType',16#10003,pAxisParamters^.nEncType);//nEncType                    : DWORD;      (* 0x00010003 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fEncScaleFactorNumerator',16#10023,pAxisParamters^.fEncScaleFactorNumerator);//fEncScaleFactorNumerator    : LREAL;          (* 0x00010023 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fEncScaleFactorDenominator',16#10024,pAxisParamters^.fEncScaleFactorDenominator);//fEncScaleFactorDenominator  : LREAL;          (* 0x00010024 *)
+//_M_MapJsonValues(stAxisMappingJson[M_Add1(x)],'fEncScaleFactorInternal',16#10024,pAxisParamters^.fEncScaleFactorInternal);//fEncScaleFactorDenominator  : LREAL;          (* 0x00010024 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fEncOffset',16#10007,pAxisParamters^.fEncOffset);//fEncOffset                  : LREAL;      (* 0x00010007 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'bEncIsInverse',16#10008,pAxisParamters^.bEncIsInverse);//bEncIsInverse               : WORD;       (* 0x00010008 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fEncModuloFactor',16#10009,pAxisParamters^.fEncModuloFactor);//fEncModuloFactor            : LREAL;      (* 0x00010009 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'nEncMode',16#1000A,pAxisParamters^.nEncMode);//nEncMode                    : DWORD;      (* 0x0001000A *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'bEncEnableSoftEndMinControl',16#1000B,pAxisParamters^.bEncEnableSoftEndMinControl);//bEncEnableSoftEndMinControl : WORD;       (* 0x0001000B *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'bEncEnableSoftEndMaxControl',16#1000C,pAxisParamters^.bEncEnableSoftEndMaxControl);//bEncEnableSoftEndMaxControl : WORD;       (* 0x0001000C *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fEncSoftEndMin',16#1000D,pAxisParamters^.fEncSoftEndMin);//fEncSoftEndMin              : LREAL;      (* 0x0001000D *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fEncSoftEndMax',16#1000E,pAxisParamters^.fEncSoftEndMax);//fEncSoftEndMax              : LREAL;      (* 0x0001000E *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'nEncMaxIncrement',16#10015,pAxisParamters^.nEncMaxIncrement);//nEncMaxIncrement            : DWORD;      (* 0x00010015 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'bEncEnablePosCorrection',16#10016,pAxisParamters^.bEncEnablePosCorrection);//bEncEnablePosCorrection     : WORD;       (* 0x00010016 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fEncPosCorrectionFilterTime',16#10017,pAxisParamters^.fEncPosCorrectionFilterTime);//fEncPosCorrectionFilterTime : LREAL;      (* 0x00010017 *)
+//_M_MapJsonValues(stAxisMappingJson[M_Add1(x)],'nEncReferenceSystem',16#100019,pAxisParamters^.nEncReferenceSystem);//nEncReferenceSystem         : DWORD;          (* 0x00010019 *)
+(* CONTROLLER: *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'nCtrlId',16#20001,pAxisParamters^.nCtrlId);//nCtrlId                     : DWORD;      (* 0x00020001 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'sCtrlName',16#20002,pAxisParamters^.sCtrlName);//sCtrlName                   : STRING(31); (* 0x00020002 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'nCtrlType',16#20003,pAxisParamters^.nCtrlType);//nCtrlType                   : DWORD;      (* 0x00020003 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'bCtrlEnablePosDiffControl',16#20010,pAxisParamters^.bCtrlEnablePosDiffControl);//bCtrlEnablePosDiffControl   : WORD;       (* 0x00020010 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'bCtrlEnableVeloDiffControl',16#20011,pAxisParamters^.bCtrlEnableVeloDiffControl);//bCtrlEnableVeloDiffControl  : WORD;       (* 0x00020011 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fCtrlPosDiffMax',16#20012,pAxisParamters^.fCtrlPosDiffMax);//fCtrlPosDiffMax             : LREAL;      (* 0x00020012 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fCtrlPosDiffMaxTime',16#20012,pAxisParamters^.fCtrlPosDiffMaxTime);//fCtrlPosDiffMaxTime         : LREAL;      (* 0x00020013 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fCtrlPosKp',16#20102,pAxisParamters^.fCtrlPosKp);//fCtrlPosKp                  : LREAL;      (* 0x00020102 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fCtrlPosTn',16#20103,pAxisParamters^.fCtrlPosTn);//fCtrlPosTn                  : LREAL;      (* 0x00020103 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fCtrlPosTv',16#20104,pAxisParamters^.fCtrlPosTv);//fCtrlPosTv                  : LREAL;      (* 0x00020104 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fCtrlPosTd',16#20105,pAxisParamters^.fCtrlPosTd);//fCtrlPosTd                  : LREAL;      (* 0x00020105 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fCtrlPosExtKp',16#20106,pAxisParamters^.fCtrlPosExtKp);//fCtrlPosExtKp               : LREAL;      (* 0x00020106 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fCtrlPosExtVelo',16#20107,pAxisParamters^.fCtrlPosExtVelo);//fCtrlPosExtVelo             : LREAL;      (* 0x00020107 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fCtrlAccKa',16#20108,pAxisParamters^.fCtrlAccKa);//fCtrlAccKa                  : LREAL;      (* 0x00020108 *)
+(* DRIVE: *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'nDriveId',16#30001,pAxisParamters^.nDriveId);//nDriveId                    : DWORD;      (* 0x00030001 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'sDriveName',16#30002,pAxisParamters^.sDriveName);//sDriveName                  : STRING(31); (* 0x00030002 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'nDriveType',16#30003,pAxisParamters^.nDriveType);//nDriveType                  : DWORD;      (* 0x00030003 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'bDriveIsInverse',16#30006,pAxisParamters^.bDriveIsInverse);//bDriveIsInverse             : WORD;       (* 0x00030006 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fDriveVeloReferenz',16#30101,pAxisParamters^.fDriveVeloReferenz);//fDriveVeloReferenz          : LREAL;      (* 0x00030101 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fDriveOutputReferenz',16#30102,pAxisParamters^.fDriveOutputReferenz);//fDriveOutputReferenz        : LREAL;      (* 0x00030102 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fDriveOutputScalingAcc',16#3010A,pAxisParamters^.fDriveOutputScalingAcc);//fDriveOutputScalingAcc      : LREAL;        (* 0x0003000A *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fDriveOutputScalingTorque',16#3010C,pAxisParamters^.fDriveOutputScalingTorque);//fDriveOutputScalingTorque   : LREAL;        (* 0x0003000B *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fDriveInputScalingTorque',16#30031,pAxisParamters^.fDriveInputScalingTorque);//fDriveInputScalingTorque    : LREAL;        (* 0x00030031 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fDriveInputFiltertimeTorque',16#30032,pAxisParamters^.fDriveInputFiltertimeTorque);//fDriveInputFiltertimeTorque : LREAL;        (* 0x00030032 *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fDriveInputFiltertimeTorqueDerivative',16#30033,pAxisParamters^.fDriveInputFiltertimeTorqueDerivative);//fDriveInputFiltertimeTorqueDerivative: LREAL;(* 0x00030033 *)
+(* miscellaneous *)
+//_M_MapJsonValues(stAxisMappingJson[M_Add1(x)],'fAxisCycleTime',16#00000004,pAxisParamters^.fAxisCycleTime);//fAxisCycleTime              : LREAL;      (* 0x00000004 *) (* available from Tc 2.11 R2 *)
+(* 17.05.11: parameter extension *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fRefVeloSearch',16#00000006,pAxisParamters^.fRefVeloSearch);//fRefVeloSearch              : LREAL;      (* 0x00000006 calibration velo (TO plc cam) *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fRefVeloSync',16#00000007,pAxisParamters^.fRefVeloSync);// fRefVeloSync                : LREAL;      (* 0x00000007 calibration velo (off plc cam) *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fVeloSlowManual',16#00000008,pAxisParamters^.fVeloSlowManual);//fVeloSlowManual             : LREAL;      (* 0x00000008 manual velocity (slow) *)
+_M_MapJsonValues(stAxisMappingJson[super^.F_Add1(x)],'fVeloFastManual',16#00000009,pAxisParamters^.fVeloFastManual);//fVeloFastManual             : LREAL;      (* 0x00000009 manual velocity (fast) *)
+(* ENCODER (incremental): *)
+//_M_MapJsonValues(stAxisMappingJson[M_Add1(x)],'bEncRefSearchInverse',16#10101,pAxisParamters^.bEncRefSearchInverse);//bEncRefSearchInverse        : UINT;       (* 0x00010101 *)
+//_M_MapJsonValues(stAxisMappingJson[M_Add1(x)],'bEncRefSyncInverse',16#10102,pAxisParamters^.bEncRefSyncInverse);//bEncRefSyncInverse          : UINT;       (* 0x00010102 *)
+//_M_MapJsonValues(stAxisMappingJson[M_Add1(x)],'nEncRefMode',16#10107,pAxisParamters^.nEncRefMode);//nEncRefMode                 : UDINT;      (* 0x00010107 *)
+//_M_MapJsonValues(stAxisMappingJson[M_Add1(x)],'fEncRefPosition',16#00010103,pAxisParamters^.fEncRefPosition);//fEncRefPosition             : LREAL;      (* 0x00010103 *)
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_PraseSchemaJson" Id="{797a14ef-19ba-499d-9c83-b64f0e4eafc0}">
+      <Declaration><![CDATA[METHOD PUBLIC  M_PraseSchemaJson : BOOL
+VAR_INPUT
+END_VAR
+VAR
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[jsonRoot := THIS^.GetDocumentRoot();
+IF jsonRoot > 0 THEN
+	M_PraseJsonSchema(jsonRoot,P_sJsonid);
+	//M_SetJsonSchema(P_sJsonid.jsonValue,P_sJsonRecipe);
+	M_PraseJsonSchema(jsonRoot,P_sJsonValues);
+	M_PraseJsonSchema(jsonRoot,P_sJsonTimeStamp);
+END_IF]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_SetAxisJson" Id="{b7869fca-ced5-48e0-931d-5f5de5217e95}">
+      <Declaration><![CDATA[METHOD PUBLIC M_SetAxisJson : HResult
+VAR_INPUT
+	lastResult : HRESULT;
+END_VAR
+VAR_INPUT
+	path : STRING(255);
+END_VAR
+VAR_INPUT
+	pAxisParamters : POINTER TO Tc2_MC2.ST_AxisParameterSet;
+END_VAR
+
+VAR
+	pJson : SJsonValue;
+END_VAR
+
+VAR_INST
+	saveFile : BOOL;		
+	x : UDINT;
+	aStringJson : STRING(10000);
+	fileName : STRING(255);
+	_state			: DINT;
+	_fbResult		: FB_ResultHelper;	
+	errorCode : HRESULT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF _fbResult.M_MethodResult(M_SetAxisJson,lastResult) = FALSE THEN
+	RETURN;
+ELSE
+
+	IF _fbResult.P_Result = E_Result.S_OK THEN //Reset
+		_state := 0;	
+		x := 0;
+		saveFile := FALSE;
+		errorCode := 0;
+		THIS^.SaveDocumentToFile(fileName,saveFile,hrErrorCode => errorCode);
+		saveFile := TRUE;
+		fileName := path;
+	END_IF 
+
+	_fbResult.P_Result := E_Result.S_WORKING; //Working	
+	
+	CASE _state OF
+		0:
+			THIS^.M_CreateSchemaJson();
+			FOR x := 0 TO NUM_OF_VARS BY 1 DO
+				pJson := THIS^.M_SetJsonMember(P_sJsonValues.jsonValue,stAxisMappingJson[x].name);		(* 3 Inches *)			
+				THIS^.M_SetAxisJson_Values(pJson,ADR(stAxisMappingJson[x]),(pAxisParamters));
+			END_FOR
+			_state := 1;
+		1:		
+			THIS^.SaveDocumentToFile(fileName,saveFile,hrErrorCode => errorCode);
+			IF saveFile = FALSE AND errorCode = 0 THEN
+				_fbResult.P_Result := E_Result.S_OK; //Working	
+			ELSIF saveFile = FALSE AND errorCode < 0 THEN
+				_fbResult.P_Result := E_Result.S_FAILED; //Working	
+			END_IF		
+	END_CASE	
+	
+	
+END_IF	
+	
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_SetAxisJson_Values" Id="{0895c640-c232-48a1-a14c-f8c5e5d6d088}" FolderPath="Protected\">
+      <Declaration><![CDATA[METHOD PROTECTED M_SetAxisJson_Values : HResult
+VAR_INPUT
+	sJson : SJsonValue;
+	stAxisMapping : POINTER TO ST_AxisMapping;
+	pAxisParamters : POINTER TO Tc2_MC2.ST_AxisParameterSet;
+END_VAR
+VAR
+	pAny : MPM_JsonParser.ST_AnyType_User;	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[pAny := stAxisMapping^.pAny; //copy so can be modified 
+pAny.pvalue := pAny.pvalue + pAxisParamters; //very important how this works
+THIS^.M_SetJsonMemberValue_AnyType(sJson,'value',pAny);
+THIS^.M_SetJsonMemberValue(sJson,'indexOffset',stAxisMapping^.indexOffset);]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_SetParametersToAxis" Id="{54b1085a-3d05-4661-9236-ea919704125a}">
+      <Declaration><![CDATA[METHOD PUBLIC M_SetParametersToAxis : HRESULT
+VAR_INPUT
+	lastResult : HRESULT;
+	axisID : DINT;
+	pAxisParamters : POINTER TO Tc2_Mc2.ST_AxisParameterSet;
+END_VAR
+VAR_INST
+	adsWrite : ADSWRITE;	
+	_state			: DINT;
+	_fbResult		: FB_ResultHelper;
+	x : DINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF _fbResult.M_MethodResult(M_SetParametersToAxis,lastResult) = FALSE THEN
+	RETURN;
+ELSE
+
+	IF _fbResult.P_Result = E_Result.S_OK THEN //Reset
+		_state := 0;	
+		adsWrite(WRITE := FALSE);
+		x := 0;
+	END_IF 
+		
+	_fbResult.P_Result := E_Result.S_WORKING; //Working	
+	
+	CASE _state OF
+		0:
+			adsWrite.port := PORT;
+			adsWrite.IDXGRP := INDEX_BASE + axisID;
+			adsWrite.IDXOFFS :=stAxisMappingJson[x].indexOffset;
+			adsWrite.LEN := (stAxisMappingJson[x].pAny.diSize);
+			adsWrite.SRCADDR := (stAxisMappingJson[x].pAny.pvalue + pAxisParamters);
+			adsWrite(WRITE := TRUE);
+			_state := 1;
+		1:
+			adsWrite(WRITE := TRUE);
+			IF adsWrite.WRITE = TRUE AND adsWrite.BUSY = FALSE AND adsWrite.ERR = FALSE THEN
+				IF x < NUM_OF_VARS THEN
+					x := x + 1;
+					adsWrite(WRITE := FALSE);
+					_state := 0;
+				ELSIF x >= NUM_OF_VARS THEN
+					_fbResult.P_Result := E_Result.S_OK;
+				END_IF
+			ELSIF adsWrite.WRITE = TRUE AND adsWrite.BUSY = FALSE AND adsWrite.ERR = TRUE THEN
+				ADSLOGSTR(msgCtrlMask := ADSLOG_MSGTYPE_ERROR,
+					msgFmtStr := 'Error in %s',
+					strArg := stAxisMappingJson[x].name);
+				ADSLOGSTR(msgCtrlMask := ADSLOG_MSGTYPE_ERROR,
+					msgFmtStr := 'ErrorID %s',
+					strArg := TO_STRING(adsWrite.ERRID));
+				IF x < NUM_OF_VARS THEN
+					x := x + 1;
+					adsWrite(WRITE := FALSE);
+					_state := 0;
+				ELSIF x >= NUM_OF_VARS THEN
+					_fbResult.P_Result := E_Result.S_OK;
+				END_IF
+			END_IF	
+	END_CASE
+	
+END_IF	]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_NCAxisJson">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_NCAxisJson._M_MapJsonValues">
+      <LineId Id="5" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="20" Count="2" />
+    </LineIds>
+    <LineIds Name="FB_NCAxisJson.F_Add1">
+      <LineId Id="16" Count="0" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_NCAxisJson.M_CreateSchemaJson">
+      <LineId Id="11" Count="0" />
+      <LineId Id="6" Count="3" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_NCAxisJson.M_GetAxisJson">
+      <LineId Id="230" Count="5" />
+      <LineId Id="237" Count="0" />
+      <LineId Id="264" Count="0" />
+      <LineId Id="261" Count="0" />
+      <LineId Id="299" Count="1" />
+      <LineId Id="217" Count="1" />
+      <LineId Id="238" Count="2" />
+      <LineId Id="219" Count="0" />
+      <LineId Id="241" Count="0" />
+      <LineId Id="298" Count="0" />
+      <LineId Id="245" Count="0" />
+      <LineId Id="248" Count="1" />
+      <LineId Id="251" Count="1" />
+      <LineId Id="246" Count="0" />
+      <LineId Id="253" Count="5" />
+      <LineId Id="250" Count="0" />
+      <LineId Id="259" Count="0" />
+      <LineId Id="242" Count="1" />
+      <LineId Id="40" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_NCAxisJson.M_GetAxisJson_Values">
+      <LineId Id="15" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="8" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_NCAxisJson.M_GetParametersFromAxis">
+      <LineId Id="130" Count="1" />
+      <LineId Id="128" Count="0" />
+      <LineId Id="132" Count="0" />
+      <LineId Id="148" Count="3" />
+      <LineId Id="135" Count="1" />
+      <LineId Id="153" Count="2" />
+      <LineId Id="137" Count="0" />
+      <LineId Id="156" Count="4" />
+      <LineId Id="138" Count="0" />
+      <LineId Id="179" Count="0" />
+      <LineId Id="139" Count="0" />
+      <LineId Id="161" Count="17" />
+      <LineId Id="140" Count="0" />
+      <LineId Id="133" Count="0" />
+      <LineId Id="129" Count="0" />
+      <LineId Id="72" Count="0" />
+      <LineId Id="74" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_NCAxisJson.M_MapJsonValues">
+      <LineId Id="37" Count="0" />
+      <LineId Id="10" Count="1" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="12" Count="14" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="33" Count="2" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="118" Count="0" />
+      <LineId Id="117" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="40" Count="2" />
+      <LineId Id="101" Count="1" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="56" Count="2" />
+      <LineId Id="45" Count="1" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="47" Count="0" />
+      <LineId Id="60" Count="1" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="100" Count="0" />
+      <LineId Id="49" Count="6" />
+      <LineId Id="62" Count="0" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="64" Count="0" />
+      <LineId Id="63" Count="0" />
+      <LineId Id="66" Count="3" />
+      <LineId Id="72" Count="0" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="73" Count="0" />
+      <LineId Id="71" Count="0" />
+      <LineId Id="75" Count="0" />
+      <LineId Id="74" Count="0" />
+      <LineId Id="70" Count="0" />
+      <LineId Id="95" Count="4" />
+      <LineId Id="77" Count="2" />
+      <LineId Id="81" Count="1" />
+      <LineId Id="109" Count="0" />
+      <LineId Id="86" Count="0" />
+      <LineId Id="84" Count="1" />
+      <LineId Id="80" Count="0" />
+      <LineId Id="76" Count="0" />
+      <LineId Id="88" Count="0" />
+      <LineId Id="87" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_NCAxisJson.M_PraseSchemaJson">
+      <LineId Id="12" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="9" Count="2" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="16" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_NCAxisJson.M_SetAxisJson">
+      <LineId Id="558" Count="7" />
+      <LineId Id="611" Count="0" />
+      <LineId Id="566" Count="0" />
+      <LineId Id="608" Count="0" />
+      <LineId Id="636" Count="0" />
+      <LineId Id="555" Count="1" />
+      <LineId Id="584" Count="2" />
+      <LineId Id="580" Count="0" />
+      <LineId Id="603" Count="3" />
+      <LineId Id="600" Count="0" />
+      <LineId Id="590" Count="0" />
+      <LineId Id="609" Count="1" />
+      <LineId Id="592" Count="3" />
+      <LineId Id="587" Count="0" />
+      <LineId Id="589" Count="0" />
+      <LineId Id="557" Count="0" />
+      <LineId Id="581" Count="1" />
+      <LineId Id="607" Count="0" />
+      <LineId Id="514" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_NCAxisJson.M_SetAxisJson_Values">
+      <LineId Id="23" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="8" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_NCAxisJson.M_SetParametersToAxis">
+      <LineId Id="61" Count="1" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="68" Count="0" />
+      <LineId Id="66" Count="1" />
+      <LineId Id="70" Count="0" />
+      <LineId Id="100" Count="0" />
+      <LineId Id="60" Count="0" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="71" Count="0" />
+      <LineId Id="73" Count="1" />
+      <LineId Id="76" Count="0" />
+      <LineId Id="79" Count="4" />
+      <LineId Id="78" Count="0" />
+      <LineId Id="121" Count="0" />
+      <LineId Id="84" Count="0" />
+      <LineId Id="122" Count="0" />
+      <LineId Id="86" Count="3" />
+      <LineId Id="103" Count="0" />
+      <LineId Id="91" Count="0" />
+      <LineId Id="106" Count="0" />
+      <LineId Id="105" Count="0" />
+      <LineId Id="93" Count="6" />
+      <LineId Id="128" Count="5" />
+      <LineId Id="124" Count="0" />
+      <LineId Id="85" Count="0" />
+      <LineId Id="77" Count="0" />
+      <LineId Id="75" Count="0" />
+      <LineId Id="64" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

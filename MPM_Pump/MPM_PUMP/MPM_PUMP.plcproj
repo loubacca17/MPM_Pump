@@ -49,19 +49,31 @@
     <Compile Include="FBs\IO_Mapping\Types\ST_IOMappingJson.TcDUT">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="FBs\JSON\FB_NCAxisJson.TcPOU">
+      <SubType>Code</SubType>
+      <ExcludeFromBuild>false</ExcludeFromBuild>
+      <LinkAlways>true</LinkAlways>
+    </Compile>
+    <Compile Include="FBs\JSON\FB_NCAxisJson_V2.TcPOU">
+      <SubType>Code</SubType>
+      <LinkAlways>true</LinkAlways>
+    </Compile>
+    <Compile Include="FBs\JSON\FB_ValuesJson.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FBs\JSON\ST_AxisMapping.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="FBs\Main\FB_JsonFile.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="FBs\Main\FB_Pump.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="FBs\System\FB_ConfigControlJson.TcPOU">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="FBs\System\FB_ConfigControl.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="FUns\F_Add1.TcPOU">
+    <Compile Include="FUN\F_Add1.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="PlcTask.TcTTO">
@@ -83,7 +95,7 @@
     <Folder Include="GVLs" />
     <Folder Include="FBs" />
     <Folder Include="IFTs" />
-    <Folder Include="FUns" />
+    <Folder Include="FUN" />
     <Folder Include="VISUs" />
     <Folder Include="POUs" />
   </ItemGroup>
@@ -94,6 +106,12 @@
     </PlaceholderReference>
     <PlaceholderReference Include="MPM_JsonParser">
       <DefaultResolution>MPM_JsonParser, * (MatixPM)</DefaultResolution>
+      <Namespace>MPM_JsonParser</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc2_MC2">
+      <DefaultResolution>Tc2_MC2, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc2_MC2</Namespace>
+      <QualifiedOnly>true</QualifiedOnly>
     </PlaceholderReference>
     <PlaceholderReference Include="Tc2_Standard">
       <DefaultResolution>Tc2_Standard, * (Beckhoff Automation GmbH)</DefaultResolution>
@@ -112,6 +130,23 @@
     <None Include="MPM_PUMP.tmc">
       <SubType>Content</SubType>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <SubObject Include="FB_ConfigControl.M_CreateSchemaJson">
+      <LinkAlways>true</LinkAlways>
+    </SubObject>
+    <SubObject Include="FB_NCAxisJson_V2.M_GetAxisJson">
+      <ExcludeFromBuild>true</ExcludeFromBuild>
+    </SubObject>
+    <SubObject Include="FB_NCAxisJson_V2.M_GetAxisJson_Values">
+      <ExcludeFromBuild>true</ExcludeFromBuild>
+    </SubObject>
+    <SubObject Include="FB_NCAxisJson_V2.M_GetParametersFromAxis">
+      <ExcludeFromBuild>true</ExcludeFromBuild>
+    </SubObject>
+    <SubObject Include="FB_NCAxisJson_V2.M_SetParametersToAxis">
+      <ExcludeFromBuild>true</ExcludeFromBuild>
+    </SubObject>
   </ItemGroup>
   <ProjectExtensions>
     <PlcProjectOptions>

@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Refactors>
+  <Renames>
+    <RenamedType>
+      <Type guid="7a334520-5eb4-4d73-90ae-6ae03962642a">M_ADD1</Type>
+      <From>M_Add1</From>
+      <To>F_Add1</To>
+    </RenamedType>
+  </Renames>
+</Refactors>

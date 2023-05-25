@@ -17,9 +17,20 @@ END_VAR
     <Implementation>
       <ST><![CDATA[]]></ST>
     </Implementation>
+    <Folder Name="ABSTRACT" Id="{d3f0e259-1061-426a-b7a1-3591a9d5be2f}" />
     <Folder Name="Protected" Id="{d31bea82-4c8d-4864-8213-7cfbba3c0754}" />
-    <Method Name="_F_IO" Id="{25f7451c-b2be-4782-91c3-53451c901d29}">
-      <Declaration><![CDATA[METHOD PUBLIC ABSTRACT _F_IO : HResult
+    <Method Name="_F_Axis" Id="{7fa39416-568e-4119-8393-652fc6472acb}" FolderPath="ABSTRACT\">
+      <Declaration><![CDATA[METHOD _F_Axis : BOOL
+VAR_INPUT
+	
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_F_IO" Id="{25f7451c-b2be-4782-91c3-53451c901d29}" FolderPath="ABSTRACT\">
+      <Declaration><![CDATA[METHOD PROTECTED ABSTRACT _F_IO : HResult
 VAR_IN_OUT
 	a_pstIOMappingJson : POINTER TO ST_IOMappingJson; //pointer to array
 	ustIOMappingJson : UDINT; 		
@@ -29,7 +40,7 @@ END_VAR
         <ST><![CDATA[]]></ST>
       </Implementation>
     </Method>
-    <Method Name="_F_Recipe" Id="{acb8c5d6-5487-4d41-9ec0-f4a34dd65731}">
+    <Method Name="_F_Recipe" Id="{acb8c5d6-5487-4d41-9ec0-f4a34dd65731}" FolderPath="ABSTRACT\">
       <Declaration><![CDATA[(*
 return the list of vars that want to be saved and loaded 
 *)
@@ -46,7 +57,7 @@ END_VAR]]></Declaration>
         <ST><![CDATA[]]></ST>
       </Implementation>
     </Method>
-    <Method Name="_F_System" Id="{c67585fa-6db9-4ba3-8b65-2665a130374f}">
+    <Method Name="_F_System" Id="{c67585fa-6db9-4ba3-8b65-2665a130374f}" FolderPath="ABSTRACT\">
       <Declaration><![CDATA[METHOD PROTECTED ABSTRACT _F_System : HResult
 VAR_IN_OUT
 	a_pstAnyTypeUser : POINTER TO MPM_JsonParser.ST_AnyType_User; //pointer to array
@@ -55,6 +66,45 @@ END_VAR
 ]]></Declaration>
       <Implementation>
         <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="F_AXIS" Id="{c0243cb9-9b32-4370-9384-0993220a2226}">
+      <Declaration><![CDATA[METHOD PUBLIC FINAL F_AXIS : HRESULT
+VAR_INPUT
+	lastResult : HRESULT;
+	sJson : SJsonValue;
+	pfbJsonSchema : POINTER TO FB_JsonSchemaEx_OLD;	
+	bGet : BOOL; //Read in values vs set
+END_VAR
+
+VAR_INST
+	_fbResult : FB_ResultHelper_V2;
+	pResult : POINTER TO HRESULT;
+END_VAR
+
+VAR
+	a_pstIOMappingJson : POINTER TO ST_IOMappingJson; // pointer to array of vars
+	uAnyTypeUser : UDINT; //number of bytes in a_stAnyUser
+	
+	uSizeOfArray : UDINT;
+	pstIOMappingJson : POINTER TO ST_IOMappingJson; //pointer for loop
+	x : UDINT;
+END_VAR
+
+
+VAR CONSTANT
+	uSizeOfStAnyType : UDINT := SIZEOF(ST_IOMappingJson);
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF _fbResult.M_MethodResult(F_IO,ADR(pResult),lastResult) = FALSE THEN
+	RETURN;
+END_IF
+
+
+pResult^ := _F_IO(a_pstIOMappingJson,uAnyTypeUser);
+pResult^ := MPM_FBResult.E_Result.S_WORKING;
+sJson := pfbJsonSchema^.M_SetJsonMember(sJson,_fbName);
+]]></ST>
       </Implementation>
     </Method>
     <Method Name="F_IO" Id="{3a02837e-fabe-4f90-b88e-c4f1e99bdab4}">
@@ -90,7 +140,7 @@ END_VAR]]></Declaration>
 END_IF
 
 
-pResult^ := _F_IO(a_pstIOMappingJson,uAnyTypeUser);
+pResult^ := _F_IO(a_pstIOMappingJson,uAnyTypeUser); //gets pointer from FB
 
 
 pResult^ := MPM_FBResult.E_Result.S_WORKING;
@@ -260,6 +310,9 @@ END_VAR
     <LineIds Name="FB_ConfigJson">
       <LineId Id="9" Count="0" />
     </LineIds>
+    <LineIds Name="FB_ConfigJson._F_Axis">
+      <LineId Id="5" Count="0" />
+    </LineIds>
     <LineIds Name="FB_ConfigJson._F_IO">
       <LineId Id="5" Count="0" />
     </LineIds>
@@ -268,6 +321,11 @@ END_VAR
     </LineIds>
     <LineIds Name="FB_ConfigJson._F_System">
       <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ConfigJson.F_AXIS">
+      <LineId Id="28" Count="5" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="34" Count="1" />
     </LineIds>
     <LineIds Name="FB_ConfigJson.F_IO">
       <LineId Id="36" Count="7" />
