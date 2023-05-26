@@ -1631,7 +1631,7 @@ External Setpoint Generation:
 		</Motion>
 		<Plc>
 			<Project GUID="{73B3D93F-7C7A-449B-A407-BEAC4D1CF568}" Name="MPM_PUMP" PrjFilePath="MPM_PUMP\MPM_PUMP.plcproj" TmcFilePath="MPM_PUMP\MPM_PUMP.tmc" ReloadTmc="true" AmsPort="851" FileArchiveSettings="#x000e" SymbolicMapping="true">
-				<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcPath="MPM_PUMP\MPM_PUMP.tmc" TmcHash="{DF791373-F6DB-5414-01B6-B71AAF03CB8C}">
+				<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcPath="MPM_PUMP\MPM_PUMP.tmc" TmcHash="{B943D1F8-89BC-3B3F-5840-991EE1B6F6E1}">
 					<Name>MPM_PUMP Instance</Name>
 					<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
 					<Vars VarGrpType="1">

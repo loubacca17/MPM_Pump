@@ -142,9 +142,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <SubObject Include="FB_ConfigControl.M_CreateSchemaJson">
-      <LinkAlways>true</LinkAlways>
-    </SubObject>
     <SubObject Include="FB_NCAxisJson_V2.M_GetAxisJson">
       <ExcludeFromBuild>true</ExcludeFromBuild>
     </SubObject>

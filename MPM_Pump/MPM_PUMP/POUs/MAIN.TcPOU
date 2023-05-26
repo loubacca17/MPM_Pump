@@ -29,11 +29,10 @@ fbNCAxisJson;]]></ST>
       <Implementation>
         <ST><![CDATA[fbConfigControl.a_pFBConfigJson := ADR(a_pFBConfigJson);
 fbConfigControl.ua_pFBConfigJson := SIZEOF(a_pFBConfigJson);
-fbConfigControl.M_SetJsonRecipe();
-fbConfigControl.M_SetJsonSystem();
-fbConfigControl.M_SetJsonIO();
-fbConfigControl.M_SetJsonAxis();
-fbConfigControl.M_GetJsonString(jsonRecipeDoc,jsonSystemDoc,jsonIODoc,jsonAxisDoc);
+fbConfigControl.M_SetJsonRecipe(jsonRecipeDoc);
+fbConfigControl.M_SetJsonSystem(jsonSystemDoc);
+fbConfigControl.M_SetJsonIO(jsonIODoc);
+fbConfigControl.M_SetJsonAxis(jsonAxisDoc);
 
 
 
@@ -65,7 +64,6 @@ a_pFBConfigJson[2] := ADR(fbPump2);
       <LineId Id="1" Count="2" />
       <LineId Id="5" Count="0" />
       <LineId Id="7" Count="1" />
-      <LineId Id="4" Count="0" />
       <LineId Id="10" Count="2" />
       <LineId Id="9" Count="0" />
       <LineId Id="15" Count="0" />

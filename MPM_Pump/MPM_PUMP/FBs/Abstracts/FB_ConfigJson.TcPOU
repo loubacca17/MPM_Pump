@@ -75,7 +75,6 @@ VAR_INPUT
 	lastResult : HRESULT;
 	sJson : SJsonValue;
 	pfbJsonSchema : POINTER TO FB_NCAxisJson_V2;	
-	bGet : BOOL; //Read in values vs set
 END_VAR
 
 VAR_INST
@@ -124,7 +123,6 @@ VAR_INPUT
 	lastResult : HRESULT;
 	sJson : SJsonValue;
 	pfbJsonSchema : POINTER TO FB_JsonSchemaEx_OLD;	
-	bGet : BOOL; //Read in values vs set
 END_VAR
 
 VAR_INST
@@ -160,14 +158,12 @@ IF a_pstIOMappingJson > 0 AND_THEN uAnyTypeUser > 0 AND uSizeOfStAnyType > 0 THE
 	uSizeOfArray := uAnyTypeUser/uSizeOfStAnyType - 1; //get number of items in array
 	FOR x := 0 TO uSizeOfArray BY 1 DO //loop through all items 
 		pstIOMappingJson := a_pstIOMappingJson + uSizeOfStAnyType*x; // get array position
-			IF bGet = FALSE THEN
-				sJson := pfbJsonSchema^.M_SetJsonMember(sJson,pstIOMappingJson^.name); //set json value
-				pfbJsonSchema^.M_SetJsonMemberValue(sJson,'channel',pstIOMappingJson^.channel); //set json value
-				pfbJsonSchema^.M_SetJsonMemberValue(sJson,'deviceNum',pstIOMappingJson^.deviceNum); //set json value
-				pfbJsonSchema^.M_SetJsonMemberValue(sJson,'ethercatDeviceNum',pstIOMappingJson^.ethercatDeviceNum); //set json value
-				pfbJsonSchema^.M_SetJsonMemberValue(sJson,'ioLinkDevice',pstIOMappingJson^.ioLinkDevice); //set json value
-				pfbJsonSchema^.M_SetJsonMemberValue(sJson,'ioLinkSlaveChannel',pstIOMappingJson^.ioLinkSlaveChannel); //set json value
-			END_IF
+		sJson := pfbJsonSchema^.M_SetJsonMember(sJson,pstIOMappingJson^.name); //set json value
+		pfbJsonSchema^.M_SetJsonMemberValue(sJson,'channel',pstIOMappingJson^.channel); //set json value
+		pfbJsonSchema^.M_SetJsonMemberValue(sJson,'deviceNum',pstIOMappingJson^.deviceNum); //set json value
+		pfbJsonSchema^.M_SetJsonMemberValue(sJson,'ethercatDeviceNum',pstIOMappingJson^.ethercatDeviceNum); //set json value
+		pfbJsonSchema^.M_SetJsonMemberValue(sJson,'ioLinkDevice',pstIOMappingJson^.ioLinkDevice); //set json value
+		pfbJsonSchema^.M_SetJsonMemberValue(sJson,'ioLinkSlaveChannel',pstIOMappingJson^.ioLinkSlaveChannel); //set json value
 	END_FOR
 	pResult^ := MPM_FBResult.E_Result.S_OK;
 ELSE
@@ -338,9 +334,10 @@ END_VAR
     </LineIds>
     <LineIds Name="FB_ConfigJson.F_IO">
       <LineId Id="36" Count="7" />
-      <LineId Id="58" Count="7" />
+      <LineId Id="58" Count="5" />
+      <LineId Id="65" Count="0" />
       <LineId Id="95" Count="4" />
-      <LineId Id="66" Count="3" />
+      <LineId Id="67" Count="2" />
       <LineId Id="56" Count="1" />
       <LineId Id="5" Count="0" />
     </LineIds>

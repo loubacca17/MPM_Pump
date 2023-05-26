@@ -18,35 +18,10 @@ END_VAR
     <Implementation>
       <ST><![CDATA[]]></ST>
     </Implementation>
-    <Method Name="M_CreateSchemaJson" Id="{f44aea64-e5fe-4d14-8dfa-bbb974027d26}">
-      <Declaration><![CDATA[METHOD PUBLIC M_CreateSchemaJson : HResult
-VAR_INPUT
-END_VAR
-]]></Declaration>
-      <Implementation>
-        <ST><![CDATA[fbRecipeJson.M_CreateSchemaJson();]]></ST>
-      </Implementation>
-    </Method>
-    <Method Name="M_GetJsonString" Id="{6c0a32eb-aa79-412c-a85a-e47532b90cb3}">
-      <Declaration><![CDATA[METHOD PUBLIC M_GetJsonString : HResult
-VAR_IN_OUT CONSTANT
-	pRecipeDoc : STRING(50000);
-	pSystemDoc : STRING(50000);
-	pIODoc : STRING(50000);
-	pAxisDoc : STRING(50000);	
-END_VAR
-]]></Declaration>
-      <Implementation>
-        <ST><![CDATA[fbRecipeJson.CopyDocument(pRecipeDoc,SIZEOF(pRecipeDoc));
-fbSystemJson.CopyDocument(pSystemDoc,SIZEOF(pSystemDoc));
-fbIOJson.CopyDocument(pIODoc,SIZEOF(pIODoc));
-fbAxisJson.GetDocumentLength();
-fbAxisJson.CopyDocument(pAxisDoc,SIZEOF(pAxisDoc));]]></ST>
-      </Implementation>
-    </Method>
-    <Method Name="M_SetJsonAxis" Id="{765762fc-ea43-4377-89d7-628b8a9bb1cb}">
-      <Declaration><![CDATA[METHOD PUBLIC M_SetJsonAxis : HResult
-VAR_INPUT
+    <Method Name="M_GetJsonAxis" Id="{f2577cc8-ada7-4485-9fbd-d7c81979f777}">
+      <Declaration><![CDATA[METHOD PUBLIC M_GetJsonAxis : HResult
+VAR_IN_OUT
+	pDoc : STRING(50000);
 END_VAR
 VAR CONSTANT
 	uSizeOfStAnyType : UDINT := SIZEOF(PVOID);
@@ -61,17 +36,20 @@ END_VAR]]></Declaration>
         <ST><![CDATA[
 uSizeOfArray := ua_pFBConfigJson/uSizeOfStAnyType - 1; //get number of items in array
 
-
-fbAxisJson.M_CreateSchemaJson();
+fbAxisJson.ParseDocument(pDoc);
+fbAxisJson.M_PraseSchemaJson();
 FOR x := 0 TO uSizeOfArray BY 1 DO
 	pFBConfigJson := a_pFBConfigJson + uSizeOfStAnyType*x;
-	lastResult := pFBConfigJson^^.F_AXIS(lastResult,fbAxisJson.P_sJsonValues.jsonValue,ADR(fbAxisJson),FALSE);
-END_FOR]]></ST>
+	lastResult := pFBConfigJson^^.F_AXIS(lastResult,fbAxisJson.P_sJsonValues.jsonValue,ADR(fbAxisJson));
+END_FOR
+
+fbAxisJson.CopyDocument(pDoc,SIZEOF(pDoc));]]></ST>
       </Implementation>
     </Method>
-    <Method Name="M_SetJsonIO" Id="{132bf0dc-f494-4655-8dce-d202cd22afc3}">
-      <Declaration><![CDATA[METHOD PUBLIC M_SetJsonIO : HResult
-VAR_INPUT
+    <Method Name="M_GetJsonIO" Id="{24d8351e-c4e8-46a7-988d-494288c63118}">
+      <Declaration><![CDATA[METHOD PUBLIC M_GetJsonIO : HResult
+VAR_IN_OUT
+	pDoc : STRING(50000);
 END_VAR
 VAR CONSTANT
 	uSizeOfStAnyType : UDINT := SIZEOF(PVOID);
@@ -90,14 +68,17 @@ uSizeOfArray := ua_pFBConfigJson/uSizeOfStAnyType - 1; //get number of items in 
 fbIOJson.M_CreateSchemaJson();
 FOR x := 0 TO uSizeOfArray BY 1 DO
 	pFBConfigJson := a_pFBConfigJson + uSizeOfStAnyType*x;
-	lastResult := pFBConfigJson^^.F_IO(lastResult,fbIOJson.P_sJsonValues.jsonValue,ADR(fbIOJson),FALSE);
-END_FOR]]></ST>
+	lastResult := pFBConfigJson^^.F_IO(lastResult,fbIOJson.P_sJsonValues.jsonValue,ADR(fbIOJson));
+END_FOR
+
+
+fbIOJson.CopyDocument(pDoc,SIZEOF(pDoc));]]></ST>
       </Implementation>
     </Method>
-    <Method Name="M_SetJsonRecipe" Id="{bfd8563a-59ab-4c37-958b-6beb44e7770e}">
-      <Declaration><![CDATA[METHOD PUBLIC M_SetJsonRecipe : HResult
+    <Method Name="M_GetJsonRecipe" Id="{46911a91-a1d5-4cf5-9cc2-9e277e00fa45}">
+      <Declaration><![CDATA[METHOD PUBLIC M_GetJsonRecipe : HResult
 VAR_IN_OUT
-	
+	pDoc : STRING(50000);
 END_VAR
 
 VAR CONSTANT
@@ -118,13 +99,16 @@ uSizeOfArray := ua_pFBConfigJson/uSizeOfStAnyType - 1; //get number of items in 
 fbRecipeJson.M_CreateSchemaJson();
 FOR x := 0 TO uSizeOfArray BY 1 DO
 	pFBConfigJson := a_pFBConfigJson + uSizeOfStAnyType*x;
-	lastResult := pFBConfigJson^^.F_Recipe(lastResult,fbRecipeJson.P_sJsonValues.jsonValue,ADR(fbRecipeJson),FALSE);
-END_FOR]]></ST>
+	lastResult := pFBConfigJson^^.F_Recipe(lastResult,fbRecipeJson.P_sJsonValues.jsonValue,ADR(fbRecipeJson));
+END_FOR
+
+fbRecipeJson.CopyDocument(pDoc,SIZEOF(pDoc));]]></ST>
       </Implementation>
     </Method>
-    <Method Name="M_SetJsonSystem" Id="{aa4bbf75-637c-4be0-bbe1-fa1addb2eb27}">
-      <Declaration><![CDATA[METHOD PUBLIC M_SetJsonSystem : HResult
-VAR_INPUT
+    <Method Name="M_GetJsonSystem" Id="{0b5fb081-6907-4da7-8fc5-e52fd4f1db29}">
+      <Declaration><![CDATA[METHOD PUBLIC M_GetJsonSystem : HResult
+VAR_IN_OUT
+	pDoc : STRING(50000);
 END_VAR
 VAR CONSTANT
 	uSizeOfStAnyType : UDINT := SIZEOF(PVOID);
@@ -143,30 +127,171 @@ uSizeOfArray := ua_pFBConfigJson/uSizeOfStAnyType - 1; //get number of items in 
 fbSystemJson.M_CreateSchemaJson();
 FOR x := 0 TO uSizeOfArray BY 1 DO
 	pFBConfigJson := a_pFBConfigJson + uSizeOfStAnyType*x;
-	lastResult := pFBConfigJson^^.F_System(lastResult,fbSystemJson.P_sJsonValues.jsonValue,ADR(fbSystemJson),FALSE);
-END_FOR]]></ST>
+	lastResult := pFBConfigJson^^.F_System(lastResult,fbSystemJson.P_sJsonValues.jsonValue,ADR(fbSystemJson));
+END_FOR
+
+fbSystemJson.CopyDocument(pDoc,SIZEOF(pDoc));]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_SetJsonAxis" Id="{765762fc-ea43-4377-89d7-628b8a9bb1cb}">
+      <Declaration><![CDATA[METHOD PUBLIC M_SetJsonAxis : HResult
+VAR_IN_OUT
+	pDoc : STRING(50000);
+END_VAR
+VAR CONSTANT
+	uSizeOfStAnyType : UDINT := SIZEOF(PVOID);
+END_VAR
+VAR_INST
+	uSizeOfArray : DINT;
+	x : DINT;
+	pFBConfigJson : POINTER TO POINTER TO FB_ConfigJson;	
+	lastResult : HRESULT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+uSizeOfArray := ua_pFBConfigJson/uSizeOfStAnyType - 1; //get number of items in array
+
+
+fbAxisJson.M_CreateSchemaJson();
+FOR x := 0 TO uSizeOfArray BY 1 DO
+	pFBConfigJson := a_pFBConfigJson + uSizeOfStAnyType*x;
+	lastResult := pFBConfigJson^^.F_AXIS(lastResult,fbAxisJson.P_sJsonValues.jsonValue,ADR(fbAxisJson));
+END_FOR
+
+fbAxisJson.CopyDocument(pDoc,SIZEOF(pDoc));]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_SetJsonIO" Id="{132bf0dc-f494-4655-8dce-d202cd22afc3}">
+      <Declaration><![CDATA[METHOD PUBLIC M_SetJsonIO : HResult
+VAR_IN_OUT
+	pDoc : STRING(50000);
+END_VAR
+VAR CONSTANT
+	uSizeOfStAnyType : UDINT := SIZEOF(PVOID);
+END_VAR
+VAR_INST
+	uSizeOfArray : DINT;
+	x : DINT;
+	pFBConfigJson : POINTER TO POINTER TO FB_ConfigJson;	
+	lastResult : HRESULT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+uSizeOfArray := ua_pFBConfigJson/uSizeOfStAnyType - 1; //get number of items in array
+
+
+fbIOJson.M_CreateSchemaJson();
+FOR x := 0 TO uSizeOfArray BY 1 DO
+	pFBConfigJson := a_pFBConfigJson + uSizeOfStAnyType*x;
+	lastResult := pFBConfigJson^^.F_IO(lastResult,fbIOJson.P_sJsonValues.jsonValue,ADR(fbIOJson));
+END_FOR
+
+
+fbIOJson.CopyDocument(pDoc,SIZEOF(pDoc));]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_SetJsonRecipe" Id="{bfd8563a-59ab-4c37-958b-6beb44e7770e}">
+      <Declaration><![CDATA[METHOD PUBLIC M_SetJsonRecipe : HResult
+VAR_IN_OUT
+	pDoc : STRING(50000);
+END_VAR
+
+VAR CONSTANT
+	uSizeOfStAnyType : UDINT := SIZEOF(PVOID);
+END_VAR
+
+VAR_INST
+	uSizeOfArray : DINT;
+	x : DINT;
+	pFBConfigJson : POINTER TO POINTER TO FB_ConfigJson;	
+	lastResult : HRESULT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+
+uSizeOfArray := ua_pFBConfigJson/uSizeOfStAnyType - 1; //get number of items in array
+
+fbRecipeJson.M_CreateSchemaJson();
+FOR x := 0 TO uSizeOfArray BY 1 DO
+	pFBConfigJson := a_pFBConfigJson + uSizeOfStAnyType*x;
+	lastResult := pFBConfigJson^^.F_Recipe(lastResult,fbRecipeJson.P_sJsonValues.jsonValue,ADR(fbRecipeJson));
+END_FOR
+
+fbRecipeJson.CopyDocument(pDoc,SIZEOF(pDoc));]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_SetJsonSystem" Id="{aa4bbf75-637c-4be0-bbe1-fa1addb2eb27}">
+      <Declaration><![CDATA[METHOD PUBLIC M_SetJsonSystem : HResult
+VAR_IN_OUT
+	pDoc : STRING(50000);
+END_VAR
+VAR CONSTANT
+	uSizeOfStAnyType : UDINT := SIZEOF(PVOID);
+END_VAR
+VAR_INST
+	uSizeOfArray : DINT;
+	x : DINT;
+	pFBConfigJson : POINTER TO POINTER TO FB_ConfigJson;	
+	lastResult : HRESULT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+uSizeOfArray := ua_pFBConfigJson/uSizeOfStAnyType - 1; //get number of items in array
+
+
+fbSystemJson.M_CreateSchemaJson();
+FOR x := 0 TO uSizeOfArray BY 1 DO
+	pFBConfigJson := a_pFBConfigJson + uSizeOfStAnyType*x;
+	lastResult := pFBConfigJson^^.F_System(lastResult,fbSystemJson.P_sJsonValues.jsonValue,ADR(fbSystemJson));
+END_FOR
+
+fbSystemJson.CopyDocument(pDoc,SIZEOF(pDoc));]]></ST>
       </Implementation>
     </Method>
     <LineIds Name="FB_ConfigControl">
       <LineId Id="9" Count="0" />
     </LineIds>
-    <LineIds Name="FB_ConfigControl.M_CreateSchemaJson">
+    <LineIds Name="FB_ConfigControl.M_GetJsonAxis">
+      <LineId Id="16" Count="7" />
       <LineId Id="5" Count="0" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="26" Count="0" />
     </LineIds>
-    <LineIds Name="FB_ConfigControl.M_GetJsonString">
+    <LineIds Name="FB_ConfigControl.M_GetJsonIO">
+      <LineId Id="14" Count="7" />
       <LineId Id="5" Count="0" />
-      <LineId Id="7" Count="0" />
-      <LineId Id="15" Count="0" />
-      <LineId Id="24" Count="0" />
+      <LineId Id="36" Count="1" />
+      <LineId Id="35" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ConfigControl.M_GetJsonRecipe">
+      <LineId Id="14" Count="1" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="43" Count="0" />
       <LineId Id="23" Count="0" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="44" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ConfigControl.M_GetJsonSystem">
+      <LineId Id="14" Count="7" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="35" Count="0" />
     </LineIds>
     <LineIds Name="FB_ConfigControl.M_SetJsonAxis">
       <LineId Id="16" Count="7" />
       <LineId Id="5" Count="0" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="26" Count="0" />
     </LineIds>
     <LineIds Name="FB_ConfigControl.M_SetJsonIO">
       <LineId Id="14" Count="7" />
       <LineId Id="5" Count="0" />
+      <LineId Id="36" Count="1" />
+      <LineId Id="35" Count="0" />
     </LineIds>
     <LineIds Name="FB_ConfigControl.M_SetJsonRecipe">
       <LineId Id="14" Count="1" />
@@ -177,10 +302,14 @@ END_FOR]]></ST>
       <LineId Id="24" Count="0" />
       <LineId Id="28" Count="0" />
       <LineId Id="25" Count="0" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="44" Count="0" />
     </LineIds>
     <LineIds Name="FB_ConfigControl.M_SetJsonSystem">
       <LineId Id="14" Count="7" />
       <LineId Id="5" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="35" Count="0" />
     </LineIds>
   </POU>
 </TcPlcObject>
