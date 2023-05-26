@@ -12,11 +12,32 @@ VAR_OUTPUT
 END_VAR
 VAR
 	axisRef : Tc2_MC2.AXIS_REF;	
+	fbMCPower : Tc2_MC2.MC_Power;
+	fbMCHome : Tc2_MC2.MC_Home;
+	fbMCStop : Tc2_MC2.MC_Stop;
+	//Discrete motion
+	fbMCMoveAbsolute : Tc2_MC2.MC_MoveAbsolute;
+	fbMCMoveRelative : Tc2_MC2.MC_MoveRelative;
+	fbMCMoveAdditive : Tc2_MC2.MC_MoveAdditive;
+	fbMCMoveSuperImposed : Tc2_MC2.MC_MoveSuperImposed;
+	fbMCHalt :  Tc2_MC2.MC_Halt;
+	
 END_VAR
 ]]></Declaration>
     <Implementation>
       <ST><![CDATA[]]></ST>
     </Implementation>
+    <Method Name="M_ContinuousMotion" Id="{8a5faf80-3892-4315-a42d-21702a6a09ad}">
+      <Declaration><![CDATA[METHOD PUBLIC M_ContinuousMotion : HRESULT
+VAR_INPUT
+END_VAR
+VAR_INST
+	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
     <Method Name="M_Disabled" Id="{9221797a-1e9a-455a-9548-f36d023ac1e2}">
       <Declaration><![CDATA[METHOD PROTECTED M_Disabled : HRESULT
 VAR_INPUT
@@ -62,8 +83,22 @@ END_VAR
         <ST><![CDATA[]]></ST>
       </Implementation>
     </Method>
+    <Method Name="M_SynchrinizedMotion" Id="{89ba9017-30dc-4f71-a661-c8d7ce704253}">
+      <Declaration><![CDATA[METHOD PUBLIC M_SynchrinizedMotion : HRESULT
+VAR_INPUT
+END_VAR
+VAR_INST
+	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
     <LineIds Name="FB_AxisControl">
       <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_AxisControl.M_ContinuousMotion">
+      <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_AxisControl.M_Disabled">
       <LineId Id="5" Count="0" />
@@ -78,6 +113,9 @@ END_VAR
       <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_AxisControl.M_Stopping">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_AxisControl.M_SynchrinizedMotion">
       <LineId Id="5" Count="0" />
     </LineIds>
   </POU>
