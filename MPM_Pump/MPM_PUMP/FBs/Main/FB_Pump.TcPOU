@@ -36,7 +36,7 @@ _F_Axis := MPM_FBResult.E_Result.S_OK;
       </Implementation>
     </Method>
     <Method Name="_F_IO" Id="{8d18df3f-e12a-48c9-9bf2-8f499f7d4a3c}">
-      <Declaration><![CDATA[METHOD PUBLIC  _F_IO : HResult
+      <Declaration><![CDATA[METHOD PROTECTED  _F_IO : HResult
 VAR_IN_OUT
 	a_pstIOMappingJson : POINTER TO ST_IOMappingJson; //pointer to array
 	ustIOMappingJson : UDINT; 		

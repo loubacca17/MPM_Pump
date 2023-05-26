@@ -9,13 +9,15 @@ VAR
 	fbPump2 : FB_Pump('fbName2');
 	fbConfigControl : FB_ConfigControl;
 	fbNCAxisJson : FB_NCAxisJson_V2;
+	fbJsonMQTT : Tc3_IotBase.FB_IotMqttClient;
+	mqttPubRate : TON;
 END_VAR
 //temp 
 VAR
-	jsonRecipeDoc : STRING(10000);
-	jsonSystemDoc : STRING(10000);
-	jsonIODoc : STRING(10000);
-	jsonAxisDoc : STRING(10000);
+	jsonRecipeDoc : STRING(50000);
+	jsonSystemDoc : STRING(50000);
+	jsonIODoc : STRING(50000);
+	jsonAxisDoc : STRING(50000);
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -30,7 +32,17 @@ fbConfigControl.ua_pFBConfigJson := SIZEOF(a_pFBConfigJson);
 fbConfigControl.M_SetJsonRecipe();
 fbConfigControl.M_SetJsonSystem();
 fbConfigControl.M_SetJsonIO();
-fbConfigControl.M_GetJsonString(jsonRecipeDoc,jsonSystemDoc,jsonIODoc,jsonAxisDoc);]]></ST>
+fbConfigControl.M_SetJsonAxis();
+fbConfigControl.M_GetJsonString(jsonRecipeDoc,jsonSystemDoc,jsonIODoc,jsonAxisDoc);
+
+
+
+fbJsonMQTT.Execute(TRUE);
+fbJsonMQTT.bConnected;
+mqttPubRate(in := TRUE, PT := T#500MS);
+IF mqttPubRate.Q AND_THEN fbJsonMQTT.Publish('axis',ADR(jsonAxisDoc),LEN2(ADR(jsonAxisDoc)),0,FALSE,FALSE) THEN
+	mqttPubRate(in := FALSE);
+END_IF	]]></ST>
       </Implementation>
     </Action>
     <Action Name="A_INIT" Id="{866a8265-32a5-4fd6-b499-da08e0d574b8}">
@@ -52,8 +64,14 @@ a_pFBConfigJson[2] := ADR(fbPump2);
     <LineIds Name="MAIN.A_ConfigControl">
       <LineId Id="1" Count="2" />
       <LineId Id="5" Count="0" />
-      <LineId Id="7" Count="0" />
+      <LineId Id="7" Count="1" />
       <LineId Id="4" Count="0" />
+      <LineId Id="10" Count="2" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="17" Count="1" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="19" Count="0" />
     </LineIds>
     <LineIds Name="MAIN.A_INIT">
       <LineId Id="3" Count="2" />

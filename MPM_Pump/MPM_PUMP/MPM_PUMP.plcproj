@@ -61,6 +61,9 @@
     <Compile Include="FBs\JSON\FB_ValuesJson.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="FBs\JSON\ST_AxisMap.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="FBs\JSON\ST_AxisMapping.TcDUT">
       <SubType>Code</SubType>
     </Compile>
@@ -120,6 +123,13 @@
     <PlaceholderReference Include="Tc2_System">
       <DefaultResolution>Tc2_System, * (Beckhoff Automation GmbH)</DefaultResolution>
       <Namespace>Tc2_System</Namespace>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc2_Utilities">
+      <DefaultResolution>Tc2_Utilities, * (Beckhoff Automation GmbH)</DefaultResolution>
+    </PlaceholderReference>
+    <PlaceholderReference Include="Tc3_IotBase">
+      <DefaultResolution>Tc3_IotBase, * (Beckhoff Automation GmbH)</DefaultResolution>
+      <Namespace>Tc3_IotBase</Namespace>
     </PlaceholderReference>
     <PlaceholderReference Include="Tc3_Module">
       <DefaultResolution>Tc3_Module, * (Beckhoff Automation GmbH)</DefaultResolution>
