@@ -142,12 +142,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <SubObject Include="FB_NCAxisJson_V2.M_GetAxisJson">
-      <ExcludeFromBuild>true</ExcludeFromBuild>
-    </SubObject>
-    <SubObject Include="FB_NCAxisJson_V2.M_GetAxisJson_Values">
-      <ExcludeFromBuild>true</ExcludeFromBuild>
-    </SubObject>
     <SubObject Include="FB_NCAxisJson_V2.M_GetParametersFromAxis">
       <ExcludeFromBuild>true</ExcludeFromBuild>
     </SubObject>

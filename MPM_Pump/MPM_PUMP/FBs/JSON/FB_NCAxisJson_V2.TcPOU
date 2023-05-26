@@ -67,9 +67,7 @@ M_SetJsonSchema(jsonRoot,P_sJsonTimeStamp);
       <Declaration><![CDATA[METHOD PUBLIC M_GetAxisJson : HRESULT
 VAR_INPUT
 	lastResult : HRESULT;
-END_VAR
-VAR_INPUT
-	path : STRING(255);
+	pJson : SJsonValue;	
 END_VAR
 VAR_INPUT
 	pAxisParamters : POINTER TO Tc2_MC2.ST_AxisParameterSet;
@@ -85,7 +83,7 @@ VAR_INST
 END_VAR
 
 VAR
-	pJson : SJsonValue;
+
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[IF _fbResult.M_MethodResult(M_GetAxisJson,lastResult) = FALSE THEN
@@ -95,29 +93,16 @@ ELSE
 	IF _fbResult.P_Result = E_Result.S_OK THEN //Reset
 		_state := 0;	
 		x := 0;
-		loadFile := FALSE;
-		THIS^.LoadDocumentFromFile(fileName,loadFile,hrErrorCode => errorCode);
-		loadFile := TRUE;
-		errorCode := 0;
 	END_IF 
 
 	_fbResult.P_Result := E_Result.S_WORKING; //Working	
 	
 	CASE _state OF
 		0:
-			fileName := path;
-			THIS^.LoadDocumentFromFile(fileName,loadFile,hrErrorCode => errorCode);
-			IF loadFile = FALSE AND errorCode = 0 THEN
-				_state := 1;	
-			ELSIF loadFile = FALSE AND errorCode < 0 THEN
-				_fbResult.P_Result := E_Result.S_FAILED; //Working	
-			END_IF
-		1:
-			THIS^.M_PraseSchemaJson();
 			FOR x := 0 TO NUM_OF_VARS BY 1 DO
-				pJson := THIS^.FindMember(P_sJsonValues.jsonValue,stAxisMappingJson[x].name);	
+				pJson := THIS^.FindMember(P_sJsonValues.jsonValue,stAxisMappingJson.stAxisMappingJson[x].name);	
 				IF pJson > 0 THEN
-					THIS^.M_GetAxisJson_Values(pJson,ADR(stAxisMappingJson[x]),pAxisParamters);
+					THIS^.M_GetAxisJson_Values(pJson,ADR(stAxisMappingJson.stAxisMappingJson[x]),pAxisParamters);
 				END_IF	
 			END_FOR	
 			_fbResult.P_Result := E_Result.S_OK; //OK				
@@ -468,19 +453,10 @@ END_IF	]]></ST>
     <LineIds Name="FB_NCAxisJson_V2.M_GetAxisJson">
       <LineId Id="230" Count="5" />
       <LineId Id="237" Count="0" />
-      <LineId Id="264" Count="0" />
-      <LineId Id="261" Count="0" />
-      <LineId Id="299" Count="1" />
       <LineId Id="217" Count="1" />
       <LineId Id="238" Count="2" />
       <LineId Id="219" Count="0" />
-      <LineId Id="241" Count="0" />
-      <LineId Id="298" Count="0" />
-      <LineId Id="245" Count="0" />
-      <LineId Id="248" Count="1" />
-      <LineId Id="251" Count="1" />
-      <LineId Id="246" Count="0" />
-      <LineId Id="253" Count="5" />
+      <LineId Id="254" Count="4" />
       <LineId Id="250" Count="0" />
       <LineId Id="259" Count="0" />
       <LineId Id="242" Count="1" />

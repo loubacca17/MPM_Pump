@@ -75,6 +75,7 @@ VAR_INPUT
 	lastResult : HRESULT;
 	sJson : SJsonValue;
 	pfbJsonSchema : POINTER TO FB_NCAxisJson_V2;	
+	bGet : BOOL;
 END_VAR
 
 VAR_INST
@@ -104,16 +105,25 @@ END_IF
 
 pResult^ := _F_Axis(a_pstAxisParameterSet,dstAxisParameterSet);
 //pResult^ := MPM_FBResult.E_Result.S_WORKING;
-sJson := pfbJsonSchema^.M_SetJsonMember(sJson,_fbName);
-
-IF a_pstAxisParameterSet > 0 AND dstAxisParameterSet > 0 AND uSizeOfStAnyType > 0 THEN //make sure all values are vaild
-	uSizeOfArray := dstAxisParameterSet/uSizeOfStAnyType - 1; //get number of items in array
-	FOR x := 0 TO uSizeOfArray BY 1 DO //loop through all items 
-		pstAxisParameterSet := a_pstAxisParameterSet + uSizeOfStAnyType*x; // get array position
-		pResult^ := pfbJsonSchema^.M_SetAxisJson(pResult^,sJson,pstAxisParameterSet);
-	END_FOR
-END_IF	
-
+IF bGet = FALSE THEN
+	sJson := pfbJsonSchema^.M_SetJsonMember(sJson,_fbName);
+	IF a_pstAxisParameterSet > 0 AND dstAxisParameterSet > 0 AND uSizeOfStAnyType > 0 THEN //make sure all values are vaild
+		uSizeOfArray := dstAxisParameterSet/uSizeOfStAnyType - 1; //get number of items in array
+		FOR x := 0 TO uSizeOfArray BY 1 DO //loop through all items 
+			pstAxisParameterSet := a_pstAxisParameterSet + uSizeOfStAnyType*x; // get array position
+			pResult^ := pfbJsonSchema^.M_SetAxisJson(pResult^,sJson,pstAxisParameterSet);
+		END_FOR
+	END_IF	
+ELSIF bGet = TRUE THEN
+	sJson := pfbJsonSchema^.FindMember(sJson,_fbName);
+	IF a_pstAxisParameterSet > 0 AND dstAxisParameterSet > 0 AND uSizeOfStAnyType > 0 THEN //make sure all values are vaild
+		uSizeOfArray := dstAxisParameterSet/uSizeOfStAnyType - 1; //get number of items in array
+		FOR x := 0 TO uSizeOfArray BY 1 DO //loop through all items 
+			pstAxisParameterSet := a_pstAxisParameterSet + uSizeOfStAnyType*x; // get array position
+			pResult^ := pfbJsonSchema^.M_GetAxisJson(pResult^,sJson,pstAxisParameterSet);
+		END_FOR
+	END_IF
+END_IF
 ]]></ST>
       </Implementation>
     </Method>
@@ -122,7 +132,8 @@ END_IF
 VAR_INPUT
 	lastResult : HRESULT;
 	sJson : SJsonValue;
-	pfbJsonSchema : POINTER TO FB_JsonSchemaEx_OLD;	
+	pfbJsonSchema : POINTER TO FB_JsonSchemaEx_OLD;
+	bGet : BOOL;	
 END_VAR
 
 VAR_INST
@@ -153,22 +164,43 @@ pResult^ := _F_IO(a_pstIOMappingJson,uAnyTypeUser); //gets pointer from FB
 
 
 pResult^ := MPM_FBResult.E_Result.S_WORKING;
-sJson := pfbJsonSchema^.M_SetJsonMember(sJson,_fbName);
-IF a_pstIOMappingJson > 0 AND_THEN uAnyTypeUser > 0 AND uSizeOfStAnyType > 0 THEN //make sure all values are vaild
-	uSizeOfArray := uAnyTypeUser/uSizeOfStAnyType - 1; //get number of items in array
-	FOR x := 0 TO uSizeOfArray BY 1 DO //loop through all items 
-		pstIOMappingJson := a_pstIOMappingJson + uSizeOfStAnyType*x; // get array position
-		sJson := pfbJsonSchema^.M_SetJsonMember(sJson,pstIOMappingJson^.name); //set json value
-		pfbJsonSchema^.M_SetJsonMemberValue(sJson,'channel',pstIOMappingJson^.channel); //set json value
-		pfbJsonSchema^.M_SetJsonMemberValue(sJson,'deviceNum',pstIOMappingJson^.deviceNum); //set json value
-		pfbJsonSchema^.M_SetJsonMemberValue(sJson,'ethercatDeviceNum',pstIOMappingJson^.ethercatDeviceNum); //set json value
-		pfbJsonSchema^.M_SetJsonMemberValue(sJson,'ioLinkDevice',pstIOMappingJson^.ioLinkDevice); //set json value
-		pfbJsonSchema^.M_SetJsonMemberValue(sJson,'ioLinkSlaveChannel',pstIOMappingJson^.ioLinkSlaveChannel); //set json value
-	END_FOR
-	pResult^ := MPM_FBResult.E_Result.S_OK;
-ELSE
-	pResult^ := MPM_FBResult.E_Result.S_FAILED;
-END_IF
+//set
+IF bGet = FALSE THEN
+	sJson := pfbJsonSchema^.M_SetJsonMember(sJson,_fbName);
+	IF a_pstIOMappingJson > 0 AND_THEN uAnyTypeUser > 0 AND uSizeOfStAnyType > 0 THEN //make sure all values are vaild
+		uSizeOfArray := uAnyTypeUser/uSizeOfStAnyType - 1; //get number of items in array
+		FOR x := 0 TO uSizeOfArray BY 1 DO //loop through all items 
+			pstIOMappingJson := a_pstIOMappingJson + uSizeOfStAnyType*x; // get array position
+			sJson := pfbJsonSchema^.M_SetJsonMember(sJson,pstIOMappingJson^.name); //set json value
+			pfbJsonSchema^.M_SetJsonMemberValue(sJson,'channel',pstIOMappingJson^.channel); //set json value
+			pfbJsonSchema^.M_SetJsonMemberValue(sJson,'deviceNum',pstIOMappingJson^.deviceNum); //set json value
+			pfbJsonSchema^.M_SetJsonMemberValue(sJson,'ethercatDeviceNum',pstIOMappingJson^.ethercatDeviceNum); //set json value
+			pfbJsonSchema^.M_SetJsonMemberValue(sJson,'ioLinkDevice',pstIOMappingJson^.ioLinkDevice); //set json value
+			pfbJsonSchema^.M_SetJsonMemberValue(sJson,'ioLinkSlaveChannel',pstIOMappingJson^.ioLinkSlaveChannel); //set json value
+		END_FOR
+		pResult^ := MPM_FBResult.E_Result.S_OK;
+	ELSE
+		pResult^ := MPM_FBResult.E_Result.S_FAILED;
+	END_IF
+//get
+ELSIF bGet = TRUE THEN
+	sJson := pfbJsonSchema^.FindMember(sJson,_fbName);
+	IF a_pstIOMappingJson > 0 AND_THEN uAnyTypeUser > 0 AND uSizeOfStAnyType > 0 THEN //make sure all values are vaild
+		uSizeOfArray := uAnyTypeUser/uSizeOfStAnyType - 1; //get number of items in array
+		FOR x := 0 TO uSizeOfArray BY 1 DO //loop through all items 
+			pstIOMappingJson := a_pstIOMappingJson + uSizeOfStAnyType*x; // get array position
+			sJson := pfbJsonSchema^.M_SetJsonMember(sJson,pstIOMappingJson^.name); //set json value
+			pfbJsonSchema^.M_GetJsonMemberValue(sJson,'channel',pstIOMappingJson^.channel); //set json value
+			pfbJsonSchema^.M_GetJsonMemberValue(sJson,'deviceNum',pstIOMappingJson^.deviceNum); //set json value
+			pfbJsonSchema^.M_GetJsonMemberValue(sJson,'ethercatDeviceNum',pstIOMappingJson^.ethercatDeviceNum); //set json value
+			pfbJsonSchema^.M_GetJsonMemberValue(sJson,'ioLinkDevice',pstIOMappingJson^.ioLinkDevice); //set json value
+			pfbJsonSchema^.M_GetJsonMemberValue(sJson,'ioLinkSlaveChannel',pstIOMappingJson^.ioLinkSlaveChannel); //set json value
+		END_FOR
+		pResult^ := MPM_FBResult.E_Result.S_OK;
+	ELSE
+		pResult^ := MPM_FBResult.E_Result.S_FAILED;
+	END_IF
+END_IF	
 ]]></ST>
       </Implementation>
     </Method>
@@ -190,6 +222,7 @@ VAR_INPUT
 	lastResult : HRESULT;
 	sJson : SJsonValue;
 	pfbJsonSchema : POINTER TO FB_JsonSchemaEx_OLD;	
+	bGet : BOOL;
 END_VAR
 
 VAR_INST
@@ -220,18 +253,35 @@ pResult^ := _F_Recipe(a_stAnyUser,uAnyTypeUser);
 
 
 pResult^ := MPM_FBResult.E_Result.S_WORKING;
-sJson := pfbJsonSchema^.M_SetJsonMember(sJson,_fbName);
-IF a_stAnyUser > 0 AND_THEN uAnyTypeUser > 0 AND uSizeOfStAnyType > 0 THEN //make sure all values are vaild
-	uSizeOfArray := uAnyTypeUser/uSizeOfStAnyType - 1; //get number of items in array
-	FOR x := 0 TO uSizeOfArray BY 1 DO //loop through all items 
-		pstAnyUser := a_stAnyUser + uSizeOfStAnyType*x; // get array position
-			pfbJsonSchema^.M_SetJsonMemberValue_AnyType(sJson,pstAnyUser^.name,pstAnyUser^); //set json value
-	END_FOR
-	pResult^ := MPM_FBResult.E_Result.S_OK;
-ELSE
-	pResult^ := MPM_FBResult.E_Result.S_FAILED;
-END_IF
-]]></ST>
+
+//set
+IF bGet = FALSE THEN
+	sJson := pfbJsonSchema^.M_SetJsonMember(sJson,_fbName);
+	IF a_stAnyUser > 0 AND_THEN uAnyTypeUser > 0 AND uSizeOfStAnyType > 0 THEN //make sure all values are vaild
+		uSizeOfArray := uAnyTypeUser/uSizeOfStAnyType - 1; //get number of items in array
+		FOR x := 0 TO uSizeOfArray BY 1 DO //loop through all items 
+			pstAnyUser := a_stAnyUser + uSizeOfStAnyType*x; // get array position
+				pfbJsonSchema^.M_SetJsonMemberValue_AnyType(sJson,pstAnyUser^.name,pstAnyUser^); //set json value
+		END_FOR
+		pResult^ := MPM_FBResult.E_Result.S_OK;
+	ELSE
+		pResult^ := MPM_FBResult.E_Result.S_FAILED;
+	END_IF
+	
+//get
+ELSIF bGet = TRUE THEN 	
+	sJson := pfbJsonSchema^.FindMember(sJson,_fbName);
+	IF a_stAnyUser > 0 AND_THEN uAnyTypeUser > 0 AND uSizeOfStAnyType > 0 THEN //make sure all values are vaild
+		uSizeOfArray := uAnyTypeUser/uSizeOfStAnyType - 1; //get number of items in array
+		FOR x := 0 TO uSizeOfArray BY 1 DO //loop through all items 
+			pstAnyUser := a_stAnyUser + uSizeOfStAnyType*x; // get array position
+				pfbJsonSchema^.M_GetJsonMemberValue_AnyType(sJson,pstAnyUser^.name,pstAnyUser^); //set json value
+		END_FOR
+		pResult^ := MPM_FBResult.E_Result.S_OK;
+	ELSE
+		pResult^ := MPM_FBResult.E_Result.S_FAILED;
+	END_IF
+END_IF]]></ST>
       </Implementation>
     </Method>
     <Method Name="F_System" Id="{4f92d8d9-026e-4619-8a71-a0cfc6eb2eed}">
@@ -240,6 +290,7 @@ VAR_INPUT
 	lastResult : HRESULT;
 	sJson : SJsonValue;
 	pfbJsonSchema : POINTER TO FB_JsonSchemaEx_OLD;	
+	bGet : BOOL;	
 END_VAR
 
 VAR_INST
@@ -268,21 +319,35 @@ END_IF
 
 
 pResult^ := _F_System(a_stAnyUser,uAnyTypeUser);
+//set
+IF bGet = FALSE THEN
+	pResult^ := MPM_FBResult.E_Result.S_WORKING;
+	sJson := pfbJsonSchema^.M_SetJsonMember(sJson,_fbName);
+	IF a_stAnyUser > 0 AND_THEN uAnyTypeUser > 0 AND uSizeOfStAnyType > 0 THEN //make sure all values are vaild
+		uSizeOfArray := uAnyTypeUser/uSizeOfStAnyType - 1; //get number of items in array
+		FOR x := 0 TO uSizeOfArray BY 1 DO //loop through all items 
+			pstAnyUser := a_stAnyUser + uSizeOfStAnyType*x; // get array position
+				pfbJsonSchema^.M_SetJsonMemberValue_AnyType(sJson,pstAnyUser^.name,pstAnyUser^); //set json value
+		END_FOR
+		pResult^ := MPM_FBResult.E_Result.S_OK;
+	ELSE
+		pResult^ := MPM_FBResult.E_Result.S_FAILED;
+	END_IF
 
-
-pResult^ := MPM_FBResult.E_Result.S_WORKING;
-sJson := pfbJsonSchema^.M_SetJsonMember(sJson,_fbName);
-IF a_stAnyUser > 0 AND_THEN uAnyTypeUser > 0 AND uSizeOfStAnyType > 0 THEN //make sure all values are vaild
-	uSizeOfArray := uAnyTypeUser/uSizeOfStAnyType - 1; //get number of items in array
-	FOR x := 0 TO uSizeOfArray BY 1 DO //loop through all items 
-		pstAnyUser := a_stAnyUser + uSizeOfStAnyType*x; // get array position
-			pfbJsonSchema^.M_SetJsonMemberValue_AnyType(sJson,pstAnyUser^.name,pstAnyUser^); //set json value
-	END_FOR
-	pResult^ := MPM_FBResult.E_Result.S_OK;
-ELSE
-	pResult^ := MPM_FBResult.E_Result.S_FAILED;
-END_IF
-]]></ST>
+//get	
+ELSIF bGet = TRUE THEN
+	sJson := pfbJsonSchema^.FindMember(sJson,_fbName);
+	IF a_stAnyUser > 0 AND_THEN uAnyTypeUser > 0 AND uSizeOfStAnyType > 0 THEN //make sure all values are vaild
+		uSizeOfArray := uAnyTypeUser/uSizeOfStAnyType - 1; //get number of items in array
+		FOR x := 0 TO uSizeOfArray BY 1 DO //loop through all items 
+			pstAnyUser := a_stAnyUser + uSizeOfStAnyType*x; // get array position
+				pfbJsonSchema^.M_GetJsonMemberValue_AnyType(sJson,pstAnyUser^.name,pstAnyUser^); //set json value
+		END_FOR
+		pResult^ := MPM_FBResult.E_Result.S_OK;
+	ELSE
+		pResult^ := MPM_FBResult.E_Result.S_FAILED;
+	END_IF	
+END_IF]]></ST>
       </Implementation>
     </Method>
     <Method Name="FB_init" Id="{39c76da8-be3f-4311-946f-56a7e0460487}">
@@ -324,21 +389,35 @@ END_VAR
       <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_ConfigJson.F_AXIS">
-      <LineId Id="119" Count="11" />
+      <LineId Id="119" Count="6" />
+      <LineId Id="168" Count="0" />
+      <LineId Id="126" Count="0" />
+      <LineId Id="128" Count="2" />
       <LineId Id="141" Count="0" />
       <LineId Id="137" Count="0" />
       <LineId Id="132" Count="0" />
       <LineId Id="68" Count="0" />
+      <LineId Id="169" Count="0" />
+      <LineId Id="173" Count="6" />
+      <LineId Id="171" Count="0" />
       <LineId Id="140" Count="0" />
       <LineId Id="139" Count="0" />
     </LineIds>
     <LineIds Name="FB_ConfigJson.F_IO">
       <LineId Id="36" Count="7" />
-      <LineId Id="58" Count="5" />
+      <LineId Id="58" Count="0" />
+      <LineId Id="124" Count="0" />
+      <LineId Id="126" Count="0" />
+      <LineId Id="59" Count="4" />
       <LineId Id="65" Count="0" />
       <LineId Id="95" Count="4" />
       <LineId Id="67" Count="2" />
       <LineId Id="56" Count="1" />
+      <LineId Id="147" Count="0" />
+      <LineId Id="127" Count="0" />
+      <LineId Id="132" Count="14" />
+      <LineId Id="129" Count="0" />
+      <LineId Id="128" Count="0" />
       <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_ConfigJson.F_Map_ST_IOMappingJson">
@@ -352,6 +431,9 @@ END_VAR
       <LineId Id="53" Count="0" />
       <LineId Id="5" Count="0" />
       <LineId Id="55" Count="2" />
+      <LineId Id="102" Count="0" />
+      <LineId Id="101" Count="0" />
+      <LineId Id="83" Count="0" />
       <LineId Id="16" Count="0" />
       <LineId Id="15" Count="0" />
       <LineId Id="34" Count="2" />
@@ -360,13 +442,21 @@ END_VAR
       <LineId Id="42" Count="0" />
       <LineId Id="22" Count="0" />
       <LineId Id="24" Count="1" />
-      <LineId Id="21" Count="0" />
+      <LineId Id="99" Count="1" />
+      <LineId Id="84" Count="1" />
+      <LineId Id="90" Count="8" />
+      <LineId Id="89" Count="0" />
+      <LineId Id="86" Count="0" />
     </LineIds>
     <LineIds Name="FB_ConfigJson.F_System">
       <LineId Id="6" Count="13" />
       <LineId Id="21" Count="0" />
       <LineId Id="23" Count="4" />
+      <LineId Id="67" Count="0" />
+      <LineId Id="66" Count="0" />
       <LineId Id="5" Count="0" />
+      <LineId Id="56" Count="9" />
+      <LineId Id="54" Count="1" />
     </LineIds>
     <LineIds Name="FB_ConfigJson.FB_init">
       <LineId Id="7" Count="0" />

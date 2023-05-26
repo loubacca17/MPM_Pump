@@ -3,42 +3,52 @@
   <POU Name="MAIN" Id="{b8c91cec-6df0-47d4-9266-f4db1361059c}" SpecialFunc="None">
     <Declaration><![CDATA[PROGRAM MAIN
 VAR
+	
+	//machine assets
 	a_pFBConfigJson : ARRAY [0..2] OF POINTER TO FB_ConfigJson;
 	fbPump : FB_Pump('fbName');
 	fbPump1 : FB_Pump('fbName1');
 	fbPump2 : FB_Pump('fbName2');
+	//config control
 	fbConfigControl : FB_ConfigControl;
-	fbNCAxisJson : FB_NCAxisJson_V2;
+	fbConfigControl_JsonRecipeResult : HRESULT;
+	fbConfigControl_JsonSystemResult : HRESULT;
+	fbConfigControl_JsonIOResult : HRESULT;
+	fbConfigControl_JsonAxisResult : HRESULT;	
+	jsonRecipeDoc : STRING(10000);
+	jsonSystemDoc : STRING(50000);
+	jsonIODoc : STRING(50000);
+	jsonAxisDoc : STRING(50000);
+	
+	//Node-Red
 	fbJsonMQTT : Tc3_IotBase.FB_IotMqttClient;
 	mqttPubRate : TON;
 END_VAR
 //temp 
 VAR
-	jsonRecipeDoc : STRING(50000);
-	jsonSystemDoc : STRING(50000);
-	jsonIODoc : STRING(50000);
-	jsonAxisDoc : STRING(50000);
+
 END_VAR
 ]]></Declaration>
     <Implementation>
       <ST><![CDATA[A_INIT();
 A_ConfigControl();
-fbNCAxisJson;]]></ST>
+]]></ST>
     </Implementation>
     <Action Name="A_ConfigControl" Id="{4eef083a-06cd-4e6a-a4ee-df3e2239f93d}">
       <Implementation>
-        <ST><![CDATA[fbConfigControl.a_pFBConfigJson := ADR(a_pFBConfigJson);
-fbConfigControl.ua_pFBConfigJson := SIZEOF(a_pFBConfigJson);
-fbConfigControl.M_SetJsonRecipe(jsonRecipeDoc);
-fbConfigControl.M_SetJsonSystem(jsonSystemDoc);
-fbConfigControl.M_SetJsonIO(jsonIODoc);
-fbConfigControl.M_SetJsonAxis(jsonAxisDoc);
+        <ST><![CDATA[
 
+fbConfigControl.a_pFBConfigJson := ADR(a_pFBConfigJson);fbConfigControl.ua_pFBConfigJson := SIZEOF(a_pFBConfigJson); //Mapping machine assest
+//Set json files
+fbConfigControl.M_SetJsonRecipe(fbConfigControl_JsonRecipeResult,jsonRecipeDoc);
+fbConfigControl.M_SetJsonSystem(fbConfigControl_JsonSystemResult,jsonSystemDoc);
+fbConfigControl.M_SetJsonIO(fbConfigControl_JsonIOResult,jsonIODoc);
+fbConfigControl.M_SetJsonAxis(fbConfigControl_JsonAxisResult,jsonAxisDoc);
+//fbConfigControl_JsonRecipeResult := fbConfigControl.M_GetJsonRecipe(fbConfigControl_JsonRecipeResult,jsonRecipeDoc);
 
 
 fbJsonMQTT.Execute(TRUE);
-fbJsonMQTT.bConnected;
-mqttPubRate(in := TRUE, PT := T#500MS);
+mqttPubRate(in := fbJsonMQTT.bConnected, PT := T#500MS);
 IF mqttPubRate.Q AND_THEN fbJsonMQTT.Publish('axis',ADR(jsonAxisDoc),LEN2(ADR(jsonAxisDoc)),0,FALSE,FALSE) THEN
 	mqttPubRate(in := FALSE);
 END_IF	]]></ST>
@@ -61,12 +71,12 @@ a_pFBConfigJson[2] := ADR(fbPump2);
       <LineId Id="28" Count="0" />
     </LineIds>
     <LineIds Name="MAIN.A_ConfigControl">
+      <LineId Id="22" Count="1" />
       <LineId Id="1" Count="2" />
       <LineId Id="5" Count="0" />
       <LineId Id="7" Count="1" />
       <LineId Id="10" Count="2" />
       <LineId Id="9" Count="0" />
-      <LineId Id="15" Count="0" />
       <LineId Id="17" Count="1" />
       <LineId Id="14" Count="0" />
       <LineId Id="19" Count="0" />

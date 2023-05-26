@@ -11,13 +11,74 @@ END_VAR
 VAR_OUTPUT
 END_VAR
 VAR
+	axisRef : Tc2_MC2.AXIS_REF;	
 END_VAR
 ]]></Declaration>
     <Implementation>
       <ST><![CDATA[]]></ST>
     </Implementation>
+    <Method Name="M_Disabled" Id="{9221797a-1e9a-455a-9548-f36d023ac1e2}">
+      <Declaration><![CDATA[METHOD PROTECTED M_Disabled : HRESULT
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Discrete" Id="{fc76ca2c-e261-4cc9-a986-b84fa3dfd3f3}">
+      <Declaration><![CDATA[METHOD M_Discrete : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Homing" Id="{08f2a54e-db5b-4d5e-8fff-13b43d554d14}">
+      <Declaration><![CDATA[METHOD M_Homing : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_StandStill" Id="{a040644f-fd6c-4fdb-b755-962a3d970bee}">
+      <Declaration><![CDATA[METHOD M_StandStill : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Stopping" Id="{107eb20a-062e-483b-84ec-b6b000b7e4b3}">
+      <Declaration><![CDATA[METHOD M_Stopping : BOOL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
     <LineIds Name="FB_AxisControl">
       <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_AxisControl.M_Disabled">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_AxisControl.M_Discrete">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_AxisControl.M_Homing">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_AxisControl.M_StandStill">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_AxisControl.M_Stopping">
+      <LineId Id="5" Count="0" />
     </LineIds>
   </POU>
 </TcPlcObject>
