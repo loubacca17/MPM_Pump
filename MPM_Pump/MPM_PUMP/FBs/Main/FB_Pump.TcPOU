@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
   <POU Name="FB_Pump" Id="{0fa90de2-8e52-41d8-b4ec-9a5ee81c648f}" SpecialFunc="None">
-    <Declaration><![CDATA[FUNCTION_BLOCK FB_Pump EXTENDS FB_ConfigJson
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Pump EXTENDS FB_ConfigBase
 VAR_INPUT
 END_VAR
 VAR_OUTPUT
@@ -13,10 +13,17 @@ VAR
 	ioVar2 : POINTER TO REAL;
 	axis : TC2_MC2.AXIS_REF;
 END_VAR
+
+VAR
+	testIO : BOOL;
+	closeFeedBack : BOOL;
+	openFeedBack : BOOL;
+END_VAR
 ]]></Declaration>
     <Implementation>
       <ST><![CDATA[]]></ST>
     </Implementation>
+    <Folder Name="Events" Id="{6db3c611-ab91-42ac-8c3a-67fe89fe2804}" />
     <Method Name="_F_Axis" Id="{8a4a8626-7eae-45de-981b-850b72ae5299}">
       <Declaration><![CDATA[METHOD _F_Axis : HRESULT
 VAR_IN_OUT
@@ -114,6 +121,120 @@ uAnyTypeUser := SIZEOF(a_stAnyTypeUser);
 _F_System := MPM_FBResult.E_Result.S_OK;]]></ST>
       </Implementation>
     </Method>
+    <Method Name="M_CloseValve" Id="{6ce41848-ca20-4d56-b479-59178105a56c}" FolderPath="Events\">
+      <Declaration><![CDATA[METHOD PROTECTED M_CloseValve : HResult
+VAR_INPUT
+	lastResult : HResult;	
+END_VAR
+VAR_INST
+	_lastResult : HResult;
+	_fbResult : FB_ResultHelper_V2_1;
+	_state : DINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF _fbResult.M_MethodResult(M_CloseValve,lastResult,ADR(_lastResult)) = FALSE THEN
+	RETURN;
+END_IF
+
+IF _fbResult.P_MethodResult = E_Result.S_OK THEN
+	_state := 0;
+END_IF
+
+
+_fbResult.P_MethodResult := E_Result.S_WORKING;
+
+
+CASE _state OF 
+	0:
+		testIO := TRUE;
+		IF closeFeedBack = TRUE THEN
+			_fbResult.P_MethodResult := E_Result.S_OK;
+		END_IF
+END_CASE]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Events" Id="{ffc56fab-7a76-4ebf-95d7-25e8eeddf966}">
+      <Declaration><![CDATA[METHOD PUBLIC  M_Events : HResult
+VAR_INPUT
+	lastResult : HResult;
+	eventID : DINT;
+END_VAR
+VAR_INST
+	_fbResult : FB_ResultHelper_V2_1;
+	_lastResult : HResult;
+	openValve_Result : HRESULT;
+	closeValve_Result : HRESULT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CASE eventID OF 
+	1 : //Open Valve
+		IF _fbResult.M_MethodResult(M_Events,lastResult,ADR(openValve_Result)) = FALSE THEN
+			RETURN;
+		END_IF
+		IF closeValve_Result > E_Result.S_OK THEN
+			closeValve_Result := -1; //fail it out
+		END_IF	
+		_fbResult.P_MethodResult := M_OpenValve(_fbResult.P_MethodResult);
+	2:
+		IF _fbResult.M_MethodResult(M_Events,lastResult,ADR(closeValve_Result)) = FALSE THEN
+			RETURN;
+		END_IF
+		IF openValve_Result > E_Result.S_OK THEN
+			openValve_Result := -1; //fail it out
+		END_IF
+		_fbResult.P_MethodResult := M_CloseValve(_fbResult.P_MethodResult);	
+	3: //enable pump
+		
+	4: //move pump continous
+		
+	5: //move pump intermiate
+		
+	6: //stop pump
+		
+END_CASE]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_GetEvents" Id="{9153554d-e1a4-4a5c-af7f-a9a0da2dc60f}">
+      <Declaration><![CDATA[METHOD PUBLIC  M_GetEvents : HResult
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_OpenValve" Id="{1d61b728-5b23-417e-8cf6-8a998ec2c686}" FolderPath="Events\">
+      <Declaration><![CDATA[METHOD PROTECTED M_OpenValve : HResult
+VAR_INPUT
+	lastResult : HResult;	
+END_VAR
+VAR_INST
+	_lastResult : HResult;
+	_fbResult : FB_ResultHelper_V2_1;
+	_state : DINT;	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF _fbResult.M_MethodResult(M_OpenValve,lastResult,ADR(_lastResult)) = FALSE THEN
+	RETURN;
+END_IF
+
+IF _fbResult.P_MethodResult = E_Result.S_OK THEN
+	_state := 0;
+END_IF
+
+
+_fbResult.P_MethodResult := E_Result.S_WORKING;
+
+
+CASE _state OF 
+	0:
+		testIO := FALSE;
+		IF openFeedBack = TRUE THEN
+			_fbResult.P_MethodResult := E_Result.S_OK;
+		END_IF
+END_CASE]]></ST>
+      </Implementation>
+    </Method>
     <LineIds Name="FB_Pump">
       <LineId Id="9" Count="0" />
     </LineIds>
@@ -145,6 +266,47 @@ _F_System := MPM_FBResult.E_Result.S_OK;]]></ST>
     <LineIds Name="FB_Pump._F_System">
       <LineId Id="8" Count="6" />
       <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pump.M_CloseValve">
+      <LineId Id="14" Count="1" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="17" Count="3" />
+      <LineId Id="22" Count="1" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="25" Count="1" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="29" Count="3" />
+      <LineId Id="28" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pump.M_Events">
+      <LineId Id="7" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="22" Count="1" />
+      <LineId Id="30" Count="1" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="11" Count="1" />
+      <LineId Id="24" Count="1" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="26" Count="2" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="40" Count="0" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="41" Count="0" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pump.M_GetEvents">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pump.M_OpenValve">
+      <LineId Id="12" Count="17" />
+      <LineId Id="10" Count="0" />
     </LineIds>
   </POU>
 </TcPlcObject>

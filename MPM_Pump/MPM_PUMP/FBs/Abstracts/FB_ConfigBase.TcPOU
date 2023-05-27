@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
-  <POU Name="FB_ConfigJson" Id="{3ccc0d41-27f9-41ab-b33f-1e963a615b44}" SpecialFunc="None">
+  <POU Name="FB_ConfigBase" Id="{3ccc0d41-27f9-41ab-b33f-1e963a615b44}" SpecialFunc="None">
     <Declaration><![CDATA[(*
 Will be an abstract class that will be used to configure all parts of the machine through json
 *)
 
-FUNCTION_BLOCK ABSTRACT FB_ConfigJson
+FUNCTION_BLOCK ABSTRACT FB_ConfigBase
 VAR_INPUT
 END_VAR
 VAR_OUTPUT
@@ -362,6 +362,26 @@ END_VAR
         <ST><![CDATA[_fbName := fbName;]]></ST>
       </Implementation>
     </Method>
+    <Method Name="M_Events" Id="{9bfb2769-0fba-4d76-86ce-22f9c6c76e6b}">
+      <Declaration><![CDATA[METHOD PUBLIC ABSTRACT M_Events : HResult
+VAR_INPUT
+	lastResult : HResult;
+	eventID : DINT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_GetEvents" Id="{78b6458e-7fc9-4d4d-a4d4-ca75768767e9}">
+      <Declaration><![CDATA[METHOD PUBLIC ABSTRACT M_GetEvents : HResult
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
     <Property Name="P_fbName" Id="{5a2b393b-8b77-4ed7-a71a-7e64119bd062}">
       <Declaration><![CDATA[PROPERTY PUBLIC P_fbName : STRING]]></Declaration>
       <Get Name="Get" Id="{831f96df-87bd-4bb9-ad06-74017936567e}">
@@ -373,22 +393,22 @@ END_VAR
         </Implementation>
       </Get>
     </Property>
-    <LineIds Name="FB_ConfigJson">
+    <LineIds Name="FB_ConfigBase">
       <LineId Id="9" Count="0" />
     </LineIds>
-    <LineIds Name="FB_ConfigJson._F_Axis">
+    <LineIds Name="FB_ConfigBase._F_Axis">
       <LineId Id="5" Count="0" />
     </LineIds>
-    <LineIds Name="FB_ConfigJson._F_IO">
+    <LineIds Name="FB_ConfigBase._F_IO">
       <LineId Id="5" Count="0" />
     </LineIds>
-    <LineIds Name="FB_ConfigJson._F_Recipe">
+    <LineIds Name="FB_ConfigBase._F_Recipe">
       <LineId Id="5" Count="0" />
     </LineIds>
-    <LineIds Name="FB_ConfigJson._F_System">
+    <LineIds Name="FB_ConfigBase._F_System">
       <LineId Id="5" Count="0" />
     </LineIds>
-    <LineIds Name="FB_ConfigJson.F_AXIS">
+    <LineIds Name="FB_ConfigBase.F_AXIS">
       <LineId Id="119" Count="6" />
       <LineId Id="168" Count="0" />
       <LineId Id="126" Count="0" />
@@ -403,7 +423,7 @@ END_VAR
       <LineId Id="140" Count="0" />
       <LineId Id="139" Count="0" />
     </LineIds>
-    <LineIds Name="FB_ConfigJson.F_IO">
+    <LineIds Name="FB_ConfigBase.F_IO">
       <LineId Id="36" Count="7" />
       <LineId Id="58" Count="0" />
       <LineId Id="124" Count="0" />
@@ -420,10 +440,10 @@ END_VAR
       <LineId Id="128" Count="0" />
       <LineId Id="5" Count="0" />
     </LineIds>
-    <LineIds Name="FB_ConfigJson.F_Map_ST_IOMappingJson">
+    <LineIds Name="FB_ConfigBase.F_Map_ST_IOMappingJson">
       <LineId Id="5" Count="0" />
     </LineIds>
-    <LineIds Name="FB_ConfigJson.F_Recipe">
+    <LineIds Name="FB_ConfigBase.F_Recipe">
       <LineId Id="44" Count="0" />
       <LineId Id="52" Count="0" />
       <LineId Id="51" Count="0" />
@@ -448,7 +468,7 @@ END_VAR
       <LineId Id="89" Count="0" />
       <LineId Id="86" Count="0" />
     </LineIds>
-    <LineIds Name="FB_ConfigJson.F_System">
+    <LineIds Name="FB_ConfigBase.F_System">
       <LineId Id="6" Count="13" />
       <LineId Id="21" Count="0" />
       <LineId Id="23" Count="4" />
@@ -458,10 +478,16 @@ END_VAR
       <LineId Id="56" Count="9" />
       <LineId Id="54" Count="1" />
     </LineIds>
-    <LineIds Name="FB_ConfigJson.FB_init">
+    <LineIds Name="FB_ConfigBase.FB_init">
       <LineId Id="7" Count="0" />
     </LineIds>
-    <LineIds Name="FB_ConfigJson.P_fbName.Get">
+    <LineIds Name="FB_ConfigBase.M_Events">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ConfigBase.M_GetEvents">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ConfigBase.P_fbName.Get">
       <LineId Id="2" Count="0" />
     </LineIds>
   </POU>

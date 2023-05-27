@@ -20,7 +20,7 @@
     <Compile Include="FBs\Abstracts\FB_AxisControl.TcPOU">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="FBs\Abstracts\FB_ConfigJson.TcPOU">
+    <Compile Include="FBs\Abstracts\FB_ConfigBase.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="FBs\Abstracts\FB_DiscreteEvents.TcPOU">

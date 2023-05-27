@@ -3,7 +3,7 @@
   <POU Name="FB_ConfigControl" Id="{40efb18b-3f60-4fa1-aa5b-c43795a06346}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_ConfigControl
 VAR_INPUT
-	a_pFBConfigJson : POINTER TO POINTER TO FB_ConfigJson; //pointer to pointer is an array
+	a_pFBConfigJson : POINTER TO POINTER TO FB_ConfigBase; //pointer to pointer is an array
 	ua_pFBConfigJson : UDINT;
 END_VAR
 VAR_OUTPUT
@@ -32,7 +32,7 @@ END_VAR
 VAR_INST
 	uSizeOfArray : DINT;
 	x : DINT;
-	pFBConfigJson : POINTER TO POINTER TO FB_ConfigJson;	
+	pFBConfigJson : POINTER TO POINTER TO FB_ConfigBase;	
 	_fbResult : FB_ResultHelper_V2;
 	pResult : POINTER TO HRESULT;
 END_VAR]]></Declaration>
@@ -67,7 +67,7 @@ END_VAR
 VAR_INST
 	uSizeOfArray : DINT;
 	x : DINT;
-	pFBConfigJson : POINTER TO POINTER TO FB_ConfigJson;	
+	pFBConfigJson : POINTER TO POINTER TO FB_ConfigBase;	
 	_fbResult : FB_ResultHelper_V2;
 	pResult : POINTER TO HRESULT;
 END_VAR]]></Declaration>
@@ -107,7 +107,7 @@ VAR_INST
 	bGet : BOOL;
 	uSizeOfArray : DINT;
 	x : DINT;
-	pFBConfigJson : POINTER TO POINTER TO FB_ConfigJson;	
+	pFBConfigJson : POINTER TO POINTER TO FB_ConfigBase;	
 	_fbResult : FB_ResultHelper_V2;
 	pResult : POINTER TO HRESULT;
 END_VAR]]></Declaration>
@@ -141,7 +141,7 @@ END_VAR
 VAR_INST
 	uSizeOfArray : DINT;
 	x : DINT;
-	pFBConfigJson : POINTER TO POINTER TO FB_ConfigJson;	
+	pFBConfigJson : POINTER TO POINTER TO FB_ConfigBase;	
 	_fbResult : FB_ResultHelper_V2;
 	pResult : POINTER TO HRESULT;
 END_VAR]]></Declaration>
@@ -176,7 +176,7 @@ END_VAR
 VAR_INST
 	uSizeOfArray : DINT;
 	x : DINT;
-	pFBConfigJson : POINTER TO POINTER TO FB_ConfigJson;	
+	pFBConfigJson : POINTER TO POINTER TO FB_ConfigBase;	
 	_fbResult : FB_ResultHelper_V2;
 	pResult : POINTER TO HRESULT;
 END_VAR]]></Declaration>
@@ -211,7 +211,7 @@ END_VAR
 VAR_INST
 	uSizeOfArray : DINT;
 	x : DINT;
-	pFBConfigJson : POINTER TO POINTER TO FB_ConfigJson;	
+	pFBConfigJson : POINTER TO POINTER TO FB_ConfigBase;	
 	_fbResult : FB_ResultHelper_V2;
 	pResult : POINTER TO HRESULT;
 END_VAR]]></Declaration>
@@ -250,7 +250,7 @@ VAR_INST
 	bGet : BOOL;
 	uSizeOfArray : DINT;
 	x : DINT;
-	pFBConfigJson : POINTER TO POINTER TO FB_ConfigJson;	
+	pFBConfigJson : POINTER TO POINTER TO FB_ConfigBase;	
 	_fbResult : FB_ResultHelper_V2;
 	pResult : POINTER TO HRESULT;
 END_VAR]]></Declaration>
@@ -284,7 +284,7 @@ END_VAR
 VAR_INST
 	uSizeOfArray : DINT;
 	x : DINT;
-	pFBConfigJson : POINTER TO POINTER TO FB_ConfigJson;	
+	pFBConfigJson : POINTER TO POINTER TO FB_ConfigBase;	
 	_fbResult : FB_ResultHelper_V2;
 	pResult : POINTER TO HRESULT;
 END_VAR]]></Declaration>

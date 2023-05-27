@@ -21,7 +21,7 @@ VAR
 	fbMCMoveAdditive : Tc2_MC2.MC_MoveAdditive;
 	fbMCMoveSuperImposed : Tc2_MC2.MC_MoveSuperImposed;
 	fbMCHalt :  Tc2_MC2.MC_Halt;
-	
+	axisState : Tc2_MC2.MC_AxisStates;
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -54,6 +54,42 @@ END_VAR
 ]]></Declaration>
       <Implementation>
         <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Execute" Id="{b221b421-b0bc-4b6c-b57a-306b266735b9}">
+      <Declaration><![CDATA[METHOD PUBLIC FINAL M_Execute : HRESULT
+VAR_INPUT
+END_VAR
+VAR_INST
+
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[axisRef.ReadStatus();
+axisState := axisRef.Status.MotionState;
+
+CASE axisRef.Status.MotionState OF
+
+	Tc2_MC2.MC_AxisStates.MC_AXISSTATE_ERRORSTOP :
+			
+	Tc2_MC2.MC_AxisStates.MC_AXISSTATE_DISABLED :
+		M_Disabled();
+	Tc2_MC2.MC_AxisStates.MC_AXISSTATE_STANDSTILL :
+		
+	Tc2_MC2.MC_AxisStates.MC_AXISSTATE_HOMING :
+		
+	Tc2_MC2.MC_AxisStates.MC_AXISSTATE_STOPPING :
+		
+	Tc2_MC2.MC_AxisStates.MC_AXISSTATE_DISCRETEMOTION :
+		
+	Tc2_MC2.MC_AxisStates.MC_AXISSTATE_CONTINOUSMOTION :
+		
+	Tc2_MC2.MC_AxisStates.MC_AXISSTATE_SYNCHRONIZEDMOTION :
+		
+END_CASE
+
+
+fbMCPower(Axis := axisRef,
+)]]></ST>
       </Implementation>
     </Method>
     <Method Name="M_Homing" Id="{08f2a54e-db5b-4d5e-8fff-13b43d554d14}">
@@ -94,6 +130,27 @@ END_VAR]]></Declaration>
         <ST><![CDATA[]]></ST>
       </Implementation>
     </Method>
+    <Method Name="MC_Power" Id="{bda134d0-6b25-4e50-9ef4-7ed82bc7a4f4}">
+      <Declaration><![CDATA[METHOD PUBLIC ABSTRACT MC_Power : HResult
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+
+
+
+
+
+fbMCPower(axis := AXIS_REF);
+
+
+
+
+
+]]></ST>
+      </Implementation>
+    </Method>
     <LineIds Name="FB_AxisControl">
       <LineId Id="9" Count="0" />
     </LineIds>
@@ -106,6 +163,23 @@ END_VAR]]></Declaration>
     <LineIds Name="FB_AxisControl.M_Discrete">
       <LineId Id="5" Count="0" />
     </LineIds>
+    <LineIds Name="FB_AxisControl.M_Execute">
+      <LineId Id="5" Count="0" />
+      <LineId Id="7" Count="1" />
+      <LineId Id="6" Count="0" />
+      <LineId Id="18" Count="1" />
+      <LineId Id="16" Count="1" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="30" Count="1" />
+      <LineId Id="28" Count="1" />
+      <LineId Id="21" Count="5" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="33" Count="1" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="36" Count="0" />
+    </LineIds>
     <LineIds Name="FB_AxisControl.M_Homing">
       <LineId Id="5" Count="0" />
     </LineIds>
@@ -116,6 +190,10 @@ END_VAR]]></Declaration>
       <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_AxisControl.M_SynchrinizedMotion">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_AxisControl.MC_Power">
+      <LineId Id="6" Count="11" />
       <LineId Id="5" Count="0" />
     </LineIds>
   </POU>

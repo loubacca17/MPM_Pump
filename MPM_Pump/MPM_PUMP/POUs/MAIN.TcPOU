@@ -5,7 +5,7 @@
 VAR
 	
 	//machine assets
-	a_pFBConfigJson : ARRAY [0..2] OF POINTER TO FB_ConfigJson;
+	a_pFBConfigJson : ARRAY [0..2] OF POINTER TO FB_ConfigBase;
 	fbPump : FB_Pump('fbName');
 	fbPump1 : FB_Pump('fbName1');
 	fbPump2 : FB_Pump('fbName2');
@@ -26,13 +26,15 @@ VAR
 END_VAR
 //temp 
 VAR
-
+//Event Test
+fbPump_OpenValve_Result : HResult := 1;
+fbPump_CloseValve_Result : HResult := 1;
 END_VAR
 ]]></Declaration>
     <Implementation>
       <ST><![CDATA[A_INIT();
 A_ConfigControl();
-]]></ST>
+A_Events();]]></ST>
     </Implementation>
     <Action Name="A_ConfigControl" Id="{4eef083a-06cd-4e6a-a4ee-df3e2239f93d}">
       <Implementation>
@@ -52,6 +54,19 @@ mqttPubRate(in := fbJsonMQTT.bConnected, PT := T#500MS);
 IF mqttPubRate.Q AND_THEN fbJsonMQTT.Publish('axis',ADR(jsonAxisDoc),LEN2(ADR(jsonAxisDoc)),0,FALSE,FALSE) THEN
 	mqttPubRate(in := FALSE);
 END_IF	]]></ST>
+      </Implementation>
+    </Action>
+    <Action Name="A_Events" Id="{fbba5905-ca14-4c8f-96c9-4fe6472c8fe1}">
+      <Implementation>
+        <ST><![CDATA[fbPump_OpenValve_Result := fbPump.M_Events(fbPump_OpenValve_Result,1);
+fbPump_CloseValve_Result := fbPump.M_Events(fbPump_CloseValve_Result,2);
+
+IF fbPump_OpenValve_Result = E_Result.S_OK THEN
+	fbPump_OpenValve_Result := E_Result.S_DONE;
+END_IF
+IF fbPump_CloseValve_Result = E_Result.S_OK THEN
+	fbPump_CloseValve_Result := E_Result.S_DONE;
+END_IF]]></ST>
       </Implementation>
     </Action>
     <Action Name="A_INIT" Id="{866a8265-32a5-4fd6-b499-da08e0d574b8}">
@@ -80,6 +95,14 @@ a_pFBConfigJson[2] := ADR(fbPump2);
       <LineId Id="17" Count="1" />
       <LineId Id="14" Count="0" />
       <LineId Id="19" Count="0" />
+    </LineIds>
+    <LineIds Name="MAIN.A_Events">
+      <LineId Id="1" Count="1" />
+      <LineId Id="4" Count="0" />
+      <LineId Id="3" Count="0" />
+      <LineId Id="5" Count="1" />
+      <LineId Id="8" Count="1" />
+      <LineId Id="7" Count="0" />
     </LineIds>
     <LineIds Name="MAIN.A_INIT">
       <LineId Id="3" Count="2" />
