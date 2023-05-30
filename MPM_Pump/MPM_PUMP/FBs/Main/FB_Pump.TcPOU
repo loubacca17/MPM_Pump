@@ -7,11 +7,12 @@ END_VAR
 VAR_OUTPUT
 END_VAR
 VAR
+	axis : Tc2_MC2.AXIS_REF;		
 	var1 : DINT;
 	var2 : STRING;
 	ioVar : POINTER TO BOOL;
 	ioVar2 : POINTER TO REAL;
-	axis : TC2_MC2.AXIS_REF;
+	fbAxisControl : FB_AxisControl(axis);
 END_VAR
 
 VAR
@@ -164,6 +165,20 @@ VAR_INST
 	_lastResult : HResult;
 	openValve_Result : HRESULT;
 	closeValve_Result : HRESULT;
+	enablePump_Result : HRESULT;
+	homeDirect_Result : HRESULT; 
+	moveABS_Result : HRESULT; 	
+END_VAR
+VAR 
+	HomingMode : Tc2_MC2.MC_HomingMode;
+	OptionsHomeing : Tc2_MC2.ST_HomingOptions;
+	BufferMode : Tc2_MC2.MC_BufferMode;
+	OptionsPower : Tc2_MC2.ST_PowerOptions;	
+	Position : LREAL;	
+	Velocity : LREAL;
+	Acceleration : LREAL;
+	Deceleration : LREAL;
+	Jerk : LREAL;	
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[CASE eventID OF 
@@ -184,14 +199,40 @@ END_VAR]]></Declaration>
 		END_IF
 		_fbResult.P_MethodResult := M_CloseValve(_fbResult.P_MethodResult);	
 	3: //enable pump
-		
-	4: //move pump continous
-		
-	5: //move pump intermiate
-		
+		IF _fbResult.M_MethodResult(M_Events,lastResult,ADR(enablePump_Result)) = FALSE THEN
+			RETURN;
+		END_IF	
+		_fbResult.P_MethodResult := fbAxisControl.MC_Power(_fbResult.P_MethodResult,TRUE,TRUE,100.0,BufferMode,OptionsPower);
+	4: //Home Pump
+		IF _fbResult.M_MethodResult(M_Events,lastResult,ADR(homeDirect_Result)) = FALSE THEN
+			RETURN;
+		END_IF			
+		HomingMode := Tc2_MC2.MC_HomingMode.MC_Direct; 
+		_fbResult.P_MethodResult := fbAxisControl.MC_Home(_fbResult.P_MethodResult,0.0,HomingMode,BufferMode,OptionsHomeing);
+	5: //move pump absoulte
+		IF _fbResult.M_MethodResult(M_Events,lastResult,ADR(moveABS_Result)) = FALSE THEN
+			RETURN;
+		END_IF			
+		_fbResult.P_MethodResult := fbAxisControl.MC_MoveAbsoulte(_fbResult.P_MethodResult,
+			Position,
+			Velocity,
+			Acceleration,
+			Deceleration,
+			Jerk,
+			BufferMode,
+		0.0,HomingMode,BufferMode,OptionsHomeing);		
 	6: //stop pump
 		
 END_CASE]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Execute" Id="{56153d5a-955b-4997-bf85-bfe2ca059757}">
+      <Declaration><![CDATA[METHOD PUBLIC M_Execute : HRESULT
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbAxisControl.M_Execute();]]></ST>
       </Implementation>
     </Method>
     <Method Name="M_GetEvents" Id="{9153554d-e1a4-4a5c-af7f-a9a0da2dc60f}">
@@ -292,14 +333,26 @@ END_CASE]]></ST>
       <LineId Id="26" Count="2" />
       <LineId Id="13" Count="0" />
       <LineId Id="32" Count="0" />
+      <LineId Id="54" Count="1" />
+      <LineId Id="53" Count="0" />
       <LineId Id="35" Count="0" />
       <LineId Id="33" Count="0" />
+      <LineId Id="61" Count="1" />
       <LineId Id="38" Count="0" />
+      <LineId Id="67" Count="0" />
+      <LineId Id="63" Count="0" />
       <LineId Id="36" Count="0" />
+      <LineId Id="69" Count="1" />
+      <LineId Id="64" Count="0" />
       <LineId Id="40" Count="0" />
+      <LineId Id="77" Count="5" />
+      <LineId Id="76" Count="0" />
       <LineId Id="39" Count="0" />
       <LineId Id="41" Count="0" />
       <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pump.M_Execute">
+      <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_Pump.M_GetEvents">
       <LineId Id="5" Count="0" />

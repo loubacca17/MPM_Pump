@@ -29,6 +29,8 @@ VAR
 //Event Test
 fbPump_OpenValve_Result : HResult := 1;
 fbPump_CloseValve_Result : HResult := 1;
+fbPump_EnablePump : HResult := 1;
+fbPump_HomePump : HResult := 1;
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -58,15 +60,24 @@ END_IF	]]></ST>
     </Action>
     <Action Name="A_Events" Id="{fbba5905-ca14-4c8f-96c9-4fe6472c8fe1}">
       <Implementation>
-        <ST><![CDATA[fbPump_OpenValve_Result := fbPump.M_Events(fbPump_OpenValve_Result,1);
+        <ST><![CDATA[fbPump.M_Execute();
+fbPump_OpenValve_Result := fbPump.M_Events(fbPump_OpenValve_Result,1);
 fbPump_CloseValve_Result := fbPump.M_Events(fbPump_CloseValve_Result,2);
+fbPump_EnablePump := fbPump.M_Events(fbPump_EnablePump,3);
+fbPump_HomePump := fbPump.M_Events(fbPump_HomePump,4);
 
 IF fbPump_OpenValve_Result = E_Result.S_OK THEN
 	fbPump_OpenValve_Result := E_Result.S_DONE;
 END_IF
 IF fbPump_CloseValve_Result = E_Result.S_OK THEN
 	fbPump_CloseValve_Result := E_Result.S_DONE;
-END_IF]]></ST>
+END_IF
+IF fbPump_EnablePump = E_Result.S_OK THEN
+	fbPump_EnablePump := E_Result.S_DONE;
+END_IF
+IF fbPump_HomePump = E_Result.S_OK THEN
+	fbPump_HomePump := E_Result.S_DONE;
+END_IF ]]></ST>
       </Implementation>
     </Action>
     <Action Name="A_INIT" Id="{866a8265-32a5-4fd6-b499-da08e0d574b8}">
@@ -97,12 +108,20 @@ a_pFBConfigJson[2] := ADR(fbPump2);
       <LineId Id="19" Count="0" />
     </LineIds>
     <LineIds Name="MAIN.A_Events">
+      <LineId Id="17" Count="0" />
       <LineId Id="1" Count="1" />
       <LineId Id="4" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="21" Count="0" />
       <LineId Id="3" Count="0" />
       <LineId Id="5" Count="1" />
       <LineId Id="8" Count="1" />
       <LineId Id="7" Count="0" />
+      <LineId Id="12" Count="1" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="19" Count="0" />
     </LineIds>
     <LineIds Name="MAIN.A_INIT">
       <LineId Id="3" Count="2" />

@@ -373,6 +373,19 @@ END_VAR
         <ST><![CDATA[]]></ST>
       </Implementation>
     </Method>
+    <Method Name="M_Execute" Id="{c363a4a8-f039-42db-96a8-a63845351f9a}">
+      <Declaration><![CDATA[METHOD PUBLIC ABSTRACT M_Execute : HRESULT
+VAR_INPUT
+END_VAR
+VAR_INST
+
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[
+
+]]></ST>
+      </Implementation>
+    </Method>
     <Method Name="M_GetEvents" Id="{78b6458e-7fc9-4d4d-a4d4-ca75768767e9}">
       <Declaration><![CDATA[METHOD PUBLIC ABSTRACT M_GetEvents : HResult
 VAR_INPUT
@@ -483,6 +496,10 @@ END_VAR
     </LineIds>
     <LineIds Name="FB_ConfigBase.M_Events">
       <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ConfigBase.M_Execute">
+      <LineId Id="33" Count="1" />
+      <LineId Id="36" Count="0" />
     </LineIds>
     <LineIds Name="FB_ConfigBase.M_GetEvents">
       <LineId Id="5" Count="0" />

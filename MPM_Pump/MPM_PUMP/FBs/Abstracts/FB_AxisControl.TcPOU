@@ -5,13 +5,14 @@
 Standard control for FB_AxisRef
 *)
 
-FUNCTION_BLOCK ABSTRACT FB_AxisControl
+FUNCTION_BLOCK FB_AxisControl
 VAR_INPUT
+	
 END_VAR
 VAR_OUTPUT
 END_VAR
 VAR
-	axisRef : Tc2_MC2.AXIS_REF;	
+	axisRef : REFERENCE TO Tc2_MC2.AXIS_REF;		
 	fbMCPower : Tc2_MC2.MC_Power;
 	fbMCHome : Tc2_MC2.MC_Home;
 	fbMCStop : Tc2_MC2.MC_Stop;
@@ -27,6 +28,18 @@ END_VAR
     <Implementation>
       <ST><![CDATA[]]></ST>
     </Implementation>
+    <Method Name="FB_init" Id="{c7d06eee-c3e9-43f4-8ddf-e44b91431e96}">
+      <Declaration><![CDATA[METHOD FB_init : BOOL
+VAR_INPUT
+	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
+	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
+	axisRef : REFERENCE TO Tc2_MC2.AXIS_REF;		
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[THis^.axisRef rEF= axisRef;]]></ST>
+      </Implementation>
+    </Method>
     <Method Name="M_ContinuousMotion" Id="{8a5faf80-3892-4315-a42d-21702a6a09ad}">
       <Declaration><![CDATA[METHOD PUBLIC M_ContinuousMotion : HRESULT
 VAR_INPUT
@@ -88,8 +101,7 @@ CASE axisRef.Status.MotionState OF
 END_CASE
 
 
-fbMCPower(Axis := axisRef,
-)]]></ST>
+]]></ST>
       </Implementation>
     </Method>
     <Method Name="M_Homing" Id="{08f2a54e-db5b-4d5e-8fff-13b43d554d14}">
@@ -130,19 +142,165 @@ END_VAR]]></Declaration>
         <ST><![CDATA[]]></ST>
       </Implementation>
     </Method>
-    <Method Name="MC_Power" Id="{bda134d0-6b25-4e50-9ef4-7ed82bc7a4f4}">
-      <Declaration><![CDATA[METHOD PUBLIC ABSTRACT MC_Power : HResult
+    <Method Name="MC_Home" Id="{19a9110b-f486-44ca-a4bc-1443a12454f8}">
+      <Declaration><![CDATA[METHOD PUBLIC MC_Home : HResult
 VAR_INPUT
+	lastResult : HResult;
+	Position : LREAL;	
+	HomingMode : Tc2_MC2.MC_HomingMode;
+	BufferMode : Tc2_MC2.MC_BufferMode;
+	Options : Tc2_MC2.ST_HomingOptions;
 END_VAR
-]]></Declaration>
+VAR_OUTPUT
+	Done : BOOL;
+	Busy : BOOL;
+	Active : BOOL;
+	CommandAborted : BOOL;
+	Error : BOOL;
+	ErrorID : UDINT;		
+END_VAR
+VAR_INST
+	_fbResult : FB_ResultHelper_V2_1;
+	_lastResult : HResult;	
+	_state : DINT;
+END_VAR]]></Declaration>
       <Implementation>
-        <ST><![CDATA[
+        <ST><![CDATA[IF _fbResult.M_MethodResult(MC_Home,lastResult,ADR(_lastResult)) = FALSE THEN
+	RETURN;
+END_IF
+
+IF _fbResult.P_MethodResult = E_Result.S_OK THEN
+	_state := 0;
+	fbMCHome(axis := axisRef,Execute := FALSE);
+END_IF
 
 
+_fbResult.P_MethodResult := E_Result.S_WORKING;
+
+CASE _state OF
+	0:
+		fbMCHome(Axis := axisRef,Execute := TRUE,Position := Position,HomingMode := HomingMode,BufferMode := BufferMode, Options := Options,Done => Done, Busy => Busy, Active => Active, CommandAborted => CommandAborted, Error => Error, ErrorID => ErrorID);
+		_state := 1;
+	1:
+		fbMCHome(Axis := axisRef);	
+		IF fbMCHome.Done = TRUE AND fbMCHome.Error = FALSE THEN
+			_fbResult.P_MethodResult := E_Result.S_OK;
+		ELSIF fbMCHome.Done = TRUE AND fbMCHome.Error = TRUE THEN 
+			_fbResult.P_MethodResult := E_Result.S_FAILED;
+		END_IF		
+END_CASE]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="MC_MoveAbsoulte" Id="{9f5a40d7-f6c6-41e7-b299-6a77dfd662f3}">
+      <Declaration><![CDATA[METHOD PUBLIC MC_MoveAbsoulte : HResult
+VAR_INPUT
+	lastResult : HResult;
+	Position : LREAL;	
+	Velocity : LREAL;
+	Acceleration : LREAL;
+	Deceleration : LREAL;
+	Jerk : LREAL;
+	BufferMode : Tc2_MC2.MC_BufferMode;
+	Options : Tc2_MC2.ST_MoveOptions;	
+END_VAR
+VAR_OUTPUT
+	Done : BOOL;
+	Active : BOOL;
+	CommandAborted : BOOL;
+	Error : BOOL;
+	ErrorID : UDINT;	
+END_VAR
+VAR_INST
+	_fbResult : FB_ResultHelper_V2_1;
+	_lastResult : HResult;	
+	_state : DINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF _fbResult.M_MethodResult(MC_MoveAbsoulte,lastResult,ADR(_lastResult)) = FALSE THEN
+	RETURN;
+END_IF
+
+IF _fbResult.P_MethodResult = E_Result.S_OK THEN
+	_state := 0;
+	fbMCMoveAbsolute(axis := axisRef,Execute := FALSE);
+END_IF
 
 
+_fbResult.P_MethodResult := E_Result.S_WORKING;
 
-fbMCPower(axis := AXIS_REF);
+CASE _state OF
+	0:
+		fbMCMoveAbsolute(Axis := axisRef,
+			Execute := TRUE,
+			Position := Position,
+			Velocity := Velocity,
+			Acceleration := Acceleration,
+			Deceleration := Deceleration,
+			Jerk := Jerk,
+			BufferMode := BufferMode,
+			Options := Options,
+			Done => Done,
+			Active => Active,
+			CommandAborted => CommandAborted,
+			Error => Error,
+			ErrorID => ErrorID);
+		_state := 1;
+	1:
+		fbMCMoveAbsolute(Axis := axisRef);	
+		IF fbMCMoveAbsolute.Done = TRUE AND fbMCMoveAbsolute.Error = FALSE THEN
+			_fbResult.P_MethodResult := E_Result.S_OK;
+		ELSIF fbMCMoveAbsolute.Done = TRUE AND fbMCMoveAbsolute.Error = TRUE THEN 
+			_fbResult.P_MethodResult := E_Result.S_FAILED;
+		END_IF		
+END_CASE]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="MC_Power" Id="{bda134d0-6b25-4e50-9ef4-7ed82bc7a4f4}">
+      <Declaration><![CDATA[METHOD PUBLIC MC_Power : HResult
+VAR_INPUT
+	lastResult : HResult;
+	Enable_Negative : BOOL;
+	Enable_Positive : BOOL;
+	Override : LREAL;
+	BufferMode : Tc2_MC2.MC_BufferMode;
+	Options : Tc2_MC2.ST_PowerOptions;
+END_VAR
+VAR_OUTPUT
+	Busy : BOOL;
+	Active : BOOL;
+	Error : BOOL;
+	ErrorID : UDINT;	
+END_VAR
+VAR_INST
+	_fbResult : FB_ResultHelper_V2_1;
+	_lastResult : HResult;	
+	_state : DINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF _fbResult.M_MethodResult(MC_Power,lastResult,ADR(_lastResult)) = FALSE THEN
+	RETURN;
+END_IF
+
+IF _fbResult.P_MethodResult = E_Result.S_OK THEN
+	_state := 0;
+	fbMCPower(axis := axisRef,Enable := FALSE);
+END_IF
+
+
+_fbResult.P_MethodResult := E_Result.S_WORKING;
+
+CASE _state OF
+	0:
+		fbMCPower(Axis := axisRef, Enable := TRUE, Enable_Negative := Enable_Negative, Enable_Positive := Enable_Positive,Override := Override,BufferMode := BufferMode, Options := Options, Busy => Busy, Active => Active, Error => Error, ErrorID => ErrorID);
+		_state := 1;
+	1:
+		fbMCPower(Axis := axisRef);	
+		IF fbMCPower.Status = TRUE AND fbMCPower.Error = FALSE THEN
+			_fbResult.P_MethodResult := E_Result.S_OK;
+		ELSIF fbMCPower.Status = FALSE AND fbMCPower.Error = TRUE THEN 
+			_fbResult.P_MethodResult := E_Result.S_FAILED;
+		END_IF		
+END_CASE
 
 
 
@@ -153,6 +311,9 @@ fbMCPower(axis := AXIS_REF);
     </Method>
     <LineIds Name="FB_AxisControl">
       <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_AxisControl.FB_init">
+      <LineId Id="7" Count="0" />
     </LineIds>
     <LineIds Name="FB_AxisControl.M_ContinuousMotion">
       <LineId Id="5" Count="0" />
@@ -177,7 +338,6 @@ fbMCPower(axis := AXIS_REF);
       <LineId Id="11" Count="0" />
       <LineId Id="10" Count="0" />
       <LineId Id="33" Count="1" />
-      <LineId Id="32" Count="0" />
       <LineId Id="36" Count="0" />
     </LineIds>
     <LineIds Name="FB_AxisControl.M_Homing">
@@ -192,8 +352,37 @@ fbMCPower(axis := AXIS_REF);
     <LineIds Name="FB_AxisControl.M_SynchrinizedMotion">
       <LineId Id="5" Count="0" />
     </LineIds>
+    <LineIds Name="FB_AxisControl.MC_Home">
+      <LineId Id="10" Count="22" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_AxisControl.MC_MoveAbsoulte">
+      <LineId Id="10" Count="14" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="36" Count="1" />
+      <LineId Id="39" Count="7" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="25" Count="7" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
     <LineIds Name="FB_AxisControl.MC_Power">
-      <LineId Id="6" Count="11" />
+      <LineId Id="6" Count="0" />
+      <LineId Id="27" Count="4" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="7" Count="2" />
+      <LineId Id="57" Count="0" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="47" Count="0" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="50" Count="3" />
+      <LineId Id="55" Count="1" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="58" Count="0" />
+      <LineId Id="14" Count="3" />
       <LineId Id="5" Count="0" />
     </LineIds>
   </POU>

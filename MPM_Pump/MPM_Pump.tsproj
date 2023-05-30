@@ -1493,8 +1493,8 @@ External Setpoint Generation:
 						<Velo RefSearch="35.70505" RefSync="35.70505" SlowManual="178.52525" FastManual="1071.1515" Fast="3570.505" Maximum="3570.505"/>
 						<OtherSettings AllowMotionCmdToSlave="true"/>
 					</AxisPara>
-					<Encoder Name="Enc" EncType="8">
-						<EncPara ScaleFactorNumerator="360" ScaleFactorDenominator="4194304" MaxCount="#xffffffff"/>
+					<Encoder Name="Enc" EncType="1">
+						<EncPara ScaleFactorNumerator="360" ScaleFactorDenominator="4194304"/>
 						<Vars VarGrpType="1">
 							<Name>Inputs</Name>
 							<Var>
@@ -1551,9 +1551,9 @@ External Setpoint Generation:
 							</Var>
 						</Vars>
 					</Encoder>
-					<Drive Name="Drive" DrvType="9">
-						<DrvPara MaxCount="#xffffffff" DriveControlDWord="#x00030100">
-							<Analog VeloReferenz="3927.5555" VeloScale="1.02400649589962" TorqueSetpointScale="10" ScaleFactorActTorque="0.1"/>
+					<Drive Name="Drive" DrvType="5">
+						<DrvPara>
+							<Analog VeloReferenz="3927.5555" TorqueSetpointScale="10" ScaleFactorActTorque="0.1"/>
 							<TimeComp TaskDelayCycles="1"/>
 						</DrvPara>
 						<Vars VarGrpType="1">
@@ -1591,6 +1591,22 @@ External Setpoint Generation:
 								</SubVar>
 								<SubVar TypeFormatIndex="2">
 									<Name>nDataOut2</Name>
+								</SubVar>
+								<SubVar>
+									<Name>nCtrl2</Name>
+									<Comment><![CDATA[Digital Outputs Setpoint Generator:
+0x41 (0100 0001) = Minus (0x42 for inverse motor polarity)
+0x42 (0100 0010) = Plus (0x41 for inverse motor polarity)
+0x80 (1000 0000) = Stop
+]]></Comment>
+								</SubVar>
+								<SubVar>
+									<Name>nCtrl3</Name>
+									<Comment><![CDATA[Digital Outputs (Setpoint Generator + Position Controller):
+0x41 (0100 0001) = Minus (0x42 for inverse motor polarity)
+0x42 (0100 0010) = Plus (0x41 for inverse motor polarity)
+0x80 (1000 0000) = Stop
+]]></Comment>
 								</SubVar>
 								<SubVar TypeFormatIndex="2">
 									<Name>nDataOut3</Name>
@@ -1631,7 +1647,7 @@ External Setpoint Generation:
 		</Motion>
 		<Plc>
 			<Project GUID="{73B3D93F-7C7A-449B-A407-BEAC4D1CF568}" Name="MPM_PUMP" PrjFilePath="MPM_PUMP\MPM_PUMP.plcproj" TmcFilePath="MPM_PUMP\MPM_PUMP.tmc" ReloadTmc="true" AmsPort="851" FileArchiveSettings="#x000e" SymbolicMapping="true">
-				<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcPath="MPM_PUMP\MPM_PUMP.tmc" TmcHash="{15DF26F0-B4C2-8CFB-740C-B48A85FA2AB9}">
+				<Instance Id="#x08502000" TcSmClass="TComPlcObjDef" KeepUnrestoredLinks="2" TmcPath="MPM_PUMP\MPM_PUMP.tmc" TmcHash="{20C84A94-E7E4-7BAB-E7A8-80E70BEFC20A}">
 					<Name>MPM_PUMP Instance</Name>
 					<CLSID ClassFactory="TcPlc30">{08500001-0000-0000-F000-000000000064}</CLSID>
 					<Vars VarGrpType="1">
@@ -3609,21 +3625,11 @@ External Setpoint Generation:
 		</Io>
 	</Project>
 	<Mappings>
-		<OwnerA Name="TINC^NC-Task 1 SAF^Axes^Axis 1">
-			<OwnerB Name="TIID^Device 2 (EtherCAT)^Drive 5 (AX5206-0000-0214)">
-				<Link VarA="Drive^Inputs^In^nDataIn1" VarB="AT 1^Following distance"/>
-				<Link VarA="Drive^Inputs^In^nDataIn3[0]" VarB="AT 1^Torque/force feedback value"/>
-				<Link VarA="Drive^Inputs^In^nDcOutputTime" VarB="InfoData^DcOutputShift"/>
-				<Link VarA="Drive^Inputs^In^nState1" VarB="AT 1^Drive status word" Size="8" OffsB="8"/>
-				<Link VarA="Drive^Inputs^In^nState2" VarB="AT 1^Drive status word"/>
-				<Link VarA="Drive^Inputs^In^nState4" VarB="WcState^InputToggle" Size="1" OffsA="1"/>
-				<Link VarA="Drive^Inputs^In^nState4" VarB="WcState^WcState"/>
-				<Link VarA="Drive^Outputs^Out^nCtrl1" VarB="MDT 1^Master control word" Size="8" OffsB="8"/>
-				<Link VarA="Drive^Outputs^Out^nDataOut1" VarB="MDT 1^Position command value"/>
-				<Link VarA="Enc^Inputs^In^nDataIn1" VarB="AT 1^Position feedback 1 value"/>
-				<Link VarA="Enc^Inputs^In^nDcInputTime" VarB="InfoData^DcInputShift"/>
-				<Link VarA="Enc^Inputs^In^nState4" VarB="WcState^InputToggle" Size="1" OffsA="1"/>
-				<Link VarA="Enc^Inputs^In^nState4" VarB="WcState^WcState"/>
+		<MappingInfo Identifier="{05000010-2001-0850-5000-040300205008}" Id="#x02030010" Watchdog="14000000040000000400000004000000"/>
+		<OwnerA Name="TIPC^MPM_PUMP^MPM_PUMP Instance">
+			<OwnerB Name="TINC^NC-Task 1 SAF^Axes^Axis 1">
+				<Link VarA="PlcTask Inputs^MAIN.fbPump.axis.NcToPlc" VarB="Outputs^ToPlc"/>
+				<Link VarA="PlcTask Outputs^MAIN.fbPump.axis.PlcToNc" VarB="Inputs^FromPlc"/>
 			</OwnerB>
 		</OwnerA>
 	</Mappings>

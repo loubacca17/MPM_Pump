@@ -19,6 +19,7 @@
   <ItemGroup>
     <Compile Include="FBs\Abstracts\FB_AxisControl.TcPOU">
       <SubType>Code</SubType>
+      <LinkAlways>true</LinkAlways>
     </Compile>
     <Compile Include="FBs\Abstracts\FB_ConfigBase.TcPOU">
       <SubType>Code</SubType>
@@ -142,6 +143,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <SubObject Include="FB_AxisControl.MC_Power">
+      <LinkAlways>true</LinkAlways>
+    </SubObject>
     <SubObject Include="FB_NCAxisJson_V2.M_GetParametersFromAxis">
       <ExcludeFromBuild>true</ExcludeFromBuild>
     </SubObject>
