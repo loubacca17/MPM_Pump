@@ -32,6 +32,7 @@ END_VAR
     <Method Name="M_Execute" Id="{1fd5e78f-7de2-40f0-8ed2-a85a6dac936a}">
       <Declaration><![CDATA[METHOD PUBLIC ABSTRACT M_Execute : HRESULT
 VAR_INPUT
+	lastResult : HResult;
 END_VAR
 ]]></Declaration>
       <Implementation>
@@ -75,7 +76,7 @@ END_VAR
       <LineId Id="7" Count="0" />
     </LineIds>
     <LineIds Name="FB_DiscreteEvents.M_Execute">
-      <LineId Id="5" Count="0" />
+      <LineId Id="21" Count="0" />
     </LineIds>
     <LineIds Name="FB_DiscreteEvents.P_EventId.Get">
       <LineId Id="2" Count="0" />

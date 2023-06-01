@@ -160,6 +160,9 @@ VAR_INPUT
 	lastResult : HResult;
 	eventID : DINT;
 END_VAR
+VAR_IN_OUT
+	varInput : ARRAY [*] OF MPM_JsonParser.ST_AnyType_User;	//What was input		
+END_VAR
 VAR_INST
 	_fbResult : FB_ResultHelper_V2_1;
 	_lastResult : HResult;
@@ -174,11 +177,12 @@ VAR
 	OptionsHomeing : Tc2_MC2.ST_HomingOptions;
 	BufferMode : Tc2_MC2.MC_BufferMode;
 	OptionsPower : Tc2_MC2.ST_PowerOptions;	
-	Position : LREAL;	
-	Velocity : LREAL;
-	Acceleration : LREAL;
-	Deceleration : LREAL;
-	Jerk : LREAL;	
+	Position : POINTER TO LREAL; //MPM_JsonParser.ST_AnyType_User := (diSize := SIZEOF(LREAL), name := 'Position', typeclass := MPM_JsonParser.E_TypeClassEx.TYPE_LREAL);	
+	Velocity : POINTER TO LREAL := 10 ;
+	Acceleration : POINTER TO LREAL := 100;
+	Deceleration : POINTER TO LREAL := 100;
+	Jerk : POINTER TO LREAL := 1000;	
+	Options : Tc2_MC2.ST_MoveOptions;		
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[CASE eventID OF 
@@ -212,15 +216,16 @@ END_VAR]]></Declaration>
 	5: //move pump absoulte
 		IF _fbResult.M_MethodResult(M_Events,lastResult,ADR(moveABS_Result)) = FALSE THEN
 			RETURN;
-		END_IF			
+		END_IF		
+			F_Event_ST_AnyType_Compare(Position^,ADR(Position),ADR(varInput[0]));
 		_fbResult.P_MethodResult := fbAxisControl.MC_MoveAbsoulte(_fbResult.P_MethodResult,
-			Position,
-			Velocity,
-			Acceleration,
-			Deceleration,
-			Jerk,
-			BufferMode,
-		0.0,HomingMode,BufferMode,OptionsHomeing);		
+			Position := Position^,
+			Velocity := Velocity^,
+			Acceleration := Acceleration^,
+			Deceleration := Deceleration^,
+			Jerk := Jerk^,
+			BufferMode := BufferMode,
+			Options := Options);	
 	6: //stop pump
 		
 END_CASE]]></ST>
@@ -344,9 +349,10 @@ END_CASE]]></ST>
       <LineId Id="36" Count="0" />
       <LineId Id="69" Count="1" />
       <LineId Id="64" Count="0" />
+      <LineId Id="134" Count="0" />
       <LineId Id="40" Count="0" />
       <LineId Id="77" Count="5" />
-      <LineId Id="76" Count="0" />
+      <LineId Id="108" Count="0" />
       <LineId Id="39" Count="0" />
       <LineId Id="41" Count="0" />
       <LineId Id="9" Count="0" />

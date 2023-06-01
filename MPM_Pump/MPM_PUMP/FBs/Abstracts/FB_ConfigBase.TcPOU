@@ -127,6 +127,34 @@ END_IF
 ]]></ST>
       </Implementation>
     </Method>
+    <Method Name="F_Event_ST_AnyType_Compare" Id="{d5d96574-3807-41bd-83c3-530358c10783}">
+      <Declaration><![CDATA[METHOD PROTECTED F_Event_ST_AnyType_Compare : HResult
+VAR_INPUT
+	varMethod : ANY; //What the evvent requires	
+	adrPvoid : POINTER TO PVOID; //PVOID FOR any value
+	varInput : POINTER TO MPM_JsonParser.ST_AnyType_User;	//What was input
+END_VAR
+VAR
+	upperBound : DINT;
+	x : DINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF varMethod.TypeClass = varInput^.typeclass THEN //check to see if type is the same
+	IF varMethod.diSize = varInput^.diSize THEN //check if the size is the same
+		IF varInput[x].pvalue > 0 THEN
+			adrPvoid := varInput^.pvalue;  //they equal send meathod values in
+		ELSE
+			F_Event_ST_AnyType_Compare := MPM_FBResult.E_Result.S_FAILED; //no pointer for type
+		END_IF	
+	ELSE
+		F_Event_ST_AnyType_Compare := MPM_FBResult.E_Result.S_FAILED; //size mismatch
+	END_IF
+ELSE
+	F_Event_ST_AnyType_Compare := MPM_FBResult.E_Result.S_FAILED; //type mismatch
+END_IF
+]]></ST>
+      </Implementation>
+    </Method>
     <Method Name="F_IO" Id="{3a02837e-fabe-4f90-b88e-c4f1e99bdab4}">
       <Declaration><![CDATA[METHOD PUBLIC FINAL F_IO : HRESULT
 VAR_INPUT
@@ -368,7 +396,9 @@ VAR_INPUT
 	lastResult : HResult;
 	eventID : DINT;
 END_VAR
-]]></Declaration>
+VAR_IN_OUT
+	varInput : ARRAY [*] OF MPM_JsonParser.ST_AnyType_User;	//What was input		
+END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[]]></ST>
       </Implementation>
@@ -435,6 +465,10 @@ END_VAR
       <LineId Id="171" Count="0" />
       <LineId Id="140" Count="0" />
       <LineId Id="139" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ConfigBase.F_Event_ST_AnyType_Compare">
+      <LineId Id="88" Count="12" />
+      <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_ConfigBase.F_IO">
       <LineId Id="36" Count="7" />
