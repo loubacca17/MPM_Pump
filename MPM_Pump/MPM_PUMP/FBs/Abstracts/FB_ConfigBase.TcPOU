@@ -18,6 +18,7 @@ END_VAR
       <ST><![CDATA[]]></ST>
     </Implementation>
     <Folder Name="ABSTRACT" Id="{d3f0e259-1061-426a-b7a1-3591a9d5be2f}" />
+    <Folder Name="Any_Type_Functions" Id="{f7907fbb-3c6d-493c-97e3-9d5f2bc80f20}" />
     <Folder Name="Protected" Id="{d31bea82-4c8d-4864-8213-7cfbba3c0754}" />
     <Method Name="_F_Axis" Id="{7fa39416-568e-4119-8393-652fc6472acb}" FolderPath="ABSTRACT\">
       <Declaration><![CDATA[METHOD _F_Axis : HRESULT
@@ -127,7 +128,7 @@ END_IF
 ]]></ST>
       </Implementation>
     </Method>
-    <Method Name="F_Event_ST_AnyType_Compare" Id="{d5d96574-3807-41bd-83c3-530358c10783}">
+    <Method Name="F_Event_ST_AnyType_Compare" Id="{d5d96574-3807-41bd-83c3-530358c10783}" FolderPath="Any_Type_Functions\">
       <Declaration><![CDATA[METHOD PROTECTED F_Event_ST_AnyType_Compare : HResult
 VAR_INPUT
 	varMethod : ANY; //What the evvent requires	
@@ -142,7 +143,7 @@ END_VAR]]></Declaration>
         <ST><![CDATA[IF varMethod.TypeClass = varInput^.typeclass THEN //check to see if type is the same
 	IF varMethod.diSize = varInput^.diSize THEN //check if the size is the same
 		IF varInput[x].pvalue > 0 THEN
-			adrPvoid := varInput^.pvalue;  //they equal send meathod values in
+			adrPvoid^ := varInput^.pvalue;  //they equal send meathod values in
 		ELSE
 			F_Event_ST_AnyType_Compare := MPM_FBResult.E_Result.S_FAILED; //no pointer for type
 		END_IF	
@@ -152,7 +153,60 @@ END_VAR]]></Declaration>
 ELSE
 	F_Event_ST_AnyType_Compare := MPM_FBResult.E_Result.S_FAILED; //type mismatch
 END_IF
+
 ]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="F_GetArrayLength" Id="{e7ef948f-69e6-4d9b-805d-c192c058829a}" FolderPath="Any_Type_Functions\">
+      <Declaration><![CDATA[METHOD PUBLIC F_GetArrayLength : HResult
+VAR_INPUT
+	sizeOfInst : DINT;
+	sizeOFType : DINT;
+END_VAR
+VAR_OUTPUT
+	length : DINT;
+END_VAR
+VAR
+	_numOfElements : DINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF sizeOFType > 0 AND sizeOfInst > 0 THEN
+	_numOfElements := sizeOfInst/sizeOFType -1;
+	IF _numOfElements > 0 THEN
+		length := _numOfElements;
+		F_GetArrayLength := MPM_FBResult.E_Result.S_OK;
+	END_IF
+ELSE
+	F_GetArrayLength := MPM_FBResult.E_Result.S_FAILED;
+	RETURN;
+END_IF  
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="F_GetArrayPosition" Id="{1d4567af-9cb4-46e8-a5eb-55d4c46ee846}" FolderPath="Any_Type_Functions\">
+      <Declaration><![CDATA[METHOD PUBLIC F_GetArrayPosition : HResult
+VAR_INPUT
+	sizeOfInst : DINT;
+	sizeOFType : DINT;
+	index : DINT;
+END_VAR
+VAR_OUTPUT
+	offset : DINT;
+	length : DINT;
+END_VAR
+VAR
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[F_GetArrayPosition := F_GetArrayLength(sizeOfInst,sizeOFType, length => length);
+IF F_GetArrayPosition = MPM_FBResult.E_Result.S_OK THEN
+	IF index >= 0 AND index <= length THEN
+		offset := sizeOFType*index;
+	ELSE
+		F_GetArrayPosition := MPM_FBResult.E_Result.S_FAILED;
+	END_IF
+ELSE
+	F_GetArrayPosition := MPM_FBResult.E_Result.S_OK;
+END_IF	]]></ST>
       </Implementation>
     </Method>
     <Method Name="F_IO" Id="{3a02837e-fabe-4f90-b88e-c4f1e99bdab4}">
@@ -378,6 +432,27 @@ ELSIF bGet = TRUE THEN
 END_IF]]></ST>
       </Implementation>
     </Method>
+    <Method Name="F_TO_LREAL" Id="{5a0750dc-9829-419c-aa77-7ef75aa663e8}" FolderPath="Any_Type_Functions\">
+      <Declaration><![CDATA[METHOD PROTECTED F_TO_LREAL : LREAL
+VAR_INPUT
+	pPvoid : PVOID;
+END_VAR
+VAR_OUTPUT
+	error : BOOL;
+END_VAR
+VAR
+	pLREAL : POINTER TO LREAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF pPvoid > 0 THEN
+	pLREAL := pPvoid;
+	F_TO_LREAL := pLREAL^;
+ELSE
+	error := TRUE;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
     <Method Name="FB_init" Id="{39c76da8-be3f-4311-946f-56a7e0460487}">
       <Declaration><![CDATA[METHOD FB_init : BOOL
 VAR_INPUT
@@ -395,9 +470,6 @@ END_VAR
 VAR_INPUT
 	lastResult : HResult;
 	eventID : DINT;
-END_VAR
-VAR_IN_OUT
-	varInput : ARRAY [*] OF MPM_JsonParser.ST_AnyType_User;	//What was input		
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[]]></ST>
@@ -468,7 +540,22 @@ END_VAR
     </LineIds>
     <LineIds Name="FB_ConfigBase.F_Event_ST_AnyType_Compare">
       <LineId Id="88" Count="12" />
+      <LineId Id="110" Count="0" />
       <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ConfigBase.F_GetArrayLength">
+      <LineId Id="75" Count="9" />
+      <LineId Id="15" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ConfigBase.F_GetArrayPosition">
+      <LineId Id="33" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="26" Count="1" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="31" Count="1" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="35" Count="0" />
     </LineIds>
     <LineIds Name="FB_ConfigBase.F_IO">
       <LineId Id="36" Count="7" />
@@ -524,6 +611,13 @@ END_VAR
       <LineId Id="5" Count="0" />
       <LineId Id="56" Count="9" />
       <LineId Id="54" Count="1" />
+    </LineIds>
+    <LineIds Name="FB_ConfigBase.F_TO_LREAL">
+      <LineId Id="5" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="16" Count="1" />
     </LineIds>
     <LineIds Name="FB_ConfigBase.FB_init">
       <LineId Id="7" Count="0" />

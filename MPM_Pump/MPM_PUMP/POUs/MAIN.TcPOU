@@ -23,16 +23,22 @@ VAR
 	//Node-Red
 	fbJsonMQTT : Tc3_IotBase.FB_IotMqttClient;
 	mqttPubRate : TON;
-	pPointer : POINTER TO LREAL;
+
+END_VAR
+//temp 
+VAR
+	pPointer : ARRAY [0..10] OF POINTER TO MPM_JsonParser.ST_AnyType_User;
 	sizeOfValue : DINT;
 	EMPTY_stAnyTypeUser  : ARRAY [0..0] OF MPM_JsonParser.ST_AnyType_User;	//What was input	
 	stAnyTypeUser_MoveAbs  : ARRAY [0..0] OF MPM_JsonParser.ST_AnyType_User;	//What was input	
 	position : LREAL;
+	dynamicMem : ARRAY [0..65354] OF PVOID;	
+	
 END_VAR
-//temp 
-VAR
 //Event Test
-
+VAR
+x : DINT;
+aLreal : ARRAY [0..0] OF LREAL;
 fbPump_OpenValve_Result : HResult := 1;
 fbPump_CloseValve_Result : HResult := 1;
 fbPump_EnablePump : HResult := 1;
@@ -41,7 +47,8 @@ fbPump_MoveAbs : HResult := 1;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[
+      <ST><![CDATA[fbPump.fbEvent.F_GetAnyType(1,p => pPointer[0]);
+RETURN;
 A_INIT();
 A_ConfigControl();
 A_Events();]]></ST>
@@ -69,12 +76,20 @@ END_IF	]]></ST>
     <Action Name="A_Events" Id="{fbba5905-ca14-4c8f-96c9-4fe6472c8fe1}">
       <Implementation>
         <ST><![CDATA[fbPump.M_Execute();
-fbPump_OpenValve_Result := fbPump.M_Events(fbPump_OpenValve_Result,1,(EMPTY_stAnyTypeUser));
-fbPump_CloseValve_Result := fbPump.M_Events(fbPump_CloseValve_Result,2,(EMPTY_stAnyTypeUser));
-fbPump_EnablePump := fbPump.M_Events(fbPump_EnablePump,3,(EMPTY_stAnyTypeUser));
-fbPump_HomePump := fbPump.M_Events(fbPump_HomePump,4,(EMPTY_stAnyTypeUser));
+fbPump_OpenValve_Result := fbPump.M_Events(fbPump_OpenValve_Result,1);
+fbPump_CloseValve_Result := fbPump.M_Events(fbPump_CloseValve_Result,2);
+fbPump_EnablePump := fbPump.M_Events(fbPump_EnablePump,3);
+fbPump_HomePump := fbPump.M_Events(fbPump_HomePump,4);
 stAnyTypeUser_MoveAbs;
-fbPump_MoveAbs := fbPump.M_Events(fbPump_MoveAbs,5,(stAnyTypeUser_MoveAbs));
+IF stAnyTypeUser_MoveAbs[0].pvalue = 0 THEN
+	F_INIT_ST_AnyType('POSITION',MPM_JsonParser.E_TypeClassEx.TYPE_LREAL,stAnyTypeUser_MoveAbs[0]);
+	F_INIT_ST_AnyType('Velocity',MPM_JsonParser.E_TypeClassEx.TYPE_LREAL,stAnyTypeUser_MoveAbs[0]);
+	F_INIT_ST_AnyType('POSITION',MPM_JsonParser.E_TypeClassEx.TYPE_LREAL,stAnyTypeUser_MoveAbs[0]);
+	F_INIT_ST_AnyType('POSITION',MPM_JsonParser.E_TypeClassEx.TYPE_LREAL,stAnyTypeUser_MoveAbs[0]);
+	F_INIT_ST_AnyType('POSITION',MPM_JsonParser.E_TypeClassEx.TYPE_LREAL,stAnyTypeUser_MoveAbs[0]);
+	F_INIT_ST_AnyType('POSITION',MPM_JsonParser.E_TypeClassEx.TYPE_LREAL,stAnyTypeUser_MoveAbs[0]);
+END_IF
+fbPump_MoveAbs := fbPump.M_Events(fbPump_MoveAbs,5);
 
 IF fbPump_OpenValve_Result = E_Result.S_OK THEN
 	fbPump_OpenValve_Result := E_Result.S_DONE;
@@ -90,7 +105,9 @@ IF fbPump_HomePump = E_Result.S_OK THEN
 END_IF 
 IF fbPump_MoveAbs = E_Result.S_OK THEN
 	fbPump_MoveAbs := E_Result.S_DONE;
-END_IF ]]></ST>
+END_IF 
+
+]]></ST>
       </Implementation>
     </Action>
     <Action Name="A_INIT" Id="{866a8265-32a5-4fd6-b499-da08e0d574b8}">
@@ -105,8 +122,9 @@ a_pFBConfigJson[2] := ADR(fbPump2);
       </Implementation>
     </Action>
     <LineIds Name="MAIN">
+      <LineId Id="119" Count="0" />
+      <LineId Id="121" Count="0" />
       <LineId Id="61" Count="0" />
-      <LineId Id="2" Count="0" />
       <LineId Id="11" Count="0" />
       <LineId Id="28" Count="0" />
     </LineIds>
@@ -126,7 +144,9 @@ a_pFBConfigJson[2] := ADR(fbPump2);
       <LineId Id="1" Count="1" />
       <LineId Id="4" Count="0" />
       <LineId Id="18" Count="0" />
-      <LineId Id="26" Count="0" />
+      <LineId Id="26" Count="2" />
+      <LineId Id="31" Count="4" />
+      <LineId Id="29" Count="0" />
       <LineId Id="21" Count="1" />
       <LineId Id="3" Count="0" />
       <LineId Id="5" Count="1" />
@@ -139,6 +159,8 @@ a_pFBConfigJson[2] := ADR(fbPump2);
       <LineId Id="19" Count="0" />
       <LineId Id="24" Count="1" />
       <LineId Id="23" Count="0" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="36" Count="0" />
     </LineIds>
     <LineIds Name="MAIN.A_INIT">
       <LineId Id="3" Count="2" />

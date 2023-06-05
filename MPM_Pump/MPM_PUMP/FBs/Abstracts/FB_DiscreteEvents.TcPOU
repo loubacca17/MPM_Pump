@@ -4,33 +4,94 @@
     <Declaration><![CDATA[(*
 Standard way to set up events to be tied to other parts of the project. might make an interface
 *)
-
+{attribute 'reflection'} 
 FUNCTION_BLOCK FB_DiscreteEvents
 VAR_INPUT
 END_VAR
 VAR_OUTPUT
 END_VAR
 VAR
+	pstAnyType_User : POINTER TO MPM_JsonParser.ST_AnyType_User; //array 
+	uAnyType_User : DINT; //Len of array 
+	pfbConfigBase : POINTER TO FB_ConfigBase; 
+	eventID : DINT;
+    {attribute 'instance-path'} 
+    {attribute 'noinit'}	
+	_eventName : STRING(1024);
 END_VAR
-]]></Declaration>
+VAR CONSTANT
+	sizeOfAnyType_User : DINT := SIZEOF(MPM_JsonParser.ST_AnyType_User);
+END_VAR]]></Declaration>
     <Implementation>
       <ST><![CDATA[]]></ST>
     </Implementation>
+    <Method Name="F_GetAnyType" Id="{af9b37ac-487f-4cc3-bae8-4489376449ed}">
+      <Declaration><![CDATA[METHOD PUBLIC F_GetAnyType : HResult
+VAR_INPUT
+	arrayPosition : DINT;
+END_VAR
+VAR_OUTPUT
+	p : POINTER TO MPM_JsonParser.ST_AnyType_User;
+END_VAR
+VAR
+	pointerOffset : DINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[F_GetAnyType := pfbConfigBase^.F_GetArrayPosition(uAnyType_User,sizeOfAnyType_User,arrayPosition,offset => pointerOffset);
+IF F_GetAnyType = MPM_FBResult.E_Result.S_OK THEN
+	p := pstAnyType_User + pointerOffset;
+ELSE
+	F_GetAnyType := MPM_FBResult.E_Result.S_FAILED;
+END_IF	]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="FB_exit" Id="{27ffa4e4-2f47-4e70-bc31-a813afef3819}">
+      <Declaration><![CDATA[METHOD FB_exit : BOOL
+VAR_INPUT
+	bInCopyCode : BOOL; // if TRUE, the exit method is called for exiting an instance that is copied afterwards (online change).
+END_VAR
+
+VAR
+	pstAnyType_User : POINTER TO MPM_JsonParser.ST_AnyType_User; //array 
+	length : DINT; 
+	offset : DINT;
+	x : DINT;
+	pByte : POINTER TO BYTE;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF bInCopyCode = FALSE THEN
+	IF pfbConfigBase^.F_GetArrayLength(uAnyType_User,sizeOfAnyType_User, length => length) = MPM_FBResult.E_Result.S_OK THEN
+		FOR x := 0 TO length BY 1 DO
+			pfbConfigBase^.F_GetArrayPosition(uAnyType_User,sizeOfAnyType_User,x,offset => offset);
+			pstAnyType_User := THIS^.pstAnyType_User + offset;
+			pByte := pstAnyType_User^.pvalue;
+			__DELETE(pByte);
+		END_FOR
+	END_IF
+END_IF]]></ST>
+      </Implementation>
+    </Method>
     <Method Name="FB_init" Id="{71612a4f-f6aa-4e09-89dc-467927c53386}">
       <Declaration><![CDATA[METHOD FB_init : BOOL
 VAR_INPUT
 	bInitRetains : BOOL; // if TRUE, the retain variables are initialized (warm start / cold start)
 	bInCopyCode : BOOL;  // if TRUE, the instance afterwards gets moved into the copy code (online change)
-	eventName : STRING;
-	evemtID : DINT;
+	pfbConfigBase : POINTER TO FB_ConfigBase; 
+	eventID : DINT;
+	pstAnyType_User : POINTER TO MPM_JsonParser.ST_AnyType_User; //array 
+	uAnyType_User : DINT; //Len of array 	
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[]]></ST>
+        <ST><![CDATA[THIS^.pfbConfigBase := pfbConfigBase;
+THIS^.pstAnyType_User := pstAnyType_User;
+THIS^.uAnyType_User := uAnyType_User;
+THIS^.eventID := eventID;]]></ST>
       </Implementation>
     </Method>
     <Method Name="M_Execute" Id="{1fd5e78f-7de2-40f0-8ed2-a85a6dac936a}">
-      <Declaration><![CDATA[METHOD PUBLIC ABSTRACT M_Execute : HRESULT
+      <Declaration><![CDATA[METHOD PUBLIC M_Execute : HRESULT
 VAR_INPUT
 	lastResult : HResult;
 END_VAR
@@ -49,39 +110,44 @@ END_VAR
           <ST><![CDATA[]]></ST>
         </Implementation>
       </Get>
-      <Set Name="Set" Id="{6ff57742-0e5d-4401-a5e2-bf854e8a9974}">
-        <Declaration><![CDATA[VAR
-END_VAR
-]]></Declaration>
-        <Implementation>
-          <ST><![CDATA[]]></ST>
-        </Implementation>
-      </Set>
     </Property>
     <Property Name="P_EventName" Id="{c298ca1a-b765-48f4-a6ad-9e9372811d6e}">
-      <Declaration><![CDATA[PROPERTY PUBLIC P_EventName : String]]></Declaration>
+      <Declaration><![CDATA[PROPERTY PUBLIC P_EventName : String(1024)]]></Declaration>
       <Get Name="Get" Id="{21c550db-b1f3-4dcb-aefa-7bb3ab289d89}">
         <Declaration><![CDATA[VAR
 END_VAR
 ]]></Declaration>
         <Implementation>
-          <ST><![CDATA[]]></ST>
+          <ST><![CDATA[P_EventName := _eventName;]]></ST>
         </Implementation>
       </Get>
     </Property>
     <LineIds Name="FB_DiscreteEvents">
       <LineId Id="9" Count="0" />
     </LineIds>
+    <LineIds Name="FB_DiscreteEvents.F_GetAnyType">
+      <LineId Id="23" Count="0" />
+      <LineId Id="5" Count="0" />
+      <LineId Id="19" Count="1" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="21" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_DiscreteEvents.FB_exit">
+      <LineId Id="6" Count="0" />
+      <LineId Id="22" Count="6" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="8" Count="0" />
+    </LineIds>
     <LineIds Name="FB_DiscreteEvents.FB_init">
+      <LineId Id="19" Count="0" />
       <LineId Id="7" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="20" Count="0" />
     </LineIds>
     <LineIds Name="FB_DiscreteEvents.M_Execute">
       <LineId Id="21" Count="0" />
     </LineIds>
     <LineIds Name="FB_DiscreteEvents.P_EventId.Get">
-      <LineId Id="2" Count="0" />
-    </LineIds>
-    <LineIds Name="FB_DiscreteEvents.P_EventId.Set">
       <LineId Id="2" Count="0" />
     </LineIds>
     <LineIds Name="FB_DiscreteEvents.P_EventName.Get">

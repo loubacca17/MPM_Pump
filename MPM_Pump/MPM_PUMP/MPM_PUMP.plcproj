@@ -80,6 +80,14 @@
     <Compile Include="FUN\F_Add1.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="FUN\F_INIT_ST_AnyType.TcPOU">
+      <SubType>Code</SubType>
+      <LinkAlways>true</LinkAlways>
+    </Compile>
+    <Compile Include="FUN\F_Delete_ST_AnyType.TcPOU">
+      <SubType>Code</SubType>
+      <LinkAlways>true</LinkAlways>
+    </Compile>
     <Compile Include="PlcTask.TcTTO">
       <SubType>Code</SubType>
     </Compile>
@@ -144,9 +152,6 @@
   </ItemGroup>
   <ItemGroup>
     <SubObject Include="FB_AxisControl.MC_Power">
-      <LinkAlways>true</LinkAlways>
-    </SubObject>
-    <SubObject Include="FB_ConfigBase.F_Event_ST_AnyType_Compare">
       <LinkAlways>true</LinkAlways>
     </SubObject>
     <SubObject Include="FB_NCAxisJson_V2.M_GetParametersFromAxis">
