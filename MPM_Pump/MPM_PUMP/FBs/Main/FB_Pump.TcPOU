@@ -25,11 +25,11 @@ END_VAR
 
 VAR
 	mcMoveAbs : ARRAY [0..4] OF MPM_JsonParser.ST_AnyType_User := [
-	(name := 'Position', typeclass := MPM_JsonParser.E_TypeClassEx.TYPE_LREAL, diSize := SIZEOF(LREAL),pvalue := __NEW(LREAL)),
-	(name := 'Velocity', typeclass := MPM_JsonParser.E_TypeClassEx.TYPE_LREAL, diSize := SIZEOF(LREAL),pvalue := __NEW(LREAL)),	
-	(name := 'Acceleration', typeclass := MPM_JsonParser.E_TypeClassEx.TYPE_LREAL, diSize := SIZEOF(LREAL),pvalue := __NEW(LREAL)),
-	(name := 'Deceleration', typeclass := MPM_JsonParser.E_TypeClassEx.TYPE_LREAL, diSize := SIZEOF(LREAL),pvalue := __NEW(LREAL)),	
-	(name := 'Jerk', typeclass := MPM_JsonParser.E_TypeClassEx.TYPE_LREAL, diSize := SIZEOF(LREAL),pvalue := __NEW(LREAL))	
+	(name := 'Position', typeclass := MPM_JsonParser.E_TypeClassEx.TYPE_LREAL, diSize := SIZEOF(LREAL)),
+	(name := 'Velocity', typeclass := MPM_JsonParser.E_TypeClassEx.TYPE_LREAL, diSize := SIZEOF(LREAL)),	
+	(name := 'Acceleration', typeclass := MPM_JsonParser.E_TypeClassEx.TYPE_LREAL, diSize := SIZEOF(LREAL)),
+	(name := 'Deceleration', typeclass := MPM_JsonParser.E_TypeClassEx.TYPE_LREAL, diSize := SIZEOF(LREAL)),	
+	(name := 'Jerk', typeclass := MPM_JsonParser.E_TypeClassEx.TYPE_LREAL, diSize := SIZEOF(LREAL))	
 	];		
 END_VAR
 ]]></Declaration>
@@ -194,6 +194,8 @@ VAR_INST
 	enablePump_Result : HRESULT;
 	homeDirect_Result : HRESULT; 
 	moveABS_Result : HRESULT; 	
+	moveVelocity_Result : HRESULT; 		
+	halt_Result : HRESULT;
 END_VAR
 VAR 
 	HomingMode : Tc2_MC2.MC_HomingMode;
@@ -224,7 +226,7 @@ END_VAR]]></Declaration>
 		IF _fbResult.M_MethodResult(M_Events,lastResult,ADR(enablePump_Result)) = FALSE THEN
 			RETURN;
 		END_IF	
-		_fbResult.P_MethodResult := fbAxisControl.MC_Power(_fbResult.P_MethodResult,TRUE,TRUE,100.0,BufferMode,OptionsPower);
+		_fbResult.P_MethodResult := fbAxisControl.MC_Power(_fbResult.P_MethodResult,TRUE,TRUE,TRUE,100.0,BufferMode,OptionsPower);
 	4: //Home Pump
 		IF _fbResult.M_MethodResult(M_Events,lastResult,ADR(homeDirect_Result)) = FALSE THEN
 			RETURN;
@@ -244,7 +246,25 @@ END_VAR]]></Declaration>
 			Jerk := F_TO_LREAL(mcMoveAbs[4].pvalue),
 			BufferMode := BufferMode,
 			Options := Options);	
-	6: //stop pump
+	6: //halt pump
+		IF _fbResult.M_MethodResult(M_Events,lastResult,ADR(halt_Result)) = FALSE THEN
+			RETURN;
+		END_IF			
+		_fbResult.P_MethodResult := fbAxisControl.MC_Halt(_fbResult.P_MethodResult,
+			1000.0,
+			1000.0);				
+	7: //pump_continuous
+	IF _fbResult.M_MethodResult(M_Events,lastResult,ADR(moveVelocity_Result)) = FALSE THEN
+			RETURN;
+		END_IF		
+		_fbResult.P_MethodResult := fbAxisControl.MC_MoveVelocity(_fbResult.P_MethodResult,
+			Direction := Tc2_MC2.MC_Direction.MC_Positive_Direction,
+			100,
+			1000,
+			1000,
+			10000,
+			BufferMode,
+			Options);	
 		
 END_CASE
 ]]></ST>
@@ -257,15 +277,6 @@ END_VAR
 ]]></Declaration>
       <Implementation>
         <ST><![CDATA[fbAxisControl.M_Execute();]]></ST>
-      </Implementation>
-    </Method>
-    <Method Name="M_GetEvents" Id="{9153554d-e1a4-4a5c-af7f-a9a0da2dc60f}">
-      <Declaration><![CDATA[METHOD PUBLIC  M_GetEvents : HResult
-VAR_INPUT
-END_VAR
-]]></Declaration>
-      <Implementation>
-        <ST><![CDATA[]]></ST>
       </Implementation>
     </Method>
     <Method Name="M_OpenValve" Id="{1d61b728-5b23-417e-8cf6-8a998ec2c686}" FolderPath="Events\">
@@ -350,42 +361,15 @@ END_CASE]]></ST>
       <LineId Id="28" Count="0" />
     </LineIds>
     <LineIds Name="FB_Pump.M_Events">
-      <LineId Id="7" Count="0" />
-      <LineId Id="10" Count="0" />
-      <LineId Id="18" Count="0" />
-      <LineId Id="22" Count="1" />
-      <LineId Id="30" Count="1" />
-      <LineId Id="29" Count="0" />
-      <LineId Id="11" Count="1" />
-      <LineId Id="24" Count="1" />
-      <LineId Id="21" Count="0" />
-      <LineId Id="26" Count="2" />
-      <LineId Id="13" Count="0" />
-      <LineId Id="32" Count="0" />
-      <LineId Id="54" Count="1" />
-      <LineId Id="53" Count="0" />
-      <LineId Id="35" Count="0" />
-      <LineId Id="33" Count="0" />
-      <LineId Id="61" Count="1" />
-      <LineId Id="38" Count="0" />
-      <LineId Id="67" Count="0" />
-      <LineId Id="63" Count="0" />
-      <LineId Id="36" Count="0" />
-      <LineId Id="69" Count="1" />
-      <LineId Id="64" Count="0" />
-      <LineId Id="172" Count="0" />
-      <LineId Id="40" Count="0" />
-      <LineId Id="77" Count="5" />
-      <LineId Id="108" Count="0" />
-      <LineId Id="39" Count="0" />
-      <LineId Id="41" Count="0" />
-      <LineId Id="9" Count="0" />
+      <LineId Id="234" Count="44" />
+      <LineId Id="280" Count="3" />
+      <LineId Id="287" Count="2" />
+      <LineId Id="291" Count="1" />
+      <LineId Id="294" Count="5" />
+      <LineId Id="285" Count="1" />
       <LineId Id="177" Count="0" />
     </LineIds>
     <LineIds Name="FB_Pump.M_Execute">
-      <LineId Id="5" Count="0" />
-    </LineIds>
-    <LineIds Name="FB_Pump.M_GetEvents">
       <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_Pump.M_OpenValve">

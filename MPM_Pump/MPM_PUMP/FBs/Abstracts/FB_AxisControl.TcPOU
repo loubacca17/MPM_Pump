@@ -12,17 +12,28 @@ END_VAR
 VAR_OUTPUT
 END_VAR
 VAR
-	axisRef : REFERENCE TO Tc2_MC2.AXIS_REF;		
+	axisRef : REFERENCE TO Tc2_MC2.AXIS_REF;	
 	fbMCPower : Tc2_MC2.MC_Power;
+	fbMCReset : Tc2_MC2.MC_Reset;		
 	fbMCHome : Tc2_MC2.MC_Home;
 	fbMCStop : Tc2_MC2.MC_Stop;
+	fbMCHalt :  Tc2_MC2.MC_Halt;
+	axisState : Tc2_MC2.MC_AxisStates;
+	
 	//Discrete motion
 	fbMCMoveAbsolute : Tc2_MC2.MC_MoveAbsolute;
 	fbMCMoveRelative : Tc2_MC2.MC_MoveRelative;
-	fbMCMoveAdditive : Tc2_MC2.MC_MoveAdditive;
-	fbMCMoveSuperImposed : Tc2_MC2.MC_MoveSuperImposed;
-	fbMCHalt :  Tc2_MC2.MC_Halt;
-	axisState : Tc2_MC2.MC_AxisStates;
+	fbMoveVelocity : Tc2_MC2.MC_MoveVelocity;
+	fbMoveVelocityDyn : ARRAY [0..1] OF Tc2_MC2.MC_MoveVelocity;
+	//Axis Coupling
+	fbGearInDyn : Tc2_MC2.MC_GearInDyn;
+	fbGearOut : Tc2_MC2.MC_GearOut;
+	
+	//Phasing
+	fbPhasingAbsolute : Tc2_MC2.MC_PhasingAbsolute;
+	fbHaltPhasing : Tc2_MC2.MC_HaltPhasing;
+	fbPhasingRelative: Tc2_MC2.MC_PhasingRelative;
+	
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -40,106 +51,57 @@ END_VAR
         <ST><![CDATA[THis^.axisRef rEF= axisRef;]]></ST>
       </Implementation>
     </Method>
-    <Method Name="M_ContinuousMotion" Id="{8a5faf80-3892-4315-a42d-21702a6a09ad}">
-      <Declaration><![CDATA[METHOD PUBLIC M_ContinuousMotion : HRESULT
+    <Method Name="M_Execute" Id="{48bb7653-d26d-4a04-bc3c-e5ab8f6b64d9}">
+      <Declaration><![CDATA[METHOD M_Execute : BOOL
 VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[axisRef.ReadStatus();]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="MC_Halt" Id="{0dac2c34-ee18-4714-98ee-4a56a60360a2}">
+      <Declaration><![CDATA[METHOD MC_Halt : HResult
+VAR_INPUT
+	lastResult : HResult;
+	Deceleration : LREAL; 
+	Jerk : LREAL;
+END_VAR
+VAR_OUTPUT
+	Busy : BOOL;
+	Active : BOOL;
+	Error : BOOL;
+	ErrorID : UDINT;	
 END_VAR
 VAR_INST
-	
+	_fbResult : FB_ResultHelper_V2_1;
+	_lastResult : HResult;	
+	_state : DINT;
 END_VAR]]></Declaration>
       <Implementation>
-        <ST><![CDATA[]]></ST>
-      </Implementation>
-    </Method>
-    <Method Name="M_Disabled" Id="{9221797a-1e9a-455a-9548-f36d023ac1e2}">
-      <Declaration><![CDATA[METHOD PROTECTED M_Disabled : HRESULT
-VAR_INPUT
-END_VAR
-]]></Declaration>
-      <Implementation>
-        <ST><![CDATA[]]></ST>
-      </Implementation>
-    </Method>
-    <Method Name="M_Discrete" Id="{fc76ca2c-e261-4cc9-a986-b84fa3dfd3f3}">
-      <Declaration><![CDATA[METHOD M_Discrete : BOOL
-VAR_INPUT
-END_VAR
-]]></Declaration>
-      <Implementation>
-        <ST><![CDATA[]]></ST>
-      </Implementation>
-    </Method>
-    <Method Name="M_Execute" Id="{b221b421-b0bc-4b6c-b57a-306b266735b9}">
-      <Declaration><![CDATA[METHOD PUBLIC FINAL M_Execute : HRESULT
-VAR_INPUT
-END_VAR
-VAR_INST
+        <ST><![CDATA[IF _fbResult.M_MethodResult(MC_Halt,lastResult,ADR(_lastResult)) = FALSE THEN
+	RETURN;
+END_IF
 
-END_VAR]]></Declaration>
-      <Implementation>
-        <ST><![CDATA[axisRef.ReadStatus();
-axisState := axisRef.Status.MotionState;
-
-CASE axisRef.Status.MotionState OF
-
-	Tc2_MC2.MC_AxisStates.MC_AXISSTATE_ERRORSTOP :
-			
-	Tc2_MC2.MC_AxisStates.MC_AXISSTATE_DISABLED :
-		M_Disabled();
-	Tc2_MC2.MC_AxisStates.MC_AXISSTATE_STANDSTILL :
-		
-	Tc2_MC2.MC_AxisStates.MC_AXISSTATE_HOMING :
-		
-	Tc2_MC2.MC_AxisStates.MC_AXISSTATE_STOPPING :
-		
-	Tc2_MC2.MC_AxisStates.MC_AXISSTATE_DISCRETEMOTION :
-		
-	Tc2_MC2.MC_AxisStates.MC_AXISSTATE_CONTINOUSMOTION :
-		
-	Tc2_MC2.MC_AxisStates.MC_AXISSTATE_SYNCHRONIZEDMOTION :
-		
-END_CASE
+IF _fbResult.P_MethodResult = E_Result.S_OK THEN
+	_state := 0;
+END_IF
 
 
-]]></ST>
-      </Implementation>
-    </Method>
-    <Method Name="M_Homing" Id="{08f2a54e-db5b-4d5e-8fff-13b43d554d14}">
-      <Declaration><![CDATA[METHOD M_Homing : BOOL
-VAR_INPUT
-END_VAR
-]]></Declaration>
-      <Implementation>
-        <ST><![CDATA[]]></ST>
-      </Implementation>
-    </Method>
-    <Method Name="M_StandStill" Id="{a040644f-fd6c-4fdb-b755-962a3d970bee}">
-      <Declaration><![CDATA[METHOD M_StandStill : BOOL
-VAR_INPUT
-END_VAR
-]]></Declaration>
-      <Implementation>
-        <ST><![CDATA[]]></ST>
-      </Implementation>
-    </Method>
-    <Method Name="M_Stopping" Id="{107eb20a-062e-483b-84ec-b6b000b7e4b3}">
-      <Declaration><![CDATA[METHOD M_Stopping : BOOL
-VAR_INPUT
-END_VAR
-]]></Declaration>
-      <Implementation>
-        <ST><![CDATA[]]></ST>
-      </Implementation>
-    </Method>
-    <Method Name="M_SynchrinizedMotion" Id="{89ba9017-30dc-4f71-a661-c8d7ce704253}">
-      <Declaration><![CDATA[METHOD PUBLIC M_SynchrinizedMotion : HRESULT
-VAR_INPUT
-END_VAR
-VAR_INST
-	
-END_VAR]]></Declaration>
-      <Implementation>
-        <ST><![CDATA[]]></ST>
+_fbResult.P_MethodResult := E_Result.S_WORKING;
+
+CASE _state OF
+	0:
+		fbMCHalt(Axis := axisRef, Execute  := TRUE,Deceleration := Deceleration,Jerk := Jerk);
+		_state := 1;
+	1:
+		fbMCHalt(Axis := axisRef,Execute  := TRUE);	
+		IF fbMCHalt.Done = TRUE AND fbMCHalt.Error = FALSE THEN
+			_fbResult.P_MethodResult := E_Result.S_OK;
+		ELSIF fbMCHalt.Done = FALSE AND fbMCHalt.Error = TRUE THEN 
+			_fbResult.P_MethodResult := E_Result.S_FAILED;
+		END_IF		
+END_CASE]]></ST>
       </Implementation>
     </Method>
     <Method Name="MC_Home" Id="{19a9110b-f486-44ca-a4bc-1443a12454f8}">
@@ -179,10 +141,27 @@ _fbResult.P_MethodResult := E_Result.S_WORKING;
 
 CASE _state OF
 	0:
-		fbMCHome(Axis := axisRef,Execute := TRUE,Position := Position,HomingMode := HomingMode,BufferMode := BufferMode, Options := Options,Done => Done, Busy => Busy, Active => Active, CommandAborted => CommandAborted, Error => Error, ErrorID => ErrorID);
+		fbMCHome(Axis := axisRef,
+			Execute := TRUE,
+			Position := Position,
+			HomingMode := HomingMode,
+			BufferMode := BufferMode,
+			Options := Options,
+			Done => Done, 
+			Busy => Busy, 
+			Active => Active, 
+			CommandAborted => CommandAborted, 
+			Error => Error, 
+			ErrorID => ErrorID);
 		_state := 1;
 	1:
-		fbMCHome(Axis := axisRef);	
+		fbMCHome(Axis := axisRef,			
+			Done => Done, 
+			Busy => Busy, 
+			Active => Active, 
+			CommandAborted => CommandAborted, 
+			Error => Error, 
+			ErrorID => ErrorID);	
 		IF fbMCHome.Done = TRUE AND fbMCHome.Error = FALSE THEN
 			_fbResult.P_MethodResult := E_Result.S_OK;
 		ELSIF fbMCHome.Done = TRUE AND fbMCHome.Error = TRUE THEN 
@@ -246,10 +225,266 @@ CASE _state OF
 			ErrorID => ErrorID);
 		_state := 1;
 	1:
-		fbMCMoveAbsolute(Axis := axisRef);	
+		fbMCMoveAbsolute(Axis := axisRef,			
+			Done => Done,
+			Active => Active,
+			CommandAborted => CommandAborted,
+			Error => Error,
+			ErrorID => ErrorID);	
 		IF fbMCMoveAbsolute.Done = TRUE AND fbMCMoveAbsolute.Error = FALSE THEN
 			_fbResult.P_MethodResult := E_Result.S_OK;
 		ELSIF fbMCMoveAbsolute.Done = TRUE AND fbMCMoveAbsolute.Error = TRUE THEN 
+			_fbResult.P_MethodResult := E_Result.S_FAILED;
+		END_IF		
+END_CASE]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="MC_MoveRelative" Id="{8581a405-1563-4c81-b39d-4a623f53f9ff}">
+      <Declaration><![CDATA[METHOD PUBLIC MC_MoveRelative : HResult
+VAR_INPUT
+	lastResult : HResult;
+	Distance : LREAL;	
+	Velocity : LREAL;
+	Acceleration : LREAL;
+	Deceleration : LREAL;
+	Jerk : LREAL;
+	BufferMode : Tc2_MC2.MC_BufferMode;
+	Options : Tc2_MC2.ST_MoveOptions;	
+END_VAR
+VAR_OUTPUT
+	Done : BOOL;
+	Active : BOOL;
+	CommandAborted : BOOL;
+	Error : BOOL;
+	ErrorID : UDINT;	
+END_VAR
+VAR_INST
+	_fbResult : FB_ResultHelper_V2_1;
+	_lastResult : HResult;	
+	_state : DINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF _fbResult.M_MethodResult(MC_MoveRelative,lastResult,ADR(_lastResult)) = FALSE THEN
+	RETURN;
+END_IF
+
+IF _fbResult.P_MethodResult = E_Result.S_OK THEN
+	_state := 0;
+	fbMCMoveRelative(axis := axisRef,Execute := FALSE);
+END_IF
+
+
+_fbResult.P_MethodResult := E_Result.S_WORKING;
+
+CASE _state OF
+	0:
+		fbMCMoveRelative(Axis := axisRef,
+			Execute := TRUE,
+			Distance := Distance,
+			Velocity := Velocity,
+			Acceleration := Acceleration,
+			Deceleration := Deceleration,
+			Jerk := Jerk,
+			BufferMode := BufferMode,
+			Options := Options,
+			Done => Done,
+			Active => Active,
+			CommandAborted => CommandAborted,
+			Error => Error,
+			ErrorID => ErrorID);
+		_state := 1;
+	1:
+		fbMCMoveRelative(Axis := axisRef,
+			Done => Done,
+			Active => Active,
+			CommandAborted => CommandAborted,
+			Error => Error,
+			ErrorID => ErrorID);	
+		IF fbMCMoveRelative.Done = TRUE AND fbMCMoveRelative.Error = FALSE THEN
+			_fbResult.P_MethodResult := E_Result.S_OK;
+		ELSIF fbMCMoveRelative.Done = TRUE AND fbMCMoveRelative.Error = TRUE THEN 
+			_fbResult.P_MethodResult := E_Result.S_FAILED;
+		END_IF		
+END_CASE]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="MC_MoveVelocity" Id="{1ee59ef8-7c4c-4ac3-a7ad-7fbeb8c0ac45}">
+      <Declaration><![CDATA[METHOD PUBLIC MC_MoveVelocity : HResult
+VAR_INPUT
+	lastResult : HResult;
+	Direction : Tc2_MC2.MC_Direction;	
+	Velocity : LREAL;
+	Acceleration : LREAL;
+	Deceleration : LREAL;
+	Jerk : LREAL;
+	BufferMode : Tc2_MC2.MC_BufferMode;
+	Options : Tc2_MC2.ST_MoveOptions;	
+END_VAR
+VAR_OUTPUT
+	InVelocity : BOOL;
+	Busy : BOOL;
+	Active : BOOL;
+	CommandAborted : BOOL;
+	Error : BOOL;
+	ErrorID : UDINT;	
+END_VAR
+VAR_INST
+	_fbResult : FB_ResultHelper_V2_1;
+	_lastResult : HResult;	
+	_state : DINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF _fbResult.M_MethodResult(MC_MoveVelocity,lastResult,ADR(_lastResult)) = FALSE THEN
+	RETURN;
+END_IF
+
+IF _fbResult.P_MethodResult = E_Result.S_OK THEN
+	_state := 0;
+	fbMoveVelocity(axis := axisRef,Execute := FALSE);
+END_IF
+
+
+_fbResult.P_MethodResult := E_Result.S_WORKING;
+
+CASE _state OF
+	0:
+		fbMoveVelocity(Axis := axisRef,
+			Execute := TRUE,
+			Direction := Direction,
+			Velocity := Velocity,
+			Acceleration := Acceleration,
+			Deceleration := Deceleration,
+			Jerk := Jerk,
+			BufferMode := BufferMode,
+			Options := Options,
+			InVelocity => InVelocity,
+			Busy => Busy,
+			Active => Active,
+			CommandAborted => CommandAborted,
+			Error => Error,
+			ErrorID => ErrorID);
+		_state := 1;
+	1:
+		fbMoveVelocity(Axis := axisRef,			
+			Busy => Busy,
+			Active => Active,
+			CommandAborted => CommandAborted,
+			Error => Error,
+			ErrorID => ErrorID);
+		IF fbMoveVelocity.InVelocity = TRUE AND fbMoveVelocity.Error = FALSE THEN
+			_fbResult.P_MethodResult := E_Result.S_OK;
+		ELSIF fbMoveVelocity.InVelocity = TRUE AND fbMoveVelocity.Error = TRUE THEN 
+			_fbResult.P_MethodResult := E_Result.S_FAILED;
+		END_IF		
+END_CASE]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="MC_MoveVelocityDyn" Id="{b93ed7f8-a864-439a-8719-c919115199fe}">
+      <Declaration><![CDATA[METHOD PUBLIC MC_MoveVelocityDyn : HResult
+VAR_INPUT
+	lastResult : HResult;
+	Direction : Tc2_MC2.MC_Direction;	
+	Execute : BOOL;
+	Velocity : LREAL;
+	Acceleration : LREAL;
+	Deceleration : LREAL;
+	Jerk : LREAL;
+	BufferMode : Tc2_MC2.MC_BufferMode;
+	Options : Tc2_MC2.ST_MoveOptions;	
+END_VAR
+VAR_OUTPUT
+	InVelocity : BOOL;
+	Busy : BOOL;
+	Active : BOOL;
+	CommandAborted : BOOL;
+	Error : BOOL;
+	ErrorID : UDINT;	
+END_VAR
+VAR_INST
+	_Velocity : LREAL;
+	_fbResult : FB_ResultHelper_V2_1;
+	_lastResult : HResult;	
+	_state : DINT;
+	fbMoveVelocityDyn : POINTER TO Tc2_MC2.MC_MoveVelocity;	
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF _fbResult.M_MethodResult(MC_MoveVelocityDyn,lastResult,ADR(_lastResult)) = FALSE THEN
+	RETURN;
+END_IF
+
+IF _fbResult.P_MethodResult = E_Result.S_OK THEN
+	_state := 0;
+	THIS^.fbMoveVelocityDyn[0](Axis := axisRef ,Execute := FALSE);
+	THIS^.fbMoveVelocityDyn[1](Axis := axisRef ,Execute := FALSE);	
+END_IF
+IF Execute = TRUE THEN
+	IF THIS^.fbMoveVelocityDyn[0].Busy = FALSE AND THIS^.fbMoveVelocityDyn[0].Busy = FALSE THEN //if no function is running pick 0
+		fbMoveVelocityDyn := ADR(THIS^.fbMoveVelocityDyn[0]);
+	ELSIF _Velocity = Velocity AND THIS^.fbMoveVelocityDyn[0].Busy = TRUE THEN //if 
+		fbMoveVelocityDyn := ADR(THIS^.fbMoveVelocityDyn[0]);
+		THIS^.fbMoveVelocityDyn[1](Axis := axisRef ,Execute := FALSE);	
+	ELSIF _Velocity = Velocity AND THIS^.fbMoveVelocityDyn[1].Busy = TRUE THEN
+		fbMoveVelocityDyn := ADR(THIS^.fbMoveVelocityDyn[1]);
+		THIS^.fbMoveVelocityDyn[0](Axis := axisRef ,Execute := FALSE);
+		_state := 0;	
+	ELSIF _Velocity <> Velocity AND THIS^.fbMoveVelocityDyn[0].Busy = FALSE THEN
+		fbMoveVelocityDyn := ADR(THIS^.fbMoveVelocityDyn[0]);
+		THIS^.fbMoveVelocityDyn[1](Axis := axisRef ,Execute := FALSE);
+		_state := 0;
+	ELSIF _Velocity <> Velocity AND THIS^.fbMoveVelocityDyn[1].Busy = FALSE THEN
+		fbMoveVelocityDyn := ADR(THIS^.fbMoveVelocityDyn[1]);
+		THIS^.fbMoveVelocityDyn[0](Axis := axisRef ,Execute := FALSE);
+		_state := 0;
+	ELSE //Something is wrong
+		_fbResult.P_MethodResult := E_Result.S_WORKING;
+		THIS^.fbMoveVelocityDyn[0](Axis := axisRef ,Execute := FALSE);
+		THIS^.fbMoveVelocityDyn[1](Axis := axisRef ,Execute := FALSE);
+		RETURN;
+	END_IF
+ELSE //execute value is low check to see if any functions are still running if not then return S_OK
+	IF THIS^.fbMoveVelocityDyn[0].Busy THEN
+		fbMoveVelocityDyn := THIS^.fbMoveVelocityDyn[0];
+	ELSIF THIS^.fbMoveVelocityDyn[1].Busy THEN
+		fbMoveVelocityDyn := THIS^.fbMoveVelocityDyn[1];
+	ELSE
+		_fbResult.P_MethodResult := E_Result.S_OK;		
+	END_IF
+END_IF
+
+
+
+
+
+_fbResult.P_MethodResult := E_Result.S_WORKING;
+
+CASE _state OF
+	0:
+		_Velocity := Velocity;
+		fbMoveVelocity(Axis := axisRef,
+			Direction := Direction,
+			Velocity := Velocity,
+			Acceleration := Acceleration,
+			Deceleration := Deceleration,
+			Jerk := Jerk,
+			BufferMode := BufferMode,
+			Options := Options,
+			InVelocity => InVelocity,
+			Busy => Busy,
+			Active => Active,
+			CommandAborted => CommandAborted,
+			Error => Error,
+			ErrorID => ErrorID);
+		_state := 1;
+	1:
+		fbMoveVelocity(Axis := axisRef,			
+			Busy => Busy,
+			Active => Active,
+			CommandAborted => CommandAborted,
+			Error => Error,
+			ErrorID => ErrorID);
+		IF Execute = FALSE AND fbMoveVelocity.InVelocity = TRUE AND fbMoveVelocity.Error = FALSE THEN //Execute has to be false the retrun S_OK
+			_fbResult.P_MethodResult := E_Result.S_OK;
+		ELSIF Execute = FALSE AND fbMoveVelocity.InVelocity = TRUE AND fbMoveVelocity.Error = TRUE THEN 
 			_fbResult.P_MethodResult := E_Result.S_FAILED;
 		END_IF		
 END_CASE]]></ST>
@@ -259,6 +494,7 @@ END_CASE]]></ST>
       <Declaration><![CDATA[METHOD PUBLIC MC_Power : HResult
 VAR_INPUT
 	lastResult : HResult;
+	Enable : BOOL;
 	Enable_Negative : BOOL;
 	Enable_Positive : BOOL;
 	Override : LREAL;
@@ -286,18 +522,24 @@ IF _fbResult.P_MethodResult = E_Result.S_OK THEN
 	fbMCPower(axis := axisRef,Enable := FALSE);
 END_IF
 
-
 _fbResult.P_MethodResult := E_Result.S_WORKING;
 
 CASE _state OF
 	0:
-		fbMCPower(Axis := axisRef, Enable := TRUE, Enable_Negative := Enable_Negative, Enable_Positive := Enable_Positive,Override := Override,BufferMode := BufferMode, Options := Options, Busy => Busy, Active => Active, Error => Error, ErrorID => ErrorID);
-		_state := 1;
-	1:
-		fbMCPower(Axis := axisRef);	
-		IF fbMCPower.Status = TRUE AND fbMCPower.Error = FALSE THEN
+		fbMCPower(Axis := axisRef, 
+			Enable := Enable,
+			Enable_Negative := Enable_Negative,
+			Enable_Positive := Enable_Positive,
+			Override := Override,
+			BufferMode := BufferMode, 
+			Options := Options, 
+			Busy => Busy, 
+			Active => Active, 
+			Error => Error, 
+			ErrorID => ErrorID);
+		IF fbMCPower.Busy = FALSE AND fbMCPower.Error = FALSE THEN
 			_fbResult.P_MethodResult := E_Result.S_OK;
-		ELSIF fbMCPower.Status = FALSE AND fbMCPower.Error = TRUE THEN 
+		ELSIF fbMCPower.Busy = FALSE AND fbMCPower.Error = TRUE THEN 
 			_fbResult.P_MethodResult := E_Result.S_FAILED;
 		END_IF		
 END_CASE
@@ -309,51 +551,114 @@ END_CASE
 ]]></ST>
       </Implementation>
     </Method>
+    <Method Name="MC_Reset" Id="{eaa8e2e2-74f1-445f-bd12-12c68faf0e1a}">
+      <Declaration><![CDATA[METHOD PUBLIC MC_Reset : HResult
+VAR_INPUT
+	lastResult : HResult;
+END_VAR
+VAR_OUTPUT
+	Busy : BOOL;
+	Active : BOOL;
+	Error : BOOL;
+	ErrorID : UDINT;	
+END_VAR
+VAR_INST
+	_fbResult : FB_ResultHelper_V2_1;
+	_lastResult : HResult;	
+	_state : DINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF _fbResult.M_MethodResult(MC_Reset,lastResult,ADR(_lastResult)) = FALSE THEN
+	RETURN;
+END_IF
+
+IF _fbResult.P_MethodResult = E_Result.S_OK THEN
+	_state := 0;
+	fbMCReset(axis := axisRef,Execute := FALSE);
+END_IF
+
+
+_fbResult.P_MethodResult := E_Result.S_WORKING;
+
+CASE _state OF
+	0:
+		fbMCReset(Axis := axisRef, Execute  := TRUE);
+		_state := 1;
+	1:
+		fbMCReset(Axis := axisRef);	
+		IF fbMCReset.Done = TRUE AND fbMCReset.Error = FALSE THEN
+			_fbResult.P_MethodResult := E_Result.S_OK;
+		ELSIF fbMCReset.Done = FALSE AND fbMCReset.Error = TRUE THEN 
+			_fbResult.P_MethodResult := E_Result.S_FAILED;
+		END_IF		
+END_CASE]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="MC_Stop" Id="{b61dfd9d-df9d-4b5b-8e4e-8a2b507098d5}">
+      <Declaration><![CDATA[METHOD PUBLIC MC_Stop : HResult
+VAR_INPUT
+	lastResult : HResult;
+	Execute : BOOL;
+	Deceleration : LREAL; 
+	Jerk : LREAL;
+END_VAR
+VAR_OUTPUT
+	Busy : BOOL;
+	Active : BOOL;
+	Error : BOOL;
+	ErrorID : UDINT;	
+END_VAR
+VAR_INST
+	_fbResult : FB_ResultHelper_V2_1;
+	_lastResult : HResult;	
+	_state : DINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF _fbResult.M_MethodResult(MC_Stop,lastResult,ADR(_lastResult)) = FALSE THEN
+	RETURN;
+END_IF
+
+IF _fbResult.P_MethodResult = E_Result.S_OK THEN
+	_state := 0;
+END_IF
+
+
+_fbResult.P_MethodResult := E_Result.S_WORKING;
+
+CASE _state OF
+	0:
+		fbMCStop(Axis := axisRef, Execute  := Execute ,Deceleration := Deceleration,Jerk := Jerk);
+		IF fbMCStop.Done = TRUE AND fbMCStop.Error = FALSE THEN
+			_fbResult.P_MethodResult := E_Result.S_OK;
+		ELSIF fbMCStop.Done = FALSE AND fbMCStop.Error = TRUE THEN 
+			_fbResult.P_MethodResult := E_Result.S_FAILED;
+		END_IF		
+END_CASE]]></ST>
+      </Implementation>
+    </Method>
     <LineIds Name="FB_AxisControl">
       <LineId Id="9" Count="0" />
     </LineIds>
     <LineIds Name="FB_AxisControl.FB_init">
       <LineId Id="7" Count="0" />
     </LineIds>
-    <LineIds Name="FB_AxisControl.M_ContinuousMotion">
-      <LineId Id="5" Count="0" />
-    </LineIds>
-    <LineIds Name="FB_AxisControl.M_Disabled">
-      <LineId Id="5" Count="0" />
-    </LineIds>
-    <LineIds Name="FB_AxisControl.M_Discrete">
-      <LineId Id="5" Count="0" />
-    </LineIds>
     <LineIds Name="FB_AxisControl.M_Execute">
       <LineId Id="5" Count="0" />
-      <LineId Id="7" Count="1" />
-      <LineId Id="6" Count="0" />
-      <LineId Id="18" Count="1" />
-      <LineId Id="16" Count="1" />
-      <LineId Id="9" Count="0" />
-      <LineId Id="20" Count="0" />
-      <LineId Id="30" Count="1" />
-      <LineId Id="28" Count="1" />
-      <LineId Id="21" Count="5" />
-      <LineId Id="11" Count="0" />
-      <LineId Id="10" Count="0" />
-      <LineId Id="33" Count="1" />
-      <LineId Id="36" Count="0" />
     </LineIds>
-    <LineIds Name="FB_AxisControl.M_Homing">
-      <LineId Id="5" Count="0" />
-    </LineIds>
-    <LineIds Name="FB_AxisControl.M_StandStill">
-      <LineId Id="5" Count="0" />
-    </LineIds>
-    <LineIds Name="FB_AxisControl.M_Stopping">
-      <LineId Id="5" Count="0" />
-    </LineIds>
-    <LineIds Name="FB_AxisControl.M_SynchrinizedMotion">
+    <LineIds Name="FB_AxisControl.MC_Halt">
+      <LineId Id="22" Count="13" />
+      <LineId Id="41" Count="2" />
+      <LineId Id="36" Count="4" />
       <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_AxisControl.MC_Home">
-      <LineId Id="10" Count="22" />
+      <LineId Id="10" Count="14" />
+      <LineId Id="53" Count="10" />
+      <LineId Id="25" Count="1" />
+      <LineId Id="64" Count="0" />
+      <LineId Id="69" Count="0" />
+      <LineId Id="65" Count="3" />
+      <LineId Id="27" Count="5" />
       <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_AxisControl.MC_MoveAbsoulte">
@@ -363,7 +668,72 @@ END_CASE
       <LineId Id="36" Count="1" />
       <LineId Id="39" Count="7" />
       <LineId Id="48" Count="0" />
-      <LineId Id="25" Count="7" />
+      <LineId Id="25" Count="1" />
+      <LineId Id="71" Count="0" />
+      <LineId Id="74" Count="0" />
+      <LineId Id="72" Count="1" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="75" Count="0" />
+      <LineId Id="28" Count="4" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_AxisControl.MC_MoveRelative">
+      <LineId Id="10" Count="14" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="36" Count="1" />
+      <LineId Id="39" Count="7" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="25" Count="2" />
+      <LineId Id="94" Count="3" />
+      <LineId Id="93" Count="0" />
+      <LineId Id="28" Count="4" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_AxisControl.MC_MoveVelocity">
+      <LineId Id="195" Count="23" />
+      <LineId Id="232" Count="0" />
+      <LineId Id="219" Count="5" />
+      <LineId Id="233" Count="0" />
+      <LineId Id="237" Count="0" />
+      <LineId Id="234" Count="2" />
+      <LineId Id="225" Count="5" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_AxisControl.MC_MoveVelocityDyn">
+      <LineId Id="31" Count="2" />
+      <LineId Id="89" Count="0" />
+      <LineId Id="95" Count="1" />
+      <LineId Id="98" Count="1" />
+      <LineId Id="90" Count="0" />
+      <LineId Id="113" Count="0" />
+      <LineId Id="109" Count="0" />
+      <LineId Id="114" Count="0" />
+      <LineId Id="125" Count="2" />
+      <LineId Id="129" Count="2" />
+      <LineId Id="128" Count="0" />
+      <LineId Id="75" Count="0" />
+      <LineId Id="78" Count="0" />
+      <LineId Id="85" Count="0" />
+      <LineId Id="93" Count="0" />
+      <LineId Id="79" Count="1" />
+      <LineId Id="86" Count="0" />
+      <LineId Id="94" Count="0" />
+      <LineId Id="81" Count="0" />
+      <LineId Id="84" Count="0" />
+      <LineId Id="132" Count="1" />
+      <LineId Id="82" Count="1" />
+      <LineId Id="76" Count="0" />
+      <LineId Id="115" Count="0" />
+      <LineId Id="117" Count="5" />
+      <LineId Id="116" Count="0" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="73" Count="0" />
+      <LineId Id="39" Count="5" />
+      <LineId Id="88" Count="0" />
+      <LineId Id="45" Count="0" />
+      <LineId Id="47" Count="25" />
       <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_AxisControl.MC_Power">
@@ -371,19 +741,28 @@ END_CASE
       <LineId Id="27" Count="4" />
       <LineId Id="34" Count="0" />
       <LineId Id="32" Count="0" />
-      <LineId Id="7" Count="2" />
+      <LineId Id="8" Count="1" />
       <LineId Id="57" Count="0" />
       <LineId Id="13" Count="0" />
       <LineId Id="35" Count="0" />
       <LineId Id="47" Count="0" />
-      <LineId Id="46" Count="0" />
-      <LineId Id="48" Count="0" />
-      <LineId Id="50" Count="3" />
+      <LineId Id="79" Count="9" />
+      <LineId Id="51" Count="2" />
       <LineId Id="55" Count="1" />
       <LineId Id="36" Count="0" />
       <LineId Id="58" Count="0" />
       <LineId Id="14" Count="3" />
       <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_AxisControl.MC_Reset">
+      <LineId Id="27" Count="22" />
+      <LineId Id="26" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_AxisControl.MC_Stop">
+      <LineId Id="27" Count="5" />
+      <LineId Id="34" Count="7" />
+      <LineId Id="45" Count="4" />
+      <LineId Id="26" Count="0" />
     </LineIds>
   </POU>
 </TcPlcObject>

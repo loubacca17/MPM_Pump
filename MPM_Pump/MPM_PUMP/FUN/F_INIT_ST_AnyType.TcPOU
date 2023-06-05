@@ -3,67 +3,66 @@
   <POU Name="F_INIT_ST_AnyType" Id="{6439665d-665c-4d60-a625-eb3fa3d91c45}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION F_INIT_ST_AnyType : HResult
 VAR_INPUT
-	name : STRING(80);
-	varType : MPM_JsonParser.E_TypeClassEx;
-END_VAR
-VAR_IN_OUT
-	stAnyType : MPM_JsonParser.ST_AnyType_User;
+	stAnyType : POINTER TO MPM_JsonParser.ST_AnyType_User;
 END_VAR
 VAR
 	pBytePointer : POINTER TO BYTE;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[stAnyType.name := name;
-stAnyType.typeclass := varType;
-IF stAnyType.pvalue > 0 THEN
+      <ST><![CDATA[IF stAnyType = 0 THEN
 	F_INIT_ST_AnyType := MPM_FBResult.E_Result.S_FAILED;
 	RETURN;
 END_IF
-CASE varType OF
+IF stAnyType^.pvalue > 0 THEN
+	F_INIT_ST_AnyType := MPM_FBResult.E_Result.S_FAILED;
+	RETURN;
+END_IF
+CASE stAnyType^.typeclass OF
 	MPM_JsonParser.E_TypeClassEx.TYPE_BOOL:
-		stAnyType.pvalue := __NEW(BOOL);	
-		stAnyType.diSize := SIZEOF(BOOL);
+		stAnyType^.pvalue := __NEW(BOOL);	
+		stAnyType^.diSize := SIZEOF(BOOL);
 		F_INIT_ST_AnyType := MPM_FBResult.E_Result.S_OK;
 	MPM_JsonParser.E_TypeClassEx.TYPE_BYTE:
-		stAnyType.pvalue := __NEW(BYTE);	
-		stAnyType.diSize := SIZEOF(BYTE);	
+		stAnyType^.pvalue := __NEW(BYTE);	
+		stAnyType^.diSize := SIZEOF(BYTE);	
 		F_INIT_ST_AnyType := MPM_FBResult.E_Result.S_OK;
 	MPM_JsonParser.E_TypeClassEx.TYPE_LREAL:
-		stAnyType.pvalue := __NEW(LREAL);	
-		stAnyType.diSize := SIZEOF(LREAL);	
+		stAnyType^.pvalue := __NEW(LREAL);	
+		stAnyType^.diSize := SIZEOF(LREAL);	
 		F_INIT_ST_AnyType := MPM_FBResult.E_Result.S_OK;		
 	MPM_JsonParser.E_TypeClassEx.TYPE_DINT:
-		stAnyType.pvalue := __NEW(DINT);	
-		stAnyType.diSize := SIZEOF(DINT);	
+		stAnyType^.pvalue := __NEW(DINT);	
+		stAnyType^.diSize := SIZEOF(DINT);	
 		F_INIT_ST_AnyType := MPM_FBResult.E_Result.S_OK;
 	MPM_JsonParser.E_TypeClassEx.TYPE_LINT:
-		stAnyType.pvalue := __NEW(LINT);	
-		stAnyType.diSize := SIZEOF(LINT);
+		stAnyType^.pvalue := __NEW(LINT);	
+		stAnyType^.diSize := SIZEOF(LINT);
 		F_INIT_ST_AnyType := MPM_FBResult.E_Result.S_OK;	
 	MPM_JsonParser.E_TypeClassEx.TYPE_UDINT:
-		stAnyType.pvalue := __NEW(UDINT);	
-		stAnyType.diSize := SIZEOF(UDINT);
+		stAnyType^.pvalue := __NEW(UDINT);	
+		stAnyType^.diSize := SIZEOF(UDINT);
 		F_INIT_ST_AnyType := MPM_FBResult.E_Result.S_OK;	
 	MPM_JsonParser.E_TypeClassEx.TYPE_INT:
-		stAnyType.pvalue := __NEW(INT);	
-		stAnyType.diSize := SIZEOF(INT);
+		stAnyType^.pvalue := __NEW(INT);	
+		stAnyType^.diSize := SIZEOF(INT);
 		F_INIT_ST_AnyType := MPM_FBResult.E_Result.S_OK;		
 	MPM_JsonParser.E_TypeClassEx.TYPE_REAL:
-		stAnyType.pvalue := __NEW(REAL);	
-		stAnyType.diSize := SIZEOF(REAL);	
+		stAnyType^.pvalue := __NEW(REAL);	
+		stAnyType^.diSize := SIZEOF(REAL);	
 		F_INIT_ST_AnyType := MPM_FBResult.E_Result.S_OK;		
 	MPM_JsonParser.E_TypeClassEx.TYPE_WORD:
-		stAnyType.pvalue := __NEW(WORD);	
-		stAnyType.diSize := SIZEOF(WORD);	
+		stAnyType^.pvalue := __NEW(WORD);	
+		stAnyType^.diSize := SIZEOF(WORD);	
 		F_INIT_ST_AnyType := MPM_FBResult.E_Result.S_OK;		
 	ELSE
 		F_INIT_ST_AnyType := MPM_FBResult.E_Result.S_FAILED;				
 END_CASE]]></ST>
     </Implementation>
     <LineIds Name="F_INIT_ST_AnyType">
-      <LineId Id="7" Count="0" />
-      <LineId Id="13" Count="0" />
+      <LineId Id="91" Count="1" />
+      <LineId Id="94" Count="0" />
+      <LineId Id="93" Count="0" />
       <LineId Id="18" Count="0" />
       <LineId Id="79" Count="0" />
       <LineId Id="21" Count="0" />
@@ -71,7 +70,7 @@ END_CASE]]></ST>
       <LineId Id="14" Count="1" />
       <LineId Id="17" Count="0" />
       <LineId Id="26" Count="0" />
-      <LineId Id="36" Count="0" />
+      <LineId Id="96" Count="0" />
       <LineId Id="25" Count="0" />
       <LineId Id="24" Count="0" />
       <LineId Id="29" Count="0" />

@@ -1,0 +1,10 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Refactors>
+  <Renames>
+    <RenamedType>
+      <Type guid="b93ed7f8-a864-439a-8719-c919115199fe">MC_MOVEDYN</Type>
+      <From>MC_MoveDyn</From>
+      <To>MC_MoveVelocityDyn</To>
+    </RenamedType>
+  </Renames>
+</Refactors>

@@ -29,8 +29,6 @@ END_VAR
 VAR
 	pPointer : ARRAY [0..10] OF POINTER TO MPM_JsonParser.ST_AnyType_User;
 	sizeOfValue : DINT;
-	EMPTY_stAnyTypeUser  : ARRAY [0..0] OF MPM_JsonParser.ST_AnyType_User;	//What was input	
-	stAnyTypeUser_MoveAbs  : ARRAY [0..0] OF MPM_JsonParser.ST_AnyType_User;	//What was input	
 	position : LREAL;
 	dynamicMem : ARRAY [0..65354] OF PVOID;	
 	
@@ -44,11 +42,13 @@ fbPump_CloseValve_Result : HResult := 1;
 fbPump_EnablePump : HResult := 1;
 fbPump_HomePump : HResult := 1;
 fbPump_MoveAbs : HResult := 1;
+fbPump_MoveVel : HResult := 1;
+fbPump_MoveHalt : HResult := 1;
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[fbPump.fbEvent.F_GetAnyType(1,p => pPointer[0]);
-RETURN;
+      <ST><![CDATA[
+
 A_INIT();
 A_ConfigControl();
 A_Events();]]></ST>
@@ -80,15 +80,12 @@ fbPump_OpenValve_Result := fbPump.M_Events(fbPump_OpenValve_Result,1);
 fbPump_CloseValve_Result := fbPump.M_Events(fbPump_CloseValve_Result,2);
 fbPump_EnablePump := fbPump.M_Events(fbPump_EnablePump,3);
 fbPump_HomePump := fbPump.M_Events(fbPump_HomePump,4);
-stAnyTypeUser_MoveAbs;
-IF stAnyTypeUser_MoveAbs[0].pvalue = 0 THEN
-	F_INIT_ST_AnyType('POSITION',MPM_JsonParser.E_TypeClassEx.TYPE_LREAL,stAnyTypeUser_MoveAbs[0]);
-	F_INIT_ST_AnyType('Velocity',MPM_JsonParser.E_TypeClassEx.TYPE_LREAL,stAnyTypeUser_MoveAbs[0]);
-	F_INIT_ST_AnyType('POSITION',MPM_JsonParser.E_TypeClassEx.TYPE_LREAL,stAnyTypeUser_MoveAbs[0]);
-	F_INIT_ST_AnyType('POSITION',MPM_JsonParser.E_TypeClassEx.TYPE_LREAL,stAnyTypeUser_MoveAbs[0]);
-	F_INIT_ST_AnyType('POSITION',MPM_JsonParser.E_TypeClassEx.TYPE_LREAL,stAnyTypeUser_MoveAbs[0]);
-	F_INIT_ST_AnyType('POSITION',MPM_JsonParser.E_TypeClassEx.TYPE_LREAL,stAnyTypeUser_MoveAbs[0]);
-END_IF
+fbPump_MoveVel := fbPump.M_Events(fbPump_MoveVel,7);
+fbPump_MoveHalt := fbPump.M_Events(fbPump_MoveHalt,6);
+FOR x := 0 TO 4 BY 1 DO
+	fbPump.fbEvent.F_GetAnyType(x,p => pPointer[0]);
+	F_INIT_ST_AnyType(pPointer[0]);
+END_FOR	
 fbPump_MoveAbs := fbPump.M_Events(fbPump_MoveAbs,5);
 
 IF fbPump_OpenValve_Result = E_Result.S_OK THEN
@@ -106,8 +103,12 @@ END_IF
 IF fbPump_MoveAbs = E_Result.S_OK THEN
 	fbPump_MoveAbs := E_Result.S_DONE;
 END_IF 
-
-]]></ST>
+IF fbPump_MoveVel = E_Result.S_OK THEN
+	fbPump_MoveVel := E_Result.S_DONE;
+END_IF 
+IF fbPump_MoveHalt = E_Result.S_OK THEN
+	fbPump_MoveHalt := E_Result.S_DONE;
+END_IF ]]></ST>
       </Implementation>
     </Action>
     <Action Name="A_INIT" Id="{866a8265-32a5-4fd6-b499-da08e0d574b8}">
@@ -144,9 +145,11 @@ a_pFBConfigJson[2] := ADR(fbPump2);
       <LineId Id="1" Count="1" />
       <LineId Id="4" Count="0" />
       <LineId Id="18" Count="0" />
-      <LineId Id="26" Count="2" />
-      <LineId Id="31" Count="4" />
+      <LineId Id="41" Count="1" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="38" Count="0" />
       <LineId Id="29" Count="0" />
+      <LineId Id="40" Count="0" />
       <LineId Id="21" Count="1" />
       <LineId Id="3" Count="0" />
       <LineId Id="5" Count="1" />
@@ -159,7 +162,9 @@ a_pFBConfigJson[2] := ADR(fbPump2);
       <LineId Id="19" Count="0" />
       <LineId Id="24" Count="1" />
       <LineId Id="23" Count="0" />
-      <LineId Id="37" Count="0" />
+      <LineId Id="44" Count="1" />
+      <LineId Id="43" Count="0" />
+      <LineId Id="46" Count="1" />
       <LineId Id="36" Count="0" />
     </LineIds>
     <LineIds Name="MAIN.A_INIT">

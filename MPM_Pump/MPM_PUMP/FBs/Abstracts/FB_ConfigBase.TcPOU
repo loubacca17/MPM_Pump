@@ -131,30 +131,18 @@ END_IF
     <Method Name="F_Event_ST_AnyType_Compare" Id="{d5d96574-3807-41bd-83c3-530358c10783}" FolderPath="Any_Type_Functions\">
       <Declaration><![CDATA[METHOD PROTECTED F_Event_ST_AnyType_Compare : HResult
 VAR_INPUT
-	varMethod : ANY; //What the evvent requires	
-	adrPvoid : POINTER TO PVOID; //PVOID FOR any value
-	varInput : POINTER TO MPM_JsonParser.ST_AnyType_User;	//What was input
+	srcvar : POINTER TO MPM_JsonParser.ST_AnyType_User; //PVOID FOR any value
+	desvar : POINTER TO MPM_JsonParser.ST_AnyType_User;	//What was input
 END_VAR
 VAR
-	upperBound : DINT;
-	x : DINT;
 END_VAR]]></Declaration>
       <Implementation>
-        <ST><![CDATA[IF varMethod.TypeClass = varInput^.typeclass THEN //check to see if type is the same
-	IF varMethod.diSize = varInput^.diSize THEN //check if the size is the same
-		IF varInput[x].pvalue > 0 THEN
-			adrPvoid^ := varInput^.pvalue;  //they equal send meathod values in
-		ELSE
-			F_Event_ST_AnyType_Compare := MPM_FBResult.E_Result.S_FAILED; //no pointer for type
-		END_IF	
-	ELSE
-		F_Event_ST_AnyType_Compare := MPM_FBResult.E_Result.S_FAILED; //size mismatch
-	END_IF
+        <ST><![CDATA[IF srcvar^.typeclass = desvar^.typeclass AND srcvar^.diSize = desvar^.diSize THEN
+	desvar^.pvalue := srcvar^.pvalue;
+	F_Event_ST_AnyType_Compare := MPM_FBResult.E_Result.S_OK;
 ELSE
-	F_Event_ST_AnyType_Compare := MPM_FBResult.E_Result.S_FAILED; //type mismatch
-END_IF
-
-]]></ST>
+	F_Event_ST_AnyType_Compare := MPM_FBResult.E_Result.S_FAILED;	
+END_IF]]></ST>
       </Implementation>
     </Method>
     <Method Name="F_GetArrayLength" Id="{e7ef948f-69e6-4d9b-805d-c192c058829a}" FolderPath="Any_Type_Functions\">
@@ -488,15 +476,6 @@ END_VAR]]></Declaration>
 ]]></ST>
       </Implementation>
     </Method>
-    <Method Name="M_GetEvents" Id="{78b6458e-7fc9-4d4d-a4d4-ca75768767e9}">
-      <Declaration><![CDATA[METHOD PUBLIC ABSTRACT M_GetEvents : HResult
-VAR_INPUT
-END_VAR
-]]></Declaration>
-      <Implementation>
-        <ST><![CDATA[]]></ST>
-      </Implementation>
-    </Method>
     <Property Name="P_fbName" Id="{5a2b393b-8b77-4ed7-a71a-7e64119bd062}">
       <Declaration><![CDATA[PROPERTY PUBLIC P_fbName : STRING]]></Declaration>
       <Get Name="Get" Id="{831f96df-87bd-4bb9-ad06-74017936567e}">
@@ -539,9 +518,11 @@ END_VAR
       <LineId Id="139" Count="0" />
     </LineIds>
     <LineIds Name="FB_ConfigBase.F_Event_ST_AnyType_Compare">
-      <LineId Id="88" Count="12" />
-      <LineId Id="110" Count="0" />
       <LineId Id="5" Count="0" />
+      <LineId Id="120" Count="0" />
+      <LineId Id="122" Count="0" />
+      <LineId Id="121" Count="0" />
+      <LineId Id="123" Count="1" />
     </LineIds>
     <LineIds Name="FB_ConfigBase.F_GetArrayLength">
       <LineId Id="75" Count="9" />
@@ -628,9 +609,6 @@ END_VAR
     <LineIds Name="FB_ConfigBase.M_Execute">
       <LineId Id="33" Count="1" />
       <LineId Id="36" Count="0" />
-    </LineIds>
-    <LineIds Name="FB_ConfigBase.M_GetEvents">
-      <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_ConfigBase.P_fbName.Get">
       <LineId Id="2" Count="0" />
