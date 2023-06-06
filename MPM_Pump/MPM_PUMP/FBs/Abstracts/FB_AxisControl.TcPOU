@@ -85,6 +85,7 @@ END_IF
 
 IF _fbResult.P_MethodResult = E_Result.S_OK THEN
 	_state := 0;
+	fbMCHalt(Axis := axisRef, Execute  := FALSE,Deceleration := Deceleration,Jerk := Jerk);	
 END_IF
 
 
@@ -100,6 +101,8 @@ CASE _state OF
 			_fbResult.P_MethodResult := E_Result.S_OK;
 		ELSIF fbMCHalt.Done = FALSE AND fbMCHalt.Error = TRUE THEN 
 			_fbResult.P_MethodResult := E_Result.S_FAILED;
+		ELSIF fbMCHalt.CommandAborted = TRUE AND fbMCHalt.Error = FALSE THEN 
+			_fbResult.P_MethodResult := E_Result.S_FAILED;			
 		END_IF		
 END_CASE]]></ST>
       </Implementation>
@@ -166,6 +169,8 @@ CASE _state OF
 			_fbResult.P_MethodResult := E_Result.S_OK;
 		ELSIF fbMCHome.Done = TRUE AND fbMCHome.Error = TRUE THEN 
 			_fbResult.P_MethodResult := E_Result.S_FAILED;
+		ELSIF fbMCHalt.CommandAborted = TRUE AND fbMCHalt.Error = FALSE THEN 
+			_fbResult.P_MethodResult := E_Result.S_FAILED;						
 		END_IF		
 END_CASE]]></ST>
       </Implementation>
@@ -235,6 +240,8 @@ CASE _state OF
 			_fbResult.P_MethodResult := E_Result.S_OK;
 		ELSIF fbMCMoveAbsolute.Done = TRUE AND fbMCMoveAbsolute.Error = TRUE THEN 
 			_fbResult.P_MethodResult := E_Result.S_FAILED;
+		ELSIF fbMCHalt.CommandAborted = TRUE AND fbMCHalt.Error = FALSE THEN 
+			_fbResult.P_MethodResult := E_Result.S_FAILED;					
 		END_IF		
 END_CASE]]></ST>
       </Implementation>
@@ -304,6 +311,8 @@ CASE _state OF
 			_fbResult.P_MethodResult := E_Result.S_OK;
 		ELSIF fbMCMoveRelative.Done = TRUE AND fbMCMoveRelative.Error = TRUE THEN 
 			_fbResult.P_MethodResult := E_Result.S_FAILED;
+		ELSIF fbMCHalt.CommandAborted = TRUE AND fbMCHalt.Error = FALSE THEN 
+			_fbResult.P_MethodResult := E_Result.S_FAILED;		
 		END_IF		
 END_CASE]]></ST>
       </Implementation>
@@ -375,6 +384,8 @@ CASE _state OF
 			_fbResult.P_MethodResult := E_Result.S_OK;
 		ELSIF fbMoveVelocity.InVelocity = TRUE AND fbMoveVelocity.Error = TRUE THEN 
 			_fbResult.P_MethodResult := E_Result.S_FAILED;
+		ELSIF fbMCHalt.CommandAborted = TRUE AND fbMCHalt.Error = FALSE THEN 
+			_fbResult.P_MethodResult := E_Result.S_FAILED;					
 		END_IF		
 END_CASE]]></ST>
       </Implementation>
@@ -441,11 +452,17 @@ IF Execute = TRUE THEN
 		THIS^.fbMoveVelocityDyn[1](Axis := axisRef ,Execute := FALSE);
 		RETURN;
 	END_IF
+	
+	_fbResult.P_MethodResult := E_Result.S_WORKING;
+	
+	
 ELSE //execute value is low check to see if any functions are still running if not then return S_OK
 	IF THIS^.fbMoveVelocityDyn[0].Busy THEN
-		fbMoveVelocityDyn := THIS^.fbMoveVelocityDyn[0];
+		fbMoveVelocityDyn := ADR(THIS^.fbMoveVelocityDyn[0]);
+		_fbResult.P_MethodResult := E_Result.S_WORKING;
 	ELSIF THIS^.fbMoveVelocityDyn[1].Busy THEN
-		fbMoveVelocityDyn := THIS^.fbMoveVelocityDyn[1];
+		fbMoveVelocityDyn := ADR(THIS^.fbMoveVelocityDyn[1]);
+		_fbResult.P_MethodResult := E_Result.S_WORKING;
 	ELSE
 		_fbResult.P_MethodResult := E_Result.S_OK;		
 	END_IF
@@ -455,12 +472,13 @@ END_IF
 
 
 
-_fbResult.P_MethodResult := E_Result.S_WORKING;
+
 
 CASE _state OF
 	0:
 		_Velocity := Velocity;
-		fbMoveVelocity(Axis := axisRef,
+		fbMoveVelocityDyn^(Axis := axisRef,
+			Execute := Execute,
 			Direction := Direction,
 			Velocity := Velocity,
 			Acceleration := Acceleration,
@@ -474,18 +492,12 @@ CASE _state OF
 			CommandAborted => CommandAborted,
 			Error => Error,
 			ErrorID => ErrorID);
-		_state := 1;
-	1:
-		fbMoveVelocity(Axis := axisRef,			
-			Busy => Busy,
-			Active => Active,
-			CommandAborted => CommandAborted,
-			Error => Error,
-			ErrorID => ErrorID);
 		IF Execute = FALSE AND fbMoveVelocity.InVelocity = TRUE AND fbMoveVelocity.Error = FALSE THEN //Execute has to be false the retrun S_OK
 			_fbResult.P_MethodResult := E_Result.S_OK;
 		ELSIF Execute = FALSE AND fbMoveVelocity.InVelocity = TRUE AND fbMoveVelocity.Error = TRUE THEN 
 			_fbResult.P_MethodResult := E_Result.S_FAILED;
+		ELSIF Execute = TRUE AND fbMoveVelocity.Busy = FALSE THEN
+			fbMoveVelocityDyn^(Axis := axisRef, Execute := FALSE);
 		END_IF		
 END_CASE]]></ST>
       </Implementation>
@@ -646,9 +658,13 @@ END_CASE]]></ST>
       <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_AxisControl.MC_Halt">
-      <LineId Id="22" Count="13" />
+      <LineId Id="22" Count="5" />
+      <LineId Id="62" Count="0" />
+      <LineId Id="28" Count="7" />
       <LineId Id="41" Count="2" />
-      <LineId Id="36" Count="4" />
+      <LineId Id="36" Count="3" />
+      <LineId Id="60" Count="1" />
+      <LineId Id="40" Count="0" />
       <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_AxisControl.MC_Home">
@@ -658,7 +674,9 @@ END_CASE]]></ST>
       <LineId Id="64" Count="0" />
       <LineId Id="69" Count="0" />
       <LineId Id="65" Count="3" />
-      <LineId Id="27" Count="5" />
+      <LineId Id="27" Count="4" />
+      <LineId Id="91" Count="1" />
+      <LineId Id="32" Count="0" />
       <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_AxisControl.MC_MoveAbsoulte">
@@ -674,7 +692,10 @@ END_CASE]]></ST>
       <LineId Id="72" Count="1" />
       <LineId Id="27" Count="0" />
       <LineId Id="75" Count="0" />
-      <LineId Id="28" Count="4" />
+      <LineId Id="28" Count="3" />
+      <LineId Id="99" Count="0" />
+      <LineId Id="98" Count="0" />
+      <LineId Id="32" Count="0" />
       <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_AxisControl.MC_MoveRelative">
@@ -687,7 +708,10 @@ END_CASE]]></ST>
       <LineId Id="25" Count="2" />
       <LineId Id="94" Count="3" />
       <LineId Id="93" Count="0" />
-      <LineId Id="28" Count="4" />
+      <LineId Id="28" Count="3" />
+      <LineId Id="122" Count="0" />
+      <LineId Id="120" Count="0" />
+      <LineId Id="32" Count="0" />
       <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_AxisControl.MC_MoveVelocity">
@@ -697,7 +721,10 @@ END_CASE]]></ST>
       <LineId Id="233" Count="0" />
       <LineId Id="237" Count="0" />
       <LineId Id="234" Count="2" />
-      <LineId Id="225" Count="5" />
+      <LineId Id="225" Count="4" />
+      <LineId Id="262" Count="0" />
+      <LineId Id="261" Count="0" />
+      <LineId Id="230" Count="0" />
       <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_AxisControl.MC_MoveVelocityDyn">
@@ -723,9 +750,14 @@ END_CASE]]></ST>
       <LineId Id="84" Count="0" />
       <LineId Id="132" Count="1" />
       <LineId Id="82" Count="1" />
+      <LineId Id="165" Count="3" />
       <LineId Id="76" Count="0" />
       <LineId Id="115" Count="0" />
-      <LineId Id="117" Count="5" />
+      <LineId Id="117" Count="0" />
+      <LineId Id="169" Count="0" />
+      <LineId Id="118" Count="1" />
+      <LineId Id="170" Count="0" />
+      <LineId Id="120" Count="2" />
       <LineId Id="116" Count="0" />
       <LineId Id="34" Count="0" />
       <LineId Id="38" Count="0" />
@@ -733,7 +765,12 @@ END_CASE]]></ST>
       <LineId Id="39" Count="5" />
       <LineId Id="88" Count="0" />
       <LineId Id="45" Count="0" />
-      <LineId Id="47" Count="25" />
+      <LineId Id="160" Count="0" />
+      <LineId Id="47" Count="12" />
+      <LineId Id="68" Count="3" />
+      <LineId Id="161" Count="0" />
+      <LineId Id="164" Count="0" />
+      <LineId Id="72" Count="0" />
       <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_AxisControl.MC_Power">

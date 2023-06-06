@@ -32,6 +32,31 @@ VAR
 	(name := 'Jerk', typeclass := MPM_JsonParser.E_TypeClassEx.TYPE_LREAL, diSize := SIZEOF(LREAL))	
 	];		
 END_VAR
+
+//axis
+VAR
+	stAxisParameterSet : Tc2_MC2.ST_AxisParameterSet;  
+END_VAR
+//IO
+
+VAR
+	//Recipe tags
+	//Intermient Move
+	enableContinuouse : BOOL;
+	volume : LREAL; // this will set number of revs
+	timeToDispense : LREAL; //time to dispence 
+	//Continous mode
+	volumePerSecond : LREAL;
+	highLevelOverride : LREAL;
+	lowLevelOverride : LREAL;
+	//System tags
+	volumePerRotation : LREAL;
+	//IO
+	lowLevelSensor : BOOL;
+	HighLevelSensor : BOOL;
+	
+	fbKinenmatics2 : FB_Kinenmatics_V2;	
+END_VAR
 ]]></Declaration>
     <Implementation>
       <ST><![CDATA[]]></ST>
@@ -43,9 +68,7 @@ VAR_IN_OUT
 	a_pstAxisParameterSet : POINTER TO Tc2_MC2.ST_AxisParameterSet; //pointer to array
 	pstAxisMapping : UDINT;
 END_VAR
-VAR_INST
-	stAxisParameterSet : Tc2_MC2.ST_AxisParameterSet;  
-END_VAR]]></Declaration>
+]]></Declaration>
       <Implementation>
         <ST><![CDATA[stAxisParameterSet.AxisId := axis.NcToPlc.AxisId;
 a_pstAxisParameterSet := ADR(stAxisParameterSet);
@@ -70,8 +93,8 @@ END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[//	ioVar : POINTER TO BOOL;
 //	ioVar2 : POINTER TO REAL;
-F_Map_ST_IOMappingJson(ADR(a_pstIOMappingJson[F_Add1(x)]),'ioVar',ADR(ioVar));
-F_Map_ST_IOMappingJson(ADR(a_pstIOMappingJson[F_Add1(x)]),'ioVar2',ADR(ioVar2));
+F_Map_ST_IOMappingJson(ADR(a_pstIOMappingJson[F_Add1(x)]),'lowLevelSensor',ADR(lowLevelSensor));
+F_Map_ST_IOMappingJson(ADR(a_pstIOMappingJson[F_Add1(x)]),'HighLevelSensor',ADR(HighLevelSensor));
 
 a_pstIOMappingJson := ADR(stIOMappingJson);
 ustIOMappingJson := SIZEOF(stIOMappingJson);
@@ -101,8 +124,8 @@ VAR_INST
 	a_stAnyTypeUser : ARRAY [0..1] OF MPM_JsonParser.ST_AnyType_User;
 END_VAR]]></Declaration>
       <Implementation>
-        <ST><![CDATA[MPM_JsonParser.F_Map_ST_AnyType_User('var1',var1,a_stAnyTypeUser[F_Add1(x)]);
-MPM_JsonParser.F_Map_ST_AnyType_User('var2',var2,a_stAnyTypeUser[F_Add1(x)]);
+        <ST><![CDATA[MPM_JsonParser.F_Map_ST_AnyType_User('volume',volume,a_stAnyTypeUser[F_Add1(x)]);
+MPM_JsonParser.F_Map_ST_AnyType_User('timeToDispense',timeToDispense,a_stAnyTypeUser[F_Add1(x)]);
 
 
 a_pstAnyTypeUser := ADR(a_stAnyTypeUser);
@@ -118,14 +141,13 @@ VAR_IN_OUT
 	uAnyTypeUser : UDINT; //size of array	
 END_VAR
 VAR_INST
-	a_stAnyTypeUser : ARRAY [0..1] OF MPM_JsonParser.ST_AnyType_User;
+	a_stAnyTypeUser : ARRAY [0..0] OF MPM_JsonParser.ST_AnyType_User;
 END_VAR
 VAR
 	x : DINT;
 END_VAR]]></Declaration>
       <Implementation>
-        <ST><![CDATA[MPM_JsonParser.F_Map_ST_AnyType_User('var1',var1,a_stAnyTypeUser[F_Add1(x)]);
-MPM_JsonParser.F_Map_ST_AnyType_User('var2',var2,a_stAnyTypeUser[F_Add1(x)]);
+        <ST><![CDATA[MPM_JsonParser.F_Map_ST_AnyType_User('volumePerRotation',volumePerRotation,a_stAnyTypeUser[F_Add1(x)]);
 
 
 a_pstAnyTypeUser := ADR(a_stAnyTypeUser);
@@ -194,6 +216,7 @@ VAR_INST
 	enablePump_Result : HRESULT;
 	homeDirect_Result : HRESULT; 
 	moveABS_Result : HRESULT; 	
+	moveInter_Result : HRESULT; 		
 	moveVelocity_Result : HRESULT; 		
 	halt_Result : HRESULT;
 END_VAR
@@ -203,6 +226,11 @@ VAR
 	BufferMode : Tc2_MC2.MC_BufferMode;
 	OptionsPower : Tc2_MC2.ST_PowerOptions;	
 	Options : Tc2_MC2.ST_MoveOptions;		
+END_VAR
+
+VAR_INST
+	executeDyn : BOOL;
+	VelocityDyn : LREAL := 10; 
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[CASE eventID OF 
@@ -237,7 +265,6 @@ END_VAR]]></Declaration>
 		IF _fbResult.M_MethodResult(M_Events,lastResult,ADR(moveABS_Result)) = FALSE THEN
 			RETURN;
 		END_IF		
-			RETURN;
 		_fbResult.P_MethodResult := fbAxisControl.MC_MoveAbsoulte(_fbResult.P_MethodResult,
 			Position := F_TO_LREAL(mcMoveAbs[0].pvalue),
 			Velocity := F_TO_LREAL(mcMoveAbs[1].pvalue),
@@ -257,15 +284,40 @@ END_VAR]]></Declaration>
 	IF _fbResult.M_MethodResult(M_Events,lastResult,ADR(moveVelocity_Result)) = FALSE THEN
 			RETURN;
 		END_IF		
-		_fbResult.P_MethodResult := fbAxisControl.MC_MoveVelocity(_fbResult.P_MethodResult,
+		VelocityDyn := VelocityDyn + 0.10;
+		IF VelocityDyn > 1000 THEN
+			VelocityDyn := 10;
+		END_IF
+		_fbResult.P_MethodResult := fbAxisControl.MC_MoveVelocityDyn(
+			_fbResult.P_MethodResult,
 			Direction := Tc2_MC2.MC_Direction.MC_Positive_Direction,
-			100,
+			executeDyn,
+			VelocityDyn,			
 			1000,
 			1000,
 			10000,
 			BufferMode,
 			Options);	
-		
+	8: //pump_intermeate
+	fbKinenmatics2.jerkLimit := 100000;
+	fbKinenmatics2.accelLimit := 15000.0;	
+	fbKinenmatics2.decelLimit := 15000.0;	
+	fbKinenmatics2.velocityLimit := 2500;	
+	fbKinenmatics2.positionDelta := volume;		
+	fbKinenmatics2.timeToComplete := timeToDispense;
+	fbKinenmatics2();
+	IF _fbResult.M_MethodResult(M_Events,lastResult,ADR(moveInter_Result)) = FALSE THEN
+			RETURN;
+		END_IF		
+		_fbResult.P_MethodResult := fbAxisControl.MC_MoveRelative(
+			_fbResult.P_MethodResult,
+			volume,
+			fbKinenmatics2.velocityOutput,
+			fbKinenmatics2.accelOutput,			
+			fbKinenmatics2.decelLimit,		
+			fbKinenmatics2.jerkOutput,		
+			BufferMode,
+			Options);			
 END_CASE
 ]]></ST>
       </Implementation>
@@ -340,7 +392,8 @@ END_CASE]]></ST>
       <LineId Id="21" Count="0" />
     </LineIds>
     <LineIds Name="FB_Pump._F_System">
-      <LineId Id="8" Count="6" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="10" Count="4" />
       <LineId Id="7" Count="0" />
     </LineIds>
     <LineIds Name="FB_Pump.FB_init">
@@ -361,12 +414,26 @@ END_CASE]]></ST>
       <LineId Id="28" Count="0" />
     </LineIds>
     <LineIds Name="FB_Pump.M_Events">
-      <LineId Id="234" Count="44" />
+      <LineId Id="234" Count="31" />
+      <LineId Id="267" Count="11" />
       <LineId Id="280" Count="3" />
       <LineId Id="287" Count="2" />
-      <LineId Id="291" Count="1" />
-      <LineId Id="294" Count="5" />
-      <LineId Id="285" Count="1" />
+      <LineId Id="330" Count="3" />
+      <LineId Id="291" Count="0" />
+      <LineId Id="329" Count="0" />
+      <LineId Id="292" Count="0" />
+      <LineId Id="322" Count="0" />
+      <LineId Id="327" Count="0" />
+      <LineId Id="295" Count="4" />
+      <LineId Id="285" Count="0" />
+      <LineId Id="345" Count="5" />
+      <LineId Id="344" Count="0" />
+      <LineId Id="353" Count="1" />
+      <LineId Id="352" Count="0" />
+      <LineId Id="335" Count="6" />
+      <LineId Id="343" Count="0" />
+      <LineId Id="334" Count="0" />
+      <LineId Id="286" Count="0" />
       <LineId Id="177" Count="0" />
     </LineIds>
     <LineIds Name="FB_Pump.M_Execute">

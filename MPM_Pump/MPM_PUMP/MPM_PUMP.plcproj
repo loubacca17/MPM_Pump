@@ -36,6 +36,12 @@
     <Compile Include="FBs\Abstracts\FB_TimeEvents.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="FBs\FB_Kinenmatics.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FBs\FB_Kinenmatics_V2.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="FBs\IO_Mapping\FB_IOMappingJson.TcPOU">
       <SubType>Code</SubType>
       <ExcludeFromBuild>true</ExcludeFromBuild>

@@ -1,0 +1,673 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_Kinenmatics_V2" Id="{53dd21c9-901d-4137-a33a-e7b0b93d11b6}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Kinenmatics_V2
+VAR_INPUT
+	intialVelocity : LREAL;
+	intialPosition : LREAL;
+	intialAcceleration : LREAL;
+	intialJerk : LREAL;
+	jerkLimit : LREAL;
+	accelLimit : LREAL;
+	decelLimit : LREAL;
+	velocityLimit : LREAL;
+	positionDelta : LREAL;
+	timeToComplete : LREAL;
+	discriment : LREAL;
+END_VAR
+VAR_OUTPUT
+	minTime : LREAL;
+	velocityOutput : LREAL;
+	accelOutput : LREAL;
+	jerkOutput : LREAL;
+	error : BOOL;
+	errorMsg : STRING;	
+END_VAR
+VAR
+	positionMid : LREAL;
+	positionQuarter : LREAL;
+	//Caculating max values for a Jerk limited move
+	jerkMoveAccelMax : LREAL;
+	jerkMoveTimeToMaxAccel : LREAL;
+	jerkMoveVelocityAtMaxAccel : LREAL;	
+	jerkMoveVelocityMax : LREAL;
+	jerkMoveTimeToMaxVelocity : LREAL;
+	jerkMoveTimeToCompleteMin : LREAL;
+	jerkMoveJerkLimitForTargetTime : LREAL;
+	
+	accelMoveTimeToMaxAccel : LREAL;
+	accelMoveMaxVelocity : LREAL;
+	accelMoveTimeForAccelConstantMove : LREAL;
+	accelMoveTimeToCompleteMove : LREAL;
+
+	accelMoveNewMaxAccel: LREAL;
+
+	accelVelocityMoveTimeToMaxVelocity : LREAL;	
+	accelVelocityMoveTimeFromMaxVelocityToMidPoint : LREAL;	
+	accelVelocityTimeToCompleteMove : LREAL;
+
+	
+
+
+END_VAR
+
+VAR
+	jerkSegment : ARRAY [0..6] OF LREAL;
+	accelSegment : ARRAY [0..6] OF LREAL;
+	velocitySegment	: ARRAY [0..6] OF LREAL;
+	positionSegment : ARRAY [0..6] OF LREAL;
+	timeSegmentDelta : ARRAY [0..6] OF LREAL;
+	timeSegment : ARRAY [0..6] OF TIME;	
+	a : LREAL;
+	b : LREAL;
+	c : LREAL;	
+	
+	state : DINT;
+	jerkLimitToAccelLimit : LREAL;
+	timeToCompleteMinAccelMove : LREAL; 
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[IF positionDelta <= 0 OR timeToComplete <= 0 OR accelLimit <= 0 OR decelLimit <= 0 OR velocityLimit <= 0 OR jerkLimit <= 0 THEN
+	RETURN;
+END_IF
+
+positionMid := positionDelta/2.0;
+positionQuarter := positionDelta/4.0;
+accelOutput := accelLimit;
+jerkOutput := jerkLimit;
+velocityOutput := velocityLimit;
+
+state := M_JerkLimitedMove(positionDelta,
+	jerkLimit,
+	accelLimit,
+	decelLimit,
+	velocityLimit,
+	timeToComplete,
+	jerkOutput => jerkOutput,
+	timeToCompleteMin => minTime,
+	jerkLimitToAccelLimit => jerkLimitToAccelLimit,
+	timeToCompleteMinAccelMove => timeToCompleteMinAccelMove,
+	error => error,
+	errorMsg => errorMsg
+);
+IF state = 1 THEN
+	state := M_AccelLimitedMove(positionDelta,
+		jerkLimit,
+		accelLimit,
+		decelLimit,
+		velocityLimit,
+		timeToComplete,
+		jerkLimitToAccelLimit := jerkLimitToAccelLimit,
+		timeToCompleteMinAccelMove := timeToCompleteMinAccelMove,
+		jerkOutput => jerkOutput,
+		accelOutput => accelOutput,
+		error => error,
+		errorMsg => errorMsg
+	);
+END_IF
+
+RETURN;
+
+
+
+
+
+
+
+
+
+
+
+
+(*
+//Solve for t jerk limited equation positionMid = jerkLimit * t^3, 
+//t = (positionMid/jerkLimit) ^(1/3) where t = 1/4 of the time to complete the move
+jerkMoveTimeToMaxAccel := EXPT(positionMid/jerkLimit,1.0/3.0);
+jerkMoveAccelMax := jerkLimit * jerkMoveTimeToMaxAccel;
+jerkMoveVelocityAtMaxAccel := jerkMoveTimeToMaxAccel * jerkMoveAccelMax;
+jerkMoveTimeToCompleteMin := jerkMoveTimeToMaxAccel * 4.0;
+
+IF jerkMoveTimeToCompleteMin > timeToComplete THEN
+	minTime := jerkMoveTimeToCompleteMin;
+	errorMsg := 'Jerk limit too low';
+	error := TRUE;			
+	RETURN;
+ELSE
+	errorMsg := '';	
+	error := FALSE;			
+END_IF
+
+IF (accelLimit < jerkMoveAccelMax) OR velocityLimit <= jerkMoveVelocityAtMaxAccel THEN
+	//Caculate known values
+	accelMoveTimeToMaxAccel := accelLimit/jerkLimit;
+	positionSegment[0] := 1.0/6.0 * jerkLimit * EXPT(accelMoveTimeToMaxAccel,3.0);
+	velocitySegment[0] := 0.5 * jerkLimit * EXPT(accelMoveTimeToMaxAccel,2.0) + intialVelocity;
+	accelSegment[0] := jerkLimit*accelMoveTimeToMaxAccel;
+	
+	//set up quardatic formula 
+	// 1/2*accelLimit*t^2 + (velocitySegment[0] + (accelLimit[0]*accelMoveTimeToMaxAccel)*t + (velocitySegment[0] * accelMoveTimeToMaxAccel)+accelSegment[0]*0.5*accelMoveTimeToMaxAccel^2
+	a := 0.5 * accelSegment[0];
+	b :=  velocitySegment[0] + accelSegment[0]*accelMoveTimeToMaxAccel;
+	c := ((velocitySegment[0] * accelMoveTimeToMaxAccel)+accelSegment[0]*0.5*EXPT(accelMoveTimeToMaxAccel,2.0)) - positionMid;
+	
+	//Make sure discriment > 0 otherwise program will crash
+	discriment := (EXPT(b,2.0) - 4.0 * a *c);
+	IF discriment > 0 THEN
+		accelMoveTimeForAccelConstantMove := (-b + EXPT(EXPT(b,2.0) -4.0 * a *c,0.5))/(2*a); //solve for quadtratic
+		accelMoveTimeToCompleteMove := 2.0*(accelMoveTimeToMaxAccel * 2.0 + accelMoveTimeForAccelConstantMove); // This value is the fastest the machine can move with the accel limit
+		accelMoveMaxVelocity := accelMoveTimeToCompleteMove/2*accelSegment[0]-EXPT(accelSegment[0],2.0)/jerkLimit;
+		IF accelMoveMaxVelocity > velocityLimit THEN
+			accelVelocityMoveTimeToMaxVelocity := velocityLimit/accelLimit + accelLimit/(jerkLimit);
+			positionSegment[1] := velocitySegment[0]*(accelVelocityMoveTimeToMaxVelocity-2.0*accelMoveTimeToMaxAccel) + 0.5*accelLimit*EXPT((accelVelocityMoveTimeToMaxVelocity-2.0*accelMoveTimeToMaxAccel),2.0);
+			velocitySegment[1] := velocitySegment[0] + accelLimit * (accelVelocityMoveTimeToMaxVelocity-2.0*accelMoveTimeToMaxAccel);
+			positionSegment[2] := velocitySegment[1] * accelMoveTimeToMaxAccel +  0.5*accelLimit*EXPT((accelMoveTimeToMaxAccel),2.0) - 1.0/6.0 * jerkLimit * EXPT(accelMoveTimeToMaxAccel,3.0);
+			//positionSegment[0] :=velocitySegment[0]*(accelVelocityMoveTimeToMaxVelocity-2.0*accelMoveTimeToMaxAccel);
+			positionSegment[3] := positionMid - (positionSegment[0] + positionSegment[1] + positionSegment[2]);
+			accelVelocityMoveTimeFromMaxVelocityToMidPoint := positionSegment[3]/velocityLimit;
+			accelVelocityTimeToCompleteMove := 2.0*(accelVelocityMoveTimeToMaxVelocity + accelVelocityMoveTimeFromMaxVelocityToMidPoint);
+			IF	accelVelocityTimeToCompleteMove < timeToComplete THEN
+				errorMsg := '';		
+				error := FALSE;						
+				a := 1/jerkLimit;
+				b := -(accelVelocityMoveTimeToMaxVelocity + timeToComplete - accelVelocityTimeToCompleteMove); //-timeToComplete/2.0; //
+				c := velocityLimit;
+				discriment := (EXPT(b,2.0) - 4.0 * a *c);
+				IF discriment > 0 THEN
+					minTime := accelVelocityTimeToCompleteMove;
+					velocityOutput := velocityLimit;
+					accelOutput := (-b - EXPT(EXPT(b,2.0) -4.0 * a *c,0.5))/(2*a);
+					jerkOutput := jerkLimit; 
+				END_IF	
+			ELSIF accelVelocityTimeToCompleteMove > timeToComplete THEN
+				minTime := accelVelocityTimeToCompleteMove;				
+				errorMsg := 'velocity limit to low';	
+				error := TRUE;		
+				RETURN;	
+			ELSIF accelVelocityTimeToCompleteMove = timeToComplete THEN
+				minTime := accelVelocityTimeToCompleteMove;
+				velocityOutput := velocityLimit;
+				accelOutput := accelLimit;
+				jerkOutput := jerkLimit; 			
+			END_IF
+		ELSIF accelMoveTimeToCompleteMove > timeToComplete THEN 
+				minTime := accelMoveTimeToCompleteMove;			
+			errorMsg := 'accel limit to low';
+			error := TRUE;
+			RETURN;
+		ELSIF accelMoveTimeToCompleteMove < timeToComplete THEN
+			minTime := accelMoveTimeToCompleteMove;
+			error := FALSE;			
+			errorMsg := '';	
+			//Vmax = t*a-a^2/(2*j) positionMid = Intergrate(Vmax) = timeToCompleteMove/(4.0 * jerkLimit)*a^2 + ((timeToCompleteMove/2)^2)/2; solve with quaddratic
+			a := -(timeToComplete/(4.0*jerkLimit));
+			b := EXPT(timeToComplete/2.0,2.0)/2.0;
+			c := -positionMid;			
+			discriment := (EXPT(b,2.0) - 4.0 * a *c);
+			IF discriment > 0 THEN
+				accelOutput := (-b + EXPT(EXPT(b,2.0) -4.0 * a *c,0.5))/(2*a); //solve for quadtratic
+			END_IF
+			jerkOutput := jerkLimit;
+			velocityOutput := velocityLimit;			
+		ELSE
+			error := FALSE;					
+			errorMsg := '';	
+		END_IF	
+	END_IF
+	//RETURN; // accel limited only
+ELSIF accelLimit < jerkMoveAccelMax AND velocityLimit < jerkMoveVelocityAtMaxAccel THEN
+	RETURN; // accel limited only and might be velocity limited
+ELSIF accelLimit >= jerkMoveAccelMax AND velocityLimit >= jerkMoveVelocityAtMaxAccel THEN
+	//jerkLimit = positionMid/(timeToComplete/4)^(3)
+	minTime := jerkMoveTimeToCompleteMin;
+	jerkMoveJerkLimitForTargetTime := positionMid/EXPT(timeToComplete/4,3.0);
+	jerkOutput := jerkMoveJerkLimitForTargetTime;
+	velocityOutput := velocityLimit;
+	accelOutput := accelLimit;
+	RETURN; // jerk limited
+END_IF
+	
+
+
+// Max velocity in a jerk only limited move = positionMid = 1/2 * jerkLimit * t^2
+// jerkMoveTimeToMaxVelocity := EXPT(positionMid*6/jerkLimit,1.0/3.0);
+// jerkMoveVelocityMax := 1.0/2.0 * jerkLimit * EXPT(jerkMoveTimeToMaxVelocity,2);
+
+
+*)]]></ST>
+    </Implementation>
+    <Method Name="M_AccelLimitedMove" Id="{638562c2-6fa5-4a55-b3cf-293e0e5c1dc7}">
+      <Declaration><![CDATA[METHOD PROTECTED M_AccelLimitedMove : DINT
+VAR_INPUT
+	position : LREAL;
+	jerkLimit : LREAL;
+	accelLimit : LREAL;
+	decelLimit : LREAL;
+	velocityLimit : LREAL;
+	timeToComplete : LREAL;
+	jerkLimitToAccelLimit : LREAL;
+	timeToCompleteMinAccelMove : LREAL;
+END_VAR
+VAR_OUTPUT
+	jerkOutput : LREAL;
+	accelOutput : LREAL;
+	timeToCompleteMin : LREAL;	
+	error : BOOL;
+	errorMsg : STRING;	
+END_VAR
+VAR
+	positionMid : LREAL;
+	timeToMaxAccel : LREAL;
+	minJerkToAccelLimitMove : LREAL;
+	accelMax : LREAL;
+	velocityMax : LREAL;
+	a : LREAL;	
+	b : LREAL;
+	c : LREAL;
+	timeToAccelMaxMoveMin : LREAL;
+	x : DINT;
+END_VAR
+VAR_INST
+
+	jerkAdjustment : LREAL;
+
+	whatsMyValue : LREAL;
+	autoCounter : BOOL;
+	rateOfChange : LREAL := 1;
+	slopCaculation : LREAL;
+	jerkStep : LREAL;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[positionMid := position/2.0;
+
+timeToAccelMaxMoveMin := accelLimit/jerkLimitToAccelLimit;
+//Accel limit hit before jerk limit hit in a jerk limited move. 
+
+IF jerkLimitToAccelLimit > 0 THEN //Might make a function
+	jerkStep := (jerkLimit - jerkLimitToAccelLimit)/10.0;
+	jerkAdjustment := jerkLimitToAccelLimit + jerkStep;
+	timeToMaxAccel := accelLimit/jerkAdjustment;	
+ 	FOR x := 0 TO 8 BY 1 DO // can't find a soultion with an equation so increasing jerk slowly and finding a min value thats greater than target. 
+		timeSegmentDelta[0] := timeToMaxAccel;
+		jerkSegment[0] := jerkAdjustment;
+		jerkSegment[1] := 0;
+		jerkSegment[2] := -jerkAdjustment;
+		jerkSegment[3] := -jerkAdjustment;
+		jerkSegment[4] := 0;
+		jerkSegment[5] := jerkAdjustment;	
+		M_SegmentCaculator();
+	(*
+	a = 1/2*accelLimit*t^2 + 
+	b = (velocitySegment[0] + (accelSegment[0]*accelMoveTimeToMaxAccel)*t +
+	c = (velocitySegment[0] * accelMoveTimeToMaxAccel)+accelSegment[0]*0.5*accelMoveTimeToMaxAccel^2
+	*)	
+		//find time where accel is a constant
+		M_QuadraticEquation(
+			a := 0.5*accelLimit, 
+			b := velocitySegment[0] + (accelLimit*timeSegmentDelta[0]),
+			c := (velocitySegment[0] * timeSegmentDelta[0])+accelSegment[0]*0.5*EXPT(timeSegmentDelta[0],2.0) - positionMid,
+			plusResult => timeSegmentDelta[1]);
+		//Caculate the rest of the time segments	
+		timeSegmentDelta[2] := timeSegmentDelta[0];
+		timeSegmentDelta[3] := timeSegmentDelta[0];
+		timeSegmentDelta[4] := timeSegmentDelta[1];
+		timeSegmentDelta[5] := timeSegmentDelta[0];	
+		timeToCompleteMin := timeSegmentDelta[0] + timeSegmentDelta[1] + timeSegmentDelta[2] + timeSegmentDelta[3] + timeSegmentDelta[4] + timeSegmentDelta[5];
+		IF timeToCompleteMin <= timeToComplete THEN
+			jerkOutput := jerkAdjustment; 
+			EXIT;	
+		ELSE	
+			jerkAdjustment := jerkAdjustment + jerkStep;
+		END_IF
+	END_FOR
+	
+	IF timeToCompleteMin < timeToComplete THEN
+		//Vmax = t*a-a^2/(2*j) positionMid = Integrate(Vmax) = timeToCompleteMove/(4.0 * jerkLimit)*a^2 + ((timeToCompleteMove/2)^2)/2; solve with quaddratic
+		M_QuadraticEquation(
+			a := -(timeToComplete)/(4.0*jerkAdjustment),
+			b := EXPT(timeToComplete/2.0,2.0)/2.0,
+			c := -positionMid,
+			plusResult => accelOutput);		
+	END_IF
+	M_SegmentCaculator();
+ELSE
+	IF timeToCompleteMin < timeToComplete THEN
+		//Vmax = t*a-a^2/(2*j) positionMid = Intergrate(Vmax) = timeToCompleteMove/(4.0 * jerkLimit)*a^2 + ((timeToCompleteMove/2)^2)/2; solve with quaddratic
+		M_QuadraticEquation(
+			a := -(timeToComplete)/(4.0*jerkLimit),
+			b := EXPT(timeToComplete/2.0,2.0)/2.0,
+			c := -positionMid,
+			plusResult => accelOutput);		
+	END_IF
+	M_SegmentCaculator();	
+END_IF
+
+
+	
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_AccelVelocityLimitedMove" Id="{0bd1b921-1d09-4a0f-a757-fa113c9c4afd}">
+      <Declaration><![CDATA[METHOD PROTECTED M_AccelVelocityLimitedMove : LREAL
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_JerkLimitedMove" Id="{9ac87d6e-3fc2-457a-b54f-6ef3dfee8967}">
+      <Declaration><![CDATA[METHOD PROTECTED M_JerkLimitedMove : DINT
+VAR_INPUT
+	position : LREAL;
+	jerkLimit : LREAL;
+	accelLimit : LREAL;
+	decelLimit : LREAL;
+	velocityLimit : LREAL;
+	timeToComplete : LREAL;
+END_VAR
+VAR_OUTPUT
+	jerkOutput : LREAL;
+	jerkLimitToAccelLimit : LREAL;
+	timeToCompleteMin : LREAL;
+	timeToCompleteMinAccelMove : LREAL;
+	error : BOOL;
+	errorMsg : STRING;	
+END_VAR
+VAR
+	positionMid : LREAL;
+	timeToMaxAccel : LREAL;
+	accelMax : LREAL;
+	velocityMax : LREAL;
+	jerkLimitedByAccel: BOOL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//Find mid position
+positionMid := position/2.0;
+
+//determine if accel limit limits jerk limited move
+jerkLimitToAccelLimit := EXPT(EXPT(accelLimit,(3))/positionMid,0.5);
+
+IF jerkLimitToAccelLimit < jerkLimit THEN
+	jerkLimit := jerkLimitToAccelLimit;
+	jerkLimitedByAccel := TRUE;
+END_IF
+
+//Find time to max accel with jerk limit
+timeToMaxAccel := EXPT(positionMid/jerkLimit,1.0/3.0);
+
+//Time to complete is timeToMaxAccel * 4
+timeToCompleteMin := timeToMaxAccel * 4.0;
+
+IF timeToComplete > timeToCompleteMin THEN
+	jerkOutput := positionMid/EXPT(timeToComplete/4,3.0);	
+	timeToMaxAccel := EXPT(positionMid/jerkOutput,1.0/3.0);	
+END_IF
+
+
+//Caculate max accel
+accelMax := jerkOutput * timeToMaxAccel;
+
+
+
+IF accelMax < accelLimit AND velocityMax < velocityLimit THEN
+	timeSegmentDelta[0] := timeToMaxAccel;
+	timeSegmentDelta[1] := timeToMaxAccel;
+	timeSegmentDelta[2] := timeToMaxAccel;
+	timeSegmentDelta[3] := timeToMaxAccel;
+	timeSegmentDelta[4] := 0;
+	timeSegmentDelta[5] := 0;
+	timeSegmentDelta[6] := 0;
+	
+	jerkSegment[0] := jerkOutput;
+	jerkSegment[1] := -jerkOutput;
+	jerkSegment[2] := -jerkOutput;
+	jerkSegment[3] := jerkOutput;	
+	jerkSegment[4] := 0;		
+	jerkSegment[5] := 0;	
+	jerkSegment[6] := 0;	
+
+	M_SegmentCaculator();
+	
+ELSIF accelMax > accelLimit THEN
+	errorMsg := 'Accel limited move';	
+	error := TRUE;
+	M_JerkLimitedMove := 1;	
+	RETURN;		
+END_IF
+
+IF timeToCompleteMin > timeToComplete AND jerkLimitedByAccel = FALSE THEN
+	errorMsg := 'Jerk limit too low';
+	error := TRUE;			
+	RETURN;	
+ELSIF timeToCompleteMin > timeToComplete AND jerkLimitedByAccel = TRUE THEN
+	errorMsg := 'Accel limited move';	
+	error := TRUE;	
+	M_JerkLimitedMove := 1;	
+	timeToCompleteMinAccelMove := timeToCompleteMin;
+	RETURN;			
+END_IF
+
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_QuadraticEquation" Id="{4f12e10c-d2be-4664-8135-037426094de3}">
+      <Declaration><![CDATA[METHOD PROTECTED M_QuadraticEquation : LREAL
+VAR_INPUT
+	a : LREAL;
+	b : LREAL;
+	c : LREAL;	
+END_VAR
+VAR
+	discriment : LREAL;
+END_VAR	
+VAR_OUTPUT
+	error : BOOL;
+	plusResult : LREAL;
+	negResult : LREAL;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[discriment := (EXPT(b,2.0) - 4.0 * a *c);
+IF discriment >= 0 THEN
+	M_QuadraticEquation := (-b + EXPT(EXPT(b,2.0) -4.0 * a *c,0.5))/(2*a);	
+	plusResult := (-b + EXPT(EXPT(b,2.0) -4.0 * a *c,0.5))/(2*a);
+	negResult := (-b - EXPT(EXPT(b,2.0) -4.0 * a *c,0.5))/(2*a);	
+ELSE
+	error := TRUE;
+END_IF	]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_SegmentCaculator" Id="{3b04d2f4-f221-4614-a0fe-fddcf0019703}">
+      <Declaration><![CDATA[METHOD PROTECTED M_SegmentCaculator : BOOL
+VAR_INPUT
+END_VAR
+
+VAR
+	x: INT;
+	y: INT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//This caculates each segment of the move. First are intial which are always 0; 
+timeSegment[0] := TO_TIME(timeSegmentDelta[0]*1000);
+accelSegment[0] :=  intialAcceleration + jerkSegment[0] * timeSegmentDelta[0];
+velocitySegment[0] := intialVelocity + intialAcceleration * timeSegmentDelta[0] + 1.0/2.0*jerkSegment[0]*EXPT(timeSegmentDelta[0],2.0);
+positionSegment[0] := intialPosition + intialVelocity * timeSegmentDelta[0] + 1.0/2.0 * intialAcceleration * EXPT(timeSegmentDelta[0],2.0) + 1.0/6.0*jerkSegment[0]*EXPT(timeSegmentDelta[0],3.0);
+	
+FOR x := 1 TO 6 BY 1 DO
+	y := x-1;
+	timeSegment[x] := timeSegment[y] + TO_TIME(timeSegmentDelta[x]*1000);
+	
+	accelSegment[x] := accelSegment[y] + jerkSegment[x] * timeSegmentDelta[x];			
+	
+	velocitySegment[x] := velocitySegment[y] + accelSegment[y] * timeSegmentDelta[x] + 1.0/2.0*jerkSegment[x]*EXPT(timeSegmentDelta[x],2.0);	
+
+	positionSegment[x] := positionSegment[y] + velocitySegment[y] * timeSegmentDelta[x] + 1.0/2.0 * accelSegment[y] * EXPT(timeSegmentDelta[x],2.0) + 1.0/6.0*jerkSegment[x]*EXPT(timeSegmentDelta[x],3.0);
+
+END_FOR	
+]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_Kinenmatics_V2">
+      <LineId Id="625" Count="5" />
+      <LineId Id="742" Count="0" />
+      <LineId Id="1021" Count="1" />
+      <LineId Id="1315" Count="0" />
+      <LineId Id="743" Count="0" />
+      <LineId Id="809" Count="0" />
+      <LineId Id="747" Count="2" />
+      <LineId Id="810" Count="0" />
+      <LineId Id="937" Count="0" />
+      <LineId Id="1299" Count="0" />
+      <LineId Id="1093" Count="0" />
+      <LineId Id="1163" Count="0" />
+      <LineId Id="1162" Count="0" />
+      <LineId Id="939" Count="0" />
+      <LineId Id="746" Count="0" />
+      <LineId Id="957" Count="0" />
+      <LineId Id="744" Count="0" />
+      <LineId Id="875" Count="4" />
+      <LineId Id="1092" Count="0" />
+      <LineId Id="1158" Count="0" />
+      <LineId Id="1165" Count="0" />
+      <LineId Id="1233" Count="0" />
+      <LineId Id="1166" Count="1" />
+      <LineId Id="870" Count="0" />
+      <LineId Id="869" Count="0" />
+      <LineId Id="868" Count="0" />
+      <LineId Id="631" Count="0" />
+      <LineId Id="1301" Count="10" />
+      <LineId Id="1300" Count="0" />
+      <LineId Id="750" Count="0" />
+      <LineId Id="632" Count="109" />
+      <LineId Id="48" Count="0" />
+      <LineId Id="1313" Count="1" />
+      <LineId Id="1312" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Kinenmatics_V2.M_AccelLimitedMove">
+      <LineId Id="5" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="113" Count="0" />
+      <LineId Id="88" Count="0" />
+      <LineId Id="163" Count="0" />
+      <LineId Id="89" Count="0" />
+      <LineId Id="260" Count="0" />
+      <LineId Id="263" Count="0" />
+      <LineId Id="269" Count="0" />
+      <LineId Id="261" Count="0" />
+      <LineId Id="31" Count="1" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="135" Count="3" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="125" Count="3" />
+      <LineId Id="124" Count="0" />
+      <LineId Id="134" Count="0" />
+      <LineId Id="144" Count="0" />
+      <LineId Id="129" Count="0" />
+      <LineId Id="120" Count="1" />
+      <LineId Id="130" Count="0" />
+      <LineId Id="142" Count="0" />
+      <LineId Id="116" Count="0" />
+      <LineId Id="139" Count="2" />
+      <LineId Id="146" Count="0" />
+      <LineId Id="264" Count="0" />
+      <LineId Id="166" Count="0" />
+      <LineId Id="265" Count="3" />
+      <LineId Id="210" Count="0" />
+      <LineId Id="270" Count="0" />
+      <LineId Id="369" Count="0" />
+      <LineId Id="275" Count="0" />
+      <LineId Id="410" Count="3" />
+      <LineId Id="409" Count="0" />
+      <LineId Id="274" Count="0" />
+      <LineId Id="262" Count="0" />
+      <LineId Id="199" Count="0" />
+      <LineId Id="417" Count="7" />
+      <LineId Id="415" Count="1" />
+      <LineId Id="122" Count="0" />
+      <LineId Id="56" Count="0" />
+      <LineId Id="65" Count="0" />
+      <LineId Id="63" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Kinenmatics_V2.M_AccelVelocityLimitedMove">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Kinenmatics_V2.M_JerkLimitedMove">
+      <LineId Id="147" Count="1" />
+      <LineId Id="304" Count="0" />
+      <LineId Id="306" Count="0" />
+      <LineId Id="305" Count="0" />
+      <LineId Id="308" Count="0" />
+      <LineId Id="307" Count="0" />
+      <LineId Id="309" Count="0" />
+      <LineId Id="388" Count="0" />
+      <LineId Id="387" Count="0" />
+      <LineId Id="303" Count="0" />
+      <LineId Id="201" Count="0" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="297" Count="0" />
+      <LineId Id="205" Count="0" />
+      <LineId Id="204" Count="0" />
+      <LineId Id="153" Count="0" />
+      <LineId Id="389" Count="1" />
+      <LineId Id="412" Count="0" />
+      <LineId Id="234" Count="0" />
+      <LineId Id="411" Count="0" />
+      <LineId Id="409" Count="1" />
+      <LineId Id="408" Count="0" />
+      <LineId Id="180" Count="0" />
+      <LineId Id="405" Count="0" />
+      <LineId Id="404" Count="0" />
+      <LineId Id="157" Count="0" />
+      <LineId Id="83" Count="2" />
+      <LineId Id="82" Count="0" />
+      <LineId Id="115" Count="2" />
+      <LineId Id="122" Count="0" />
+      <LineId Id="119" Count="2" />
+      <LineId Id="102" Count="0" />
+      <LineId Id="123" Count="0" />
+      <LineId Id="113" Count="1" />
+      <LineId Id="105" Count="1" />
+      <LineId Id="149" Count="1" />
+      <LineId Id="211" Count="0" />
+      <LineId Id="177" Count="0" />
+      <LineId Id="343" Count="0" />
+      <LineId Id="212" Count="0" />
+      <LineId Id="178" Count="0" />
+      <LineId Id="13" Count="1" />
+      <LineId Id="16" Count="1" />
+      <LineId Id="338" Count="4" />
+      <LineId Id="345" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="336" Count="0" />
+      <LineId Id="6" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Kinenmatics_V2.M_QuadraticEquation">
+      <LineId Id="5" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="26" Count="1" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="13" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Kinenmatics_V2.M_SegmentCaculator">
+      <LineId Id="55" Count="0" />
+      <LineId Id="60" Count="0" />
+      <LineId Id="59" Count="0" />
+      <LineId Id="56" Count="2" />
+      <LineId Id="14" Count="0" />
+      <LineId Id="51" Count="0" />
+      <LineId Id="50" Count="0" />
+      <LineId Id="39" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="46" Count="0" />
+      <LineId Id="44" Count="0" />
+      <LineId Id="48" Count="1" />
+      <LineId Id="62" Count="0" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

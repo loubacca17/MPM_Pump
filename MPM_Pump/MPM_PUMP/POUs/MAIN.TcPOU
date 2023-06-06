@@ -31,7 +31,8 @@ VAR
 	sizeOfValue : DINT;
 	position : LREAL;
 	dynamicMem : ARRAY [0..65354] OF PVOID;	
-	
+	fbKinenmatics : FB_Kinenmatics;
+	fbKinenmatics2 : FB_Kinenmatics_V2;	
 END_VAR
 //Event Test
 VAR
@@ -80,7 +81,7 @@ fbPump_OpenValve_Result := fbPump.M_Events(fbPump_OpenValve_Result,1);
 fbPump_CloseValve_Result := fbPump.M_Events(fbPump_CloseValve_Result,2);
 fbPump_EnablePump := fbPump.M_Events(fbPump_EnablePump,3);
 fbPump_HomePump := fbPump.M_Events(fbPump_HomePump,4);
-fbPump_MoveVel := fbPump.M_Events(fbPump_MoveVel,7);
+fbPump_MoveVel := fbPump.M_Events(fbPump_MoveVel,8);
 fbPump_MoveHalt := fbPump.M_Events(fbPump_MoveHalt,6);
 FOR x := 0 TO 4 BY 1 DO
 	fbPump.fbEvent.F_GetAnyType(x,p => pPointer[0]);
