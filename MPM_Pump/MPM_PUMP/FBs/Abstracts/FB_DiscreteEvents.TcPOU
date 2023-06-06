@@ -37,7 +37,10 @@ VAR
 	pointerOffset : DINT;
 END_VAR]]></Declaration>
       <Implementation>
-        <ST><![CDATA[F_GetAnyType := pfbConfigBase^.F_GetArrayPosition(uAnyType_User,sizeOfAnyType_User,arrayPosition,offset => pointerOffset);
+        <ST><![CDATA[IF pstAnyType_User = 0 THEN // no values
+	F_GetAnyType := MPM_FBResult.E_Result.S_FAILED;
+END_IF
+F_GetAnyType := pfbConfigBase^.F_GetArrayPosition(uAnyType_User,sizeOfAnyType_User,arrayPosition,offset => pointerOffset);
 IF F_GetAnyType = MPM_FBResult.E_Result.S_OK THEN
 	p := pstAnyType_User + pointerOffset;
 ELSE
@@ -97,7 +100,9 @@ VAR_INPUT
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[]]></ST>
+        <ST><![CDATA[IF pfbConfigBase > 0 THEN 
+	M_Execute := pfbConfigBase^.M_Events(lastResult,eventID);
+END_IF]]></ST>
       </Implementation>
     </Method>
     <Property Name="P_EventId" Id="{cf51e756-b2bf-4a32-9949-f15b5e95182a}">
@@ -126,6 +131,7 @@ END_VAR
       <LineId Id="9" Count="0" />
     </LineIds>
     <LineIds Name="FB_DiscreteEvents.F_GetAnyType">
+      <LineId Id="34" Count="2" />
       <LineId Id="23" Count="0" />
       <LineId Id="5" Count="0" />
       <LineId Id="19" Count="1" />
@@ -146,6 +152,8 @@ END_VAR
     </LineIds>
     <LineIds Name="FB_DiscreteEvents.M_Execute">
       <LineId Id="21" Count="0" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="27" Count="0" />
     </LineIds>
     <LineIds Name="FB_DiscreteEvents.P_EventId.Get">
       <LineId Id="2" Count="0" />

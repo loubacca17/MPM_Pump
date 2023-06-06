@@ -1,0 +1,287 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_PackMLControl_Auto" Id="{c5833f27-92ed-4a89-a91d-67d8b5f3dd79}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_PackMLControl_Auto EXTENDS FB_PackMLControl
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	state : E_PackMLStates;
+	
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Method Name="M_Aborted" Id="{78c335fe-acda-4014-bd30-8b866a0d5e43}">
+      <Declaration><![CDATA[METHOD PUBLIC M_Aborted : HResult
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Aborting" Id="{3444003e-e921-4628-8bfe-b7455b07afae}">
+      <Declaration><![CDATA[METHOD PUBLIC M_Aborting : HResult
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Complete" Id="{e5efc557-b039-48cd-8059-7b3d06b26dd5}">
+      <Declaration><![CDATA[METHOD PUBLIC M_Complete : HResult
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Completing" Id="{c33a5f9d-3834-4555-89e4-e4cada89ab06}">
+      <Declaration><![CDATA[METHOD PUBLIC M_Completing : HREsult
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Execute" Id="{4ec5b464-8a5b-449b-bc5c-de54e9781e20}">
+      <Declaration><![CDATA[METHOD PUBLIC M_Execute : HResult
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_ExecuteControl" Id="{4df9f829-aaf0-41eb-9d68-385cbd1434e7}">
+      <Declaration><![CDATA[METHOD PUBLIC M_ExecuteControl : HResult //needs to run all the time
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CASE state OF
+	E_PackMLStates.aborted:
+		M_Aborted();
+	E_PackMLStates.aborting:
+		M_Aborting();
+	E_PackMLStates.complete:
+		M_Complete();		
+	E_PackMLStates.completing:	
+		M_Completing();
+	E_PackMLStates.execute:	
+		M_Execute();		
+	E_PackMLStates.held:	
+		M_Held();	
+	E_PackMLStates.holding:	
+		M_Holding();		
+	E_PackMLStates.idle:	
+		M_Idle();			
+	E_PackMLStates.starting:	
+		M_Starting();	
+	E_PackMLStates.stopped:	
+		M_Stopped();	
+	E_PackMLStates.stopping:	
+		M_Stopping();
+	E_PackMLStates.suspdending:	
+		M_Suspending();		
+	E_PackMLStates.suspended:	
+		M_Suspended();	
+	E_PackMLStates.suspended:	
+		M_Suspended();
+	E_PackMLStates.un_holding:	
+		M_Un_Holding();			
+	E_PackMLStates.un_suspsending:	
+		M_Un_Suspending();					
+END_CASE]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Held" Id="{5f4f9a6e-7b10-4172-b2ba-372008d57881}">
+      <Declaration><![CDATA[METHOD PUBLIC M_Held : HResult
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Holding" Id="{9b8e953a-67a9-4124-a710-543f9bcd787e}">
+      <Declaration><![CDATA[METHOD PUBLIC M_Holding : HResult
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Idle" Id="{a2ad968b-e06b-4127-b93d-485aac283c9f}">
+      <Declaration><![CDATA[METHOD PUBLIC M_Idle : HResult
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Resetting" Id="{1d9ec857-5dd6-4bb9-b218-cc4502e6f587}">
+      <Declaration><![CDATA[METHOD PUBLIC M_Resetting : HResult
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Starting" Id="{0a584554-f30b-440d-bb06-5ff45cfb6c10}">
+      <Declaration><![CDATA[METHOD M_Starting : HResult
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Stopped" Id="{6f1dabcb-5a75-484d-bf5e-d7f7a44ed766}">
+      <Declaration><![CDATA[METHOD PUBLIC M_Stopped : HResult
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Stopping" Id="{a2477e6e-33d5-4e37-bed5-b0a371e17491}">
+      <Declaration><![CDATA[METHOD PUBLIC M_Stopping : HResult
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Suspended" Id="{18c1fede-7d2b-47e6-95f4-b091adaa6a30}">
+      <Declaration><![CDATA[METHOD PUBLIC M_Suspended : HREsult
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Suspending" Id="{9c59d699-c5c5-475b-aa59-8610ed99caaa}">
+      <Declaration><![CDATA[METHOD PUBLIC M_Suspending : HREsult
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Un_Holding" Id="{2ef0d78f-60a7-40e0-9514-17a12d1dbc9e}">
+      <Declaration><![CDATA[METHOD PUBLIC M_Un_Holding : HREsult
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Un_Suspending" Id="{2712b190-017e-4147-be22-b22e015dc8b8}">
+      <Declaration><![CDATA[METHOD PUBLIC M_Un_Suspending : HREsult
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_PackMLControl_Auto">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_PackMLControl_Auto.M_Aborted">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_PackMLControl_Auto.M_Aborting">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_PackMLControl_Auto.M_Complete">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_PackMLControl_Auto.M_Completing">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_PackMLControl_Auto.M_Execute">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_PackMLControl_Auto.M_ExecuteControl">
+      <LineId Id="5" Count="1" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="11" Count="3" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="18" Count="0" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="23" Count="0" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="28" Count="0" />
+      <LineId Id="27" Count="0" />
+      <LineId Id="30" Count="0" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="36" Count="0" />
+      <LineId Id="35" Count="0" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="37" Count="0" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_PackMLControl_Auto.M_Held">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_PackMLControl_Auto.M_Holding">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_PackMLControl_Auto.M_Idle">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_PackMLControl_Auto.M_Resetting">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_PackMLControl_Auto.M_Starting">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_PackMLControl_Auto.M_Stopped">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_PackMLControl_Auto.M_Stopping">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_PackMLControl_Auto.M_Suspended">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_PackMLControl_Auto.M_Suspending">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_PackMLControl_Auto.M_Un_Holding">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_PackMLControl_Auto.M_Un_Suspending">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

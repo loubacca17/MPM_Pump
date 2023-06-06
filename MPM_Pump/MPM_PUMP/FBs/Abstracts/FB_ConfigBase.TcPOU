@@ -450,7 +450,8 @@ VAR_INPUT
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[_fbName := fbName;]]></ST>
+        <ST><![CDATA[_fbName := fbName;
+]]></ST>
       </Implementation>
     </Method>
     <Method Name="M_Events" Id="{9bfb2769-0fba-4d76-86ce-22f9c6c76e6b}">
@@ -484,6 +485,17 @@ END_VAR
 ]]></Declaration>
         <Implementation>
           <ST><![CDATA[P_fbName := _fbName;]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
+    <Property Name="P_GetNumOfEvents" Id="{5a161ac0-d453-4b8e-913c-bdb5803bb6fd}">
+      <Declaration><![CDATA[PROPERTY PUBLIC ABSTRACT P_GetNumOfEvents : DINT]]></Declaration>
+      <Get Name="Get" Id="{4e2a464b-f9ab-44cf-8e2f-328e0d6c78fb}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[]]></ST>
         </Implementation>
       </Get>
     </Property>
@@ -602,6 +614,7 @@ END_VAR
     </LineIds>
     <LineIds Name="FB_ConfigBase.FB_init">
       <LineId Id="7" Count="0" />
+      <LineId Id="14" Count="0" />
     </LineIds>
     <LineIds Name="FB_ConfigBase.M_Events">
       <LineId Id="5" Count="0" />
@@ -611,6 +624,9 @@ END_VAR
       <LineId Id="36" Count="0" />
     </LineIds>
     <LineIds Name="FB_ConfigBase.P_fbName.Get">
+      <LineId Id="2" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ConfigBase.P_GetNumOfEvents.Get">
       <LineId Id="2" Count="0" />
     </LineIds>
   </POU>

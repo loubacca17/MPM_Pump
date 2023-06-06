@@ -74,7 +74,13 @@
     <Compile Include="FBs\JSON\ST_AxisMapping.TcDUT">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="FBs\Main\E_PackMLStates.TcDUT">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="FBs\Main\FB_JsonFile.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FBs\Main\FB_PackMLControl_Auto.TcPOU">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="FBs\Main\FB_Pump.TcPOU">

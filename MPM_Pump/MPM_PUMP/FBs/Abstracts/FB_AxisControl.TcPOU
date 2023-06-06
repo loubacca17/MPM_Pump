@@ -240,7 +240,7 @@ CASE _state OF
 			_fbResult.P_MethodResult := E_Result.S_OK;
 		ELSIF fbMCMoveAbsolute.Done = TRUE AND fbMCMoveAbsolute.Error = TRUE THEN 
 			_fbResult.P_MethodResult := E_Result.S_FAILED;
-		ELSIF fbMCHalt.CommandAborted = TRUE AND fbMCHalt.Error = FALSE THEN 
+		ELSIF fbMCMoveAbsolute.CommandAborted = TRUE AND fbMCMoveAbsolute.Error = FALSE THEN 
 			_fbResult.P_MethodResult := E_Result.S_FAILED;					
 		END_IF		
 END_CASE]]></ST>
@@ -311,7 +311,7 @@ CASE _state OF
 			_fbResult.P_MethodResult := E_Result.S_OK;
 		ELSIF fbMCMoveRelative.Done = TRUE AND fbMCMoveRelative.Error = TRUE THEN 
 			_fbResult.P_MethodResult := E_Result.S_FAILED;
-		ELSIF fbMCHalt.CommandAborted = TRUE AND fbMCHalt.Error = FALSE THEN 
+		ELSIF fbMCMoveRelative.CommandAborted = TRUE AND fbMCMoveRelative.Error = FALSE THEN 
 			_fbResult.P_MethodResult := E_Result.S_FAILED;		
 		END_IF		
 END_CASE]]></ST>
@@ -384,7 +384,7 @@ CASE _state OF
 			_fbResult.P_MethodResult := E_Result.S_OK;
 		ELSIF fbMoveVelocity.InVelocity = TRUE AND fbMoveVelocity.Error = TRUE THEN 
 			_fbResult.P_MethodResult := E_Result.S_FAILED;
-		ELSIF fbMCHalt.CommandAborted = TRUE AND fbMCHalt.Error = FALSE THEN 
+		ELSIF fbMoveVelocity.CommandAborted = TRUE AND fbMoveVelocity.Error = FALSE THEN 
 			_fbResult.P_MethodResult := E_Result.S_FAILED;					
 		END_IF		
 END_CASE]]></ST>

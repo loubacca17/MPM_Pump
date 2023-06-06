@@ -3,6 +3,7 @@
   <POU Name="MAIN" Id="{b8c91cec-6df0-47d4-9266-f4db1361059c}" SpecialFunc="None">
     <Declaration><![CDATA[PROGRAM MAIN
 VAR
+	ap_fbEvents : ARRAY [0..1023] OF POINTER TO POINTER TO FB_DiscreteEvents;
 	
 	//machine assets
 	a_pFBConfigJson : ARRAY [0..2] OF POINTER TO FB_ConfigBase;
@@ -43,7 +44,7 @@ fbPump_CloseValve_Result : HResult := 1;
 fbPump_EnablePump : HResult := 1;
 fbPump_HomePump : HResult := 1;
 fbPump_MoveAbs : HResult := 1;
-fbPump_MoveVel : HResult := 1;
+fbPump_MoveIncerment : HResult := 1;
 fbPump_MoveHalt : HResult := 1;
 END_VAR
 ]]></Declaration>
@@ -79,12 +80,12 @@ END_IF	]]></ST>
         <ST><![CDATA[fbPump.M_Execute();
 fbPump_OpenValve_Result := fbPump.M_Events(fbPump_OpenValve_Result,1);
 fbPump_CloseValve_Result := fbPump.M_Events(fbPump_CloseValve_Result,2);
-fbPump_EnablePump := fbPump.M_Events(fbPump_EnablePump,3);
-fbPump_HomePump := fbPump.M_Events(fbPump_HomePump,4);
-fbPump_MoveVel := fbPump.M_Events(fbPump_MoveVel,8);
-fbPump_MoveHalt := fbPump.M_Events(fbPump_MoveHalt,6);
+fbPump_EnablePump := fbPump.fbEventEnable.M_Execute(fbPump_EnablePump);
+fbPump_HomePump := fbPump.fbEventHomePump.M_Execute(fbPump_HomePump,);
+fbPump_MoveIncerment := fbPump.fbEventPumpInterminate.M_Execute(fbPump_MoveIncerment);
+fbPump_MoveHalt := fbPump.fbEventMoveHalt.M_Execute(fbPump_MoveHalt);
 FOR x := 0 TO 4 BY 1 DO
-	fbPump.fbEvent.F_GetAnyType(x,p => pPointer[0]);
+	fbPump.fbEventMoveAbs.F_GetAnyType(x,p => pPointer[0]);
 	F_INIT_ST_AnyType(pPointer[0]);
 END_FOR	
 fbPump_MoveAbs := fbPump.M_Events(fbPump_MoveAbs,5);
@@ -104,8 +105,8 @@ END_IF
 IF fbPump_MoveAbs = E_Result.S_OK THEN
 	fbPump_MoveAbs := E_Result.S_DONE;
 END_IF 
-IF fbPump_MoveVel = E_Result.S_OK THEN
-	fbPump_MoveVel := E_Result.S_DONE;
+IF fbPump_MoveIncerment = E_Result.S_OK THEN
+	fbPump_MoveIncerment := E_Result.S_DONE;
 END_IF 
 IF fbPump_MoveHalt = E_Result.S_OK THEN
 	fbPump_MoveHalt := E_Result.S_DONE;

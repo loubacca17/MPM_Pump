@@ -5,7 +5,12 @@
 VAR_INPUT
 END_VAR
 VAR_OUTPUT
-	fbEvent : FB_DiscreteEvents(THIS,5,ADR(mcMoveAbs),SIZEOF(mcMoveAbs));	
+	fbEventEnable : FB_DiscreteEvents(THIS,3,0,0);	
+	fbEventHomePump : FB_DiscreteEvents(THIS,4,0,0);	
+	fbEventMoveAbs : FB_DiscreteEvents(THIS,5,ADR(mcMoveAbs),SIZEOF(mcMoveAbs));	
+	fbEventMoveHalt : FB_DiscreteEvents(THIS,6,0,0);			
+	fbEventPumpContinuous : FB_DiscreteEvents(THIS,7,0,0);			
+	fbEventPumpInterminate : FB_DiscreteEvents(THIS,8,0,0);		
 END_VAR
 VAR
 	axis : Tc2_MC2.AXIS_REF;		
@@ -42,7 +47,6 @@ END_VAR
 VAR
 	//Recipe tags
 	//Intermient Move
-	enableContinuouse : BOOL;
 	volume : LREAL; // this will set number of revs
 	timeToDispense : LREAL; //time to dispence 
 	//Continous mode
@@ -50,7 +54,7 @@ VAR
 	highLevelOverride : LREAL;
 	lowLevelOverride : LREAL;
 	//System tags
-	volumePerRotation : LREAL;
+	volumePerRotation : LREAL; //0.23 liters for pump
 	//IO
 	lowLevelSensor : BOOL;
 	HighLevelSensor : BOOL;
@@ -363,6 +367,17 @@ CASE _state OF
 END_CASE]]></ST>
       </Implementation>
     </Method>
+    <Property Name="P_GetNumOfEvents" Id="{61d7c5cd-c689-4065-9aba-5835c5d5d6c1}">
+      <Declaration><![CDATA[PROPERTY P_GetNumOfEvents : DINT]]></Declaration>
+      <Get Name="Get" Id="{fee2f59a-d6da-4d5a-b2a3-33ea22d74d3a}">
+        <Declaration><![CDATA[VAR
+END_VAR
+]]></Declaration>
+        <Implementation>
+          <ST><![CDATA[P_GetNumOfEvents := 6; //0..5]]></ST>
+        </Implementation>
+      </Get>
+    </Property>
     <LineIds Name="FB_Pump">
       <LineId Id="9" Count="0" />
     </LineIds>
@@ -442,6 +457,9 @@ END_CASE]]></ST>
     <LineIds Name="FB_Pump.M_OpenValve">
       <LineId Id="12" Count="17" />
       <LineId Id="10" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pump.P_GetNumOfEvents.Get">
+      <LineId Id="2" Count="0" />
     </LineIds>
   </POU>
 </TcPlcObject>
