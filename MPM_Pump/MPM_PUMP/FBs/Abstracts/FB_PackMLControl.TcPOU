@@ -10,6 +10,12 @@ END_VAR
 VAR_OUTPUT
 END_VAR
 VAR
+	state_idle : DINT;
+	state_starting : DINT;
+	state_execute : DINT;	
+	start : BOOL;
+	complete : BOOL;
+	stateMachineResult : HResult;
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -37,7 +43,9 @@ END_VAR
       <Declaration><![CDATA[METHOD PUBLIC ABSTRACT M_Complete : HResult
 VAR_INPUT
 END_VAR
-]]></Declaration>
+VAR_OUTPUT
+	abort : BOOL;
+END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[]]></ST>
       </Implementation>
@@ -46,7 +54,10 @@ END_VAR
       <Declaration><![CDATA[METHOD PUBLIC ABSTRACT M_Completing : HREsult
 VAR_INPUT
 END_VAR
-]]></Declaration>
+VAR_OUTPUT
+	abort : BOOL;	
+	stop : BOOL;
+END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[]]></ST>
       </Implementation>
@@ -54,8 +65,13 @@ END_VAR
     <Method Name="M_Execute" Id="{6d6c0d6f-162d-4964-b62c-51432b81664e}">
       <Declaration><![CDATA[METHOD PUBLIC ABSTRACT M_Execute : HResult
 VAR_INPUT
+	lastResult : HResult;
 END_VAR
-]]></Declaration>
+VAR_OUTPUT
+	stop : BOOL;
+	suspend : BOOL;
+	hold : BOOL;
+END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[]]></ST>
       </Implementation>
@@ -64,7 +80,10 @@ END_VAR
       <Declaration><![CDATA[METHOD PUBLIC ABSTRACT M_Held : HResult
 VAR_INPUT
 END_VAR
-]]></Declaration>
+VAR_OUTPUT
+	abort : BOOL;
+	stop : BOOL;
+END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[]]></ST>
       </Implementation>
@@ -73,7 +92,10 @@ END_VAR
       <Declaration><![CDATA[METHOD PUBLIC ABSTRACT M_Holding : HResult
 VAR_INPUT
 END_VAR
-]]></Declaration>
+VAR_OUTPUT
+	abort : BOOL;
+	stop : BOOL;
+END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[]]></ST>
       </Implementation>
@@ -81,8 +103,11 @@ END_VAR
     <Method Name="M_Idle" Id="{35d02f5b-8116-4985-857c-a6782823d22b}">
       <Declaration><![CDATA[METHOD PUBLIC ABSTRACT M_Idle : HResult
 VAR_INPUT
+	lastResult : HResult;
 END_VAR
-]]></Declaration>
+VAR_OUTPUT
+	abort : BOOL;
+END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[]]></ST>
       </Implementation>
@@ -91,7 +116,10 @@ END_VAR
       <Declaration><![CDATA[METHOD PUBLIC ABSTRACT M_Resetting : HResult
 VAR_INPUT
 END_VAR
-]]></Declaration>
+VAR_OUTPUT
+	abort : BOOL;
+	stop : BOOL;
+END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[]]></ST>
       </Implementation>
@@ -99,8 +127,12 @@ END_VAR
     <Method Name="M_Starting" Id="{f2f0aab8-8019-40af-ab0e-d4f9bae5be2d}">
       <Declaration><![CDATA[METHOD ABSTRACT M_Starting : HResult
 VAR_INPUT
+	lastResult : HResult;
 END_VAR
-]]></Declaration>
+VAR_OUTPUT
+	abort : BOOL;
+	stop : BOOL;
+END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[]]></ST>
       </Implementation>
@@ -109,7 +141,9 @@ END_VAR
       <Declaration><![CDATA[METHOD PUBLIC ABSTRACT M_Stopped : HResult
 VAR_INPUT
 END_VAR
-]]></Declaration>
+VAR_OUTPUT
+	abort : BOOL;
+END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[]]></ST>
       </Implementation>
@@ -118,7 +152,9 @@ END_VAR
       <Declaration><![CDATA[METHOD PUBLIC ABSTRACT M_Stopping : HResult
 VAR_INPUT
 END_VAR
-]]></Declaration>
+VAR_OUTPUT
+	abort : BOOL;
+END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[]]></ST>
       </Implementation>
@@ -127,7 +163,10 @@ END_VAR
       <Declaration><![CDATA[METHOD PUBLIC ABSTRACT M_Suspended : HREsult
 VAR_INPUT
 END_VAR
-]]></Declaration>
+VAR_OUTPUT
+	abort : BOOL;
+	stop : BOOL;
+END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[]]></ST>
       </Implementation>
@@ -136,7 +175,10 @@ END_VAR
       <Declaration><![CDATA[METHOD PUBLIC ABSTRACT M_Suspending : HREsult
 VAR_INPUT
 END_VAR
-]]></Declaration>
+VAR_OUTPUT
+	abort : BOOL;
+	stop : BOOL;
+END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[]]></ST>
       </Implementation>
@@ -145,7 +187,10 @@ END_VAR
       <Declaration><![CDATA[METHOD PUBLIC ABSTRACT M_Un_Holding : HREsult
 VAR_INPUT
 END_VAR
-]]></Declaration>
+VAR_OUTPUT
+	abort : BOOL;
+	stop : BOOL;
+END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[]]></ST>
       </Implementation>
@@ -154,7 +199,10 @@ END_VAR
       <Declaration><![CDATA[METHOD PUBLIC ABSTRACT M_Un_Suspending : HREsult
 VAR_INPUT
 END_VAR
-]]></Declaration>
+VAR_OUTPUT
+	abort : BOOL;
+	stop : BOOL;
+END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[]]></ST>
       </Implementation>

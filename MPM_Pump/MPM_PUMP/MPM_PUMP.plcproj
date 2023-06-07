@@ -36,6 +36,9 @@
     <Compile Include="FBs\Abstracts\FB_TimeEvents.TcPOU">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="FBs\FB_EventArray.TcPOU">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="FBs\FB_Kinenmatics.TcPOU">
       <SubType>Code</SubType>
     </Compile>

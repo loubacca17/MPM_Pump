@@ -3,13 +3,14 @@
   <POU Name="MAIN" Id="{b8c91cec-6df0-47d4-9266-f4db1361059c}" SpecialFunc="None">
     <Declaration><![CDATA[PROGRAM MAIN
 VAR
-	ap_fbEvents : ARRAY [0..1023] OF POINTER TO POINTER TO FB_DiscreteEvents;
-	
+	ap_fbEvents : ARRAY [0..1023] OF POINTER TO FB_DiscreteEvents;
+	index : UDINT;
 	//machine assets
-	a_pFBConfigJson : ARRAY [0..2] OF POINTER TO FB_ConfigBase;
 	fbPump : FB_Pump('fbName');
 	fbPump1 : FB_Pump('fbName1');
-	fbPump2 : FB_Pump('fbName2');
+	fbPump2 : FB_Pump('fbName2');	
+	a_pFBConfigJson : ARRAY [0..2] OF POINTER TO FB_ConfigBase;
+
 	//config control
 	fbConfigControl : FB_ConfigControl;
 	fbConfigControl_JsonRecipeResult : HRESULT;
@@ -21,6 +22,8 @@ VAR
 	jsonIODoc : STRING(50000);
 	jsonAxisDoc : STRING(50000);
 	
+	//stateMachine
+	fbPackMLControlAuto : FB_PackMLControl_Auto; 
 	//Node-Red
 	fbJsonMQTT : Tc3_IotBase.FB_IotMqttClient;
 	mqttPubRate : TON;
@@ -38,6 +41,7 @@ END_VAR
 //Event Test
 VAR
 x : DINT;
+y : DINT;
 aLreal : ARRAY [0..0] OF LREAL;
 fbPump_OpenValve_Result : HResult := 1;
 fbPump_CloseValve_Result : HResult := 1;
@@ -53,7 +57,10 @@ END_VAR
 
 A_INIT();
 A_ConfigControl();
-A_Events();]]></ST>
+A_Events();
+
+fbPackMLControlAuto.ap_fbEvents := ADR(ap_fbEvents);
+fbPackMLControlAuto.M_ExecuteControl();]]></ST>
     </Implementation>
     <Action Name="A_ConfigControl" Id="{4eef083a-06cd-4e6a-a4ee-df3e2239f93d}">
       <Implementation>
@@ -118,10 +125,18 @@ END_IF ]]></ST>
         <ST><![CDATA[
 
 //Map all 
-a_pFBConfigJson[0] := ADR(fbPump);
-a_pFBConfigJson[1] := ADR(fbPump1);
-a_pFBConfigJson[2] := ADR(fbPump2);
-]]></ST>
+IF index = 0 THEN
+	a_pFBConfigJson[0] := ADR(fbPump);
+	a_pFBConfigJson[1] := ADR(fbPump1);
+	a_pFBConfigJson[2] := ADR(fbPump2);
+	
+	FOR x := 0 TO 2 BY 1 DO
+		FOR y := 0 TO a_pFBConfigJson[x]^.P_GetNumOfEvents - 1 BY 1 DO
+			a_pFBConfigJson[x]^.M_GetEvent(ADR(ap_fbEvents[index]),y);
+			index := index + 1;		
+		END_FOR
+	END_FOR
+END_IF	]]></ST>
       </Implementation>
     </Action>
     <LineIds Name="MAIN">
@@ -130,6 +145,8 @@ a_pFBConfigJson[2] := ADR(fbPump2);
       <LineId Id="61" Count="0" />
       <LineId Id="11" Count="0" />
       <LineId Id="28" Count="0" />
+      <LineId Id="174" Count="1" />
+      <LineId Id="173" Count="0" />
     </LineIds>
     <LineIds Name="MAIN.A_ConfigControl">
       <LineId Id="22" Count="1" />
@@ -171,9 +188,15 @@ a_pFBConfigJson[2] := ADR(fbPump2);
     </LineIds>
     <LineIds Name="MAIN.A_INIT">
       <LineId Id="3" Count="2" />
+      <LineId Id="16" Count="0" />
       <LineId Id="1" Count="0" />
-      <LineId Id="8" Count="1" />
+      <LineId Id="8" Count="2" />
       <LineId Id="6" Count="0" />
+      <LineId Id="11" Count="0" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="13" Count="1" />
+      <LineId Id="12" Count="0" />
+      <LineId Id="17" Count="0" />
     </LineIds>
   </POU>
 </TcPlcObject>

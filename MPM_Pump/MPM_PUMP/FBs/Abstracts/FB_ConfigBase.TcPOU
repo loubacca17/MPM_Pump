@@ -477,6 +477,17 @@ END_VAR]]></Declaration>
 ]]></ST>
       </Implementation>
     </Method>
+    <Method Name="M_GetEvent" Id="{f2004318-5ed6-456d-af31-fbab4ca91ec4}">
+      <Declaration><![CDATA[METHOD PUBLIC ABSTRACT M_GetEvent : HResult
+VAR_INPUT
+	pFbDiscreteEvents : POINTER TO POINTER TO FB_DiscreteEvents;
+	index : DINT;	
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[]]></ST>
+      </Implementation>
+    </Method>
     <Property Name="P_fbName" Id="{5a2b393b-8b77-4ed7-a71a-7e64119bd062}">
       <Declaration><![CDATA[PROPERTY PUBLIC P_fbName : STRING]]></Declaration>
       <Get Name="Get" Id="{831f96df-87bd-4bb9-ad06-74017936567e}">
@@ -622,6 +633,9 @@ END_VAR
     <LineIds Name="FB_ConfigBase.M_Execute">
       <LineId Id="33" Count="1" />
       <LineId Id="36" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_ConfigBase.M_GetEvent">
+      <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_ConfigBase.P_fbName.Get">
       <LineId Id="2" Count="0" />

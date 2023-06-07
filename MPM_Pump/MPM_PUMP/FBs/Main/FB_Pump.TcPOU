@@ -47,8 +47,8 @@ END_VAR
 VAR
 	//Recipe tags
 	//Intermient Move
-	volume : LREAL; // this will set number of revs
-	timeToDispense : LREAL; //time to dispence 
+	volume : LREAL := 100; // this will set number of revs
+	timeToDispense : LREAL := 10; //time to dispence 
 	//Continous mode
 	volumePerSecond : LREAL;
 	highLevelOverride : LREAL;
@@ -335,6 +335,30 @@ END_VAR
         <ST><![CDATA[fbAxisControl.M_Execute();]]></ST>
       </Implementation>
     </Method>
+    <Method Name="M_GetEvent" Id="{55c7dc70-85b6-4927-90ef-d2a1607f9605}">
+      <Declaration><![CDATA[METHOD M_GetEvent : HResult
+VAR_INPUT
+	pFbDiscreteEvents : POINTER TO POINTER TO FB_DiscreteEvents;
+	index : DINT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CASE index OF
+	0:
+		pFbDiscreteEvents^ := ADR(fbEventEnable);
+	1:
+		pFbDiscreteEvents^ := ADR(fbEventHomePump);	
+	2:
+		pFbDiscreteEvents^ := ADR(fbEventMoveAbs);
+	3:
+		pFbDiscreteEvents^ := ADR(fbEventMoveHalt);	
+	4:
+		pFbDiscreteEvents^ := ADR(fbEventPumpContinuous);	
+	5:
+		pFbDiscreteEvents^ := ADR(fbEventPumpInterminate);									
+END_CASE]]></ST>
+      </Implementation>
+    </Method>
     <Method Name="M_OpenValve" Id="{1d61b728-5b23-417e-8cf6-8a998ec2c686}" FolderPath="Events\">
       <Declaration><![CDATA[METHOD PROTECTED M_OpenValve : HResult
 VAR_INPUT
@@ -453,6 +477,13 @@ END_VAR
     </LineIds>
     <LineIds Name="FB_Pump.M_Execute">
       <LineId Id="5" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pump.M_GetEvent">
+      <LineId Id="5" Count="0" />
+      <LineId Id="8" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="17" Count="9" />
+      <LineId Id="9" Count="0" />
     </LineIds>
     <LineIds Name="FB_Pump.M_OpenValve">
       <LineId Id="12" Count="17" />

@@ -3,17 +3,31 @@
   <POU Name="FB_PackMLControl_Auto" Id="{c5833f27-92ed-4a89-a91d-67d8b5f3dd79}" SpecialFunc="None">
     <Declaration><![CDATA[FUNCTION_BLOCK FB_PackMLControl_Auto EXTENDS FB_PackMLControl
 VAR_INPUT
+	ap_fbEvents : POINTER TO ARRAY [0..1023] OF POINTER TO FB_DiscreteEvents;	
 END_VAR
 VAR_OUTPUT
 END_VAR
 VAR
-	state : E_PackMLStates;
-	
+	state : E_PackMLStates := E_PackMLStates.idle;
+	ap_fbEventsIdle : ARRAY [0..0] OF POINTER TO FB_DiscreteEvents;		
+	ap_fbEventsStarting : ARRAY [0..0] OF POINTER TO FB_DiscreteEvents;		
+	ap_fbEventsExecute : ARRAY [0..0] OF POINTER TO FB_DiscreteEvents;			
 END_VAR
 ]]></Declaration>
     <Implementation>
       <ST><![CDATA[]]></ST>
     </Implementation>
+    <Method Name="_mapping" Id="{95fbdf69-4d70-4cf0-a04e-f41a3e57e609}">
+      <Declaration><![CDATA[METHOD PROTECTED _mapping : HResult
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[ap_fbEventsIdle[0] := ap_fbEvents^[0];
+ap_fbEventsStarting[0] := ap_fbEvents^[1];
+ap_fbEventsExecute[0] := ap_fbEvents^[5];]]></ST>
+      </Implementation>
+    </Method>
     <Method Name="M_Aborted" Id="{78c335fe-acda-4014-bd30-8b866a0d5e43}">
       <Declaration><![CDATA[METHOD PUBLIC M_Aborted : HResult
 VAR_INPUT
@@ -36,7 +50,9 @@ END_VAR
       <Declaration><![CDATA[METHOD PUBLIC M_Complete : HResult
 VAR_INPUT
 END_VAR
-]]></Declaration>
+VAR_OUTPUT
+	abort : BOOL;
+END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[]]></ST>
       </Implementation>
@@ -45,7 +61,10 @@ END_VAR
       <Declaration><![CDATA[METHOD PUBLIC M_Completing : HREsult
 VAR_INPUT
 END_VAR
-]]></Declaration>
+VAR_OUTPUT
+	abort : BOOL;	
+	stop : BOOL;
+END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[]]></ST>
       </Implementation>
@@ -53,10 +72,40 @@ END_VAR
     <Method Name="M_Execute" Id="{4ec5b464-8a5b-449b-bc5c-de54e9781e20}">
       <Declaration><![CDATA[METHOD PUBLIC M_Execute : HResult
 VAR_INPUT
+	lastResult : HResult;
 END_VAR
-]]></Declaration>
+VAR_OUTPUT
+	stop : BOOL;
+	suspend : BOOL;
+	hold : BOOL;
+END_VAR
+VAR_INST
+	_fbResult : FB_ResultHelper_V2_1;	
+	_lastResult : HRESULT;
+	_state : POINTER TO DINT;
+	_ap_fbEventsExecute0_Result : HResult;
+END_VAR]]></Declaration>
       <Implementation>
-        <ST><![CDATA[]]></ST>
+        <ST><![CDATA[_state := ADR(state_execute);
+IF _fbResult.M_MethodResult(M_Execute,lastResult,ADR(_lastResult)) = FALSE THEN
+	RETURN;
+END_IF
+
+IF _fbResult.P_MethodResult = E_Result.S_OK THEN
+	_state^ := 0;
+	_ap_fbEventsExecute0_Result := 0;
+END_IF
+
+	_fbResult.P_MethodResult := MPM_FBResult.E_Result.S_WORKING;
+
+CASE _state^ OF
+	0:
+		_ap_fbEventsExecute0_Result := ap_fbEventsExecute[0]^.M_Execute(_ap_fbEventsExecute0_Result);
+		IF _ap_fbEventsExecute0_Result = MPM_FBResult.E_Result.S_OK AND complete = TRUE THEN
+			_fbResult.P_MethodResult := MPM_FBResult.E_Result.S_OK;
+		END_IF
+END_CASE
+]]></ST>
       </Implementation>
     </Method>
     <Method Name="M_ExecuteControl" Id="{4df9f829-aaf0-41eb-9d68-385cbd1434e7}">
@@ -65,7 +114,8 @@ VAR_INPUT
 END_VAR
 ]]></Declaration>
       <Implementation>
-        <ST><![CDATA[CASE state OF
+        <ST><![CDATA[_mapping();
+CASE state OF
 	E_PackMLStates.aborted:
 		M_Aborted();
 	E_PackMLStates.aborting:
@@ -75,15 +125,24 @@ END_VAR
 	E_PackMLStates.completing:	
 		M_Completing();
 	E_PackMLStates.execute:	
-		M_Execute();		
+		stateMachineResult := M_Execute(stateMachineResult);	
+		IF stateMachineResult = MPM_FBResult.E_Result.S_OK THEN
+			state := E_PackMLStates.completing;
+		END_IF			
 	E_PackMLStates.held:	
 		M_Held();	
 	E_PackMLStates.holding:	
 		M_Holding();		
 	E_PackMLStates.idle:	
-		M_Idle();			
+		stateMachineResult := M_Idle(stateMachineResult);		
+		IF stateMachineResult = MPM_FBResult.E_Result.S_OK THEN
+			state := E_PackMLStates.starting;
+		END_IF	
 	E_PackMLStates.starting:	
-		M_Starting();	
+		stateMachineResult := M_Starting(stateMachineResult);
+		IF stateMachineResult = MPM_FBResult.E_Result.S_OK THEN
+			state := E_PackMLStates.execute;
+		END_IF		
 	E_PackMLStates.stopped:	
 		M_Stopped();	
 	E_PackMLStates.stopping:	
@@ -92,8 +151,6 @@ END_VAR
 		M_Suspending();		
 	E_PackMLStates.suspended:	
 		M_Suspended();	
-	E_PackMLStates.suspended:	
-		M_Suspended();
 	E_PackMLStates.un_holding:	
 		M_Un_Holding();			
 	E_PackMLStates.un_suspsending:	
@@ -105,7 +162,10 @@ END_CASE]]></ST>
       <Declaration><![CDATA[METHOD PUBLIC M_Held : HResult
 VAR_INPUT
 END_VAR
-]]></Declaration>
+VAR_OUTPUT
+	abort : BOOL;
+	stop : BOOL;
+END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[]]></ST>
       </Implementation>
@@ -114,7 +174,10 @@ END_VAR
       <Declaration><![CDATA[METHOD PUBLIC M_Holding : HResult
 VAR_INPUT
 END_VAR
-]]></Declaration>
+VAR_OUTPUT
+	abort : BOOL;
+	stop : BOOL;
+END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[]]></ST>
       </Implementation>
@@ -122,17 +185,46 @@ END_VAR
     <Method Name="M_Idle" Id="{a2ad968b-e06b-4127-b93d-485aac283c9f}">
       <Declaration><![CDATA[METHOD PUBLIC M_Idle : HResult
 VAR_INPUT
+	lastResult : HResult;
 END_VAR
-]]></Declaration>
+VAR_OUTPUT
+	abort : BOOL;
+END_VAR
+VAR_INST
+	_fbResult : FB_ResultHelper_V2_1;	
+	_lastResult : HRESULT;
+	_state : POINTER TO DINT;
+END_VAR]]></Declaration>
       <Implementation>
-        <ST><![CDATA[]]></ST>
+        <ST><![CDATA[_state := ADR(state_idle);
+IF _fbResult.M_MethodResult(M_Idle,lastResult,ADR(_lastResult)) = FALSE THEN
+	RETURN;
+END_IF
+
+IF _fbResult.P_MethodResult = E_Result.S_OK THEN
+	_state^ := 0;
+END_IF
+
+
+
+CASE _state^ OF
+	0:
+		_fbResult.P_MethodResult := ap_fbEventsIdle[0]^.M_Execute(_fbResult.P_MethodResult);
+		IF _fbResult.P_MethodResult = MPM_FBResult.E_Result.S_WORKING AND start = TRUE THEN
+			_fbResult.P_MethodResult := MPM_FBResult.E_Result.S_OK;
+		END_IF
+END_CASE
+]]></ST>
       </Implementation>
     </Method>
     <Method Name="M_Resetting" Id="{1d9ec857-5dd6-4bb9-b218-cc4502e6f587}">
       <Declaration><![CDATA[METHOD PUBLIC M_Resetting : HResult
 VAR_INPUT
 END_VAR
-]]></Declaration>
+VAR_OUTPUT
+	abort : BOOL;
+	stop : BOOL;
+END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[]]></ST>
       </Implementation>
@@ -140,17 +232,44 @@ END_VAR
     <Method Name="M_Starting" Id="{0a584554-f30b-440d-bb06-5ff45cfb6c10}">
       <Declaration><![CDATA[METHOD M_Starting : HResult
 VAR_INPUT
+	lastResult : HResult;
 END_VAR
-]]></Declaration>
+VAR_OUTPUT
+	abort : BOOL;
+	stop : BOOL;
+END_VAR
+VAR_INST
+	_fbResult : FB_ResultHelper_V2_1;	
+	_lastResult : HRESULT;
+	_state : POINTER TO DINT;
+END_VAR]]></Declaration>
       <Implementation>
-        <ST><![CDATA[]]></ST>
+        <ST><![CDATA[_state := ADR(state_starting);
+IF _fbResult.M_MethodResult(M_Starting,lastResult,ADR(_lastResult)) = FALSE THEN
+	RETURN;
+END_IF
+
+IF _fbResult.P_MethodResult = E_Result.S_OK THEN
+	_state^ := 0;
+END_IF
+
+CASE _state^ OF
+	0:
+		_fbResult.P_MethodResult := ap_fbEventsStarting[0]^.M_Execute(_fbResult.P_MethodResult);
+		IF _fbResult.P_MethodResult = MPM_FBResult.E_Result.S_OK THEN
+			_fbResult.P_MethodResult := MPM_FBResult.E_Result.S_OK;
+		END_IF
+END_CASE
+]]></ST>
       </Implementation>
     </Method>
     <Method Name="M_Stopped" Id="{6f1dabcb-5a75-484d-bf5e-d7f7a44ed766}">
       <Declaration><![CDATA[METHOD PUBLIC M_Stopped : HResult
 VAR_INPUT
 END_VAR
-]]></Declaration>
+VAR_OUTPUT
+	abort : BOOL;
+END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[]]></ST>
       </Implementation>
@@ -159,7 +278,9 @@ END_VAR
       <Declaration><![CDATA[METHOD PUBLIC M_Stopping : HResult
 VAR_INPUT
 END_VAR
-]]></Declaration>
+VAR_OUTPUT
+	abort : BOOL;
+END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[]]></ST>
       </Implementation>
@@ -168,7 +289,10 @@ END_VAR
       <Declaration><![CDATA[METHOD PUBLIC M_Suspended : HREsult
 VAR_INPUT
 END_VAR
-]]></Declaration>
+VAR_OUTPUT
+	abort : BOOL;
+	stop : BOOL;
+END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[]]></ST>
       </Implementation>
@@ -177,7 +301,10 @@ END_VAR
       <Declaration><![CDATA[METHOD PUBLIC M_Suspending : HREsult
 VAR_INPUT
 END_VAR
-]]></Declaration>
+VAR_OUTPUT
+	abort : BOOL;
+	stop : BOOL;
+END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[]]></ST>
       </Implementation>
@@ -186,7 +313,10 @@ END_VAR
       <Declaration><![CDATA[METHOD PUBLIC M_Un_Holding : HREsult
 VAR_INPUT
 END_VAR
-]]></Declaration>
+VAR_OUTPUT
+	abort : BOOL;
+	stop : BOOL;
+END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[]]></ST>
       </Implementation>
@@ -195,13 +325,19 @@ END_VAR
       <Declaration><![CDATA[METHOD PUBLIC M_Un_Suspending : HREsult
 VAR_INPUT
 END_VAR
-]]></Declaration>
+VAR_OUTPUT
+	abort : BOOL;
+	stop : BOOL;
+END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[]]></ST>
       </Implementation>
     </Method>
     <LineIds Name="FB_PackMLControl_Auto">
       <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_PackMLControl_Auto._mapping">
+      <LineId Id="5" Count="2" />
     </LineIds>
     <LineIds Name="FB_PackMLControl_Auto.M_Aborted">
       <LineId Id="5" Count="0" />
@@ -216,9 +352,18 @@ END_VAR
       <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_PackMLControl_Auto.M_Execute">
+      <LineId Id="24" Count="6" />
+      <LineId Id="56" Count="0" />
+      <LineId Id="31" Count="0" />
+      <LineId Id="15" Count="0" />
       <LineId Id="5" Count="0" />
+      <LineId Id="46" Count="2" />
+      <LineId Id="55" Count="0" />
+      <LineId Id="50" Count="3" />
+      <LineId Id="45" Count="0" />
     </LineIds>
     <LineIds Name="FB_PackMLControl_Auto.M_ExecuteControl">
+      <LineId Id="42" Count="0" />
       <LineId Id="5" Count="1" />
       <LineId Id="8" Count="0" />
       <LineId Id="10" Count="0" />
@@ -226,14 +371,19 @@ END_VAR
       <LineId Id="11" Count="3" />
       <LineId Id="16" Count="0" />
       <LineId Id="15" Count="0" />
+      <LineId Id="51" Count="1" />
+      <LineId Id="49" Count="0" />
       <LineId Id="18" Count="0" />
       <LineId Id="17" Count="0" />
       <LineId Id="20" Count="0" />
       <LineId Id="19" Count="0" />
       <LineId Id="22" Count="0" />
       <LineId Id="21" Count="0" />
+      <LineId Id="43" Count="2" />
       <LineId Id="24" Count="0" />
       <LineId Id="23" Count="0" />
+      <LineId Id="47" Count="1" />
+      <LineId Id="46" Count="0" />
       <LineId Id="26" Count="0" />
       <LineId Id="25" Count="0" />
       <LineId Id="28" Count="0" />
@@ -242,8 +392,6 @@ END_VAR
       <LineId Id="29" Count="0" />
       <LineId Id="32" Count="0" />
       <LineId Id="31" Count="0" />
-      <LineId Id="34" Count="0" />
-      <LineId Id="33" Count="0" />
       <LineId Id="36" Count="0" />
       <LineId Id="35" Count="0" />
       <LineId Id="38" Count="0" />
@@ -257,12 +405,25 @@ END_VAR
       <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_PackMLControl_Auto.M_Idle">
-      <LineId Id="5" Count="0" />
+      <LineId Id="29" Count="0" />
+      <LineId Id="22" Count="1" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="25" Count="0" />
+      <LineId Id="27" Count="1" />
+      <LineId Id="26" Count="0" />
+      <LineId Id="30" Count="2" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="33" Count="0" />
+      <LineId Id="38" Count="0" />
+      <LineId Id="35" Count="2" />
+      <LineId Id="34" Count="0" />
+      <LineId Id="11" Count="0" />
     </LineIds>
     <LineIds Name="FB_PackMLControl_Auto.M_Resetting">
       <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_PackMLControl_Auto.M_Starting">
+      <LineId Id="17" Count="15" />
       <LineId Id="5" Count="0" />
     </LineIds>
     <LineIds Name="FB_PackMLControl_Auto.M_Stopped">
