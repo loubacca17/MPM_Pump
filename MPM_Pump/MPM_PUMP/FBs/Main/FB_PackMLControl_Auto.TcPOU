@@ -101,7 +101,7 @@ END_IF
 CASE _state^ OF
 	0:
 		_ap_fbEventsExecute0_Result := ap_fbEventsExecute[0]^.M_Execute(_ap_fbEventsExecute0_Result);
-		IF _ap_fbEventsExecute0_Result = MPM_FBResult.E_Result.S_OK AND complete = TRUE THEN
+		IF _ap_fbEventsExecute0_Result = MPM_FBResult.E_Result.S_OK THEN
 			_fbResult.P_MethodResult := MPM_FBResult.E_Result.S_OK;
 		END_IF
 END_CASE
@@ -135,7 +135,7 @@ CASE state OF
 		M_Holding();		
 	E_PackMLStates.idle:	
 		stateMachineResult := M_Idle(stateMachineResult);		
-		IF stateMachineResult = MPM_FBResult.E_Result.S_OK THEN
+		IF stateMachineResult = MPM_FBResult.E_Result.S_WORKING AND start = TRUE THEN
 			state := E_PackMLStates.starting;
 		END_IF	
 	E_PackMLStates.starting:	
@@ -210,9 +210,6 @@ END_IF
 CASE _state^ OF
 	0:
 		_fbResult.P_MethodResult := ap_fbEventsIdle[0]^.M_Execute(_fbResult.P_MethodResult);
-		IF _fbResult.P_MethodResult = MPM_FBResult.E_Result.S_WORKING AND start = TRUE THEN
-			_fbResult.P_MethodResult := MPM_FBResult.E_Result.S_OK;
-		END_IF
 END_CASE
 ]]></ST>
       </Implementation>
@@ -266,6 +263,7 @@ END_CASE
     <Method Name="M_Stopped" Id="{6f1dabcb-5a75-484d-bf5e-d7f7a44ed766}">
       <Declaration><![CDATA[METHOD PUBLIC M_Stopped : HResult
 VAR_INPUT
+	
 END_VAR
 VAR_OUTPUT
 	abort : BOOL;
@@ -415,7 +413,6 @@ END_VAR]]></Declaration>
       <LineId Id="17" Count="0" />
       <LineId Id="33" Count="0" />
       <LineId Id="38" Count="0" />
-      <LineId Id="35" Count="2" />
       <LineId Id="34" Count="0" />
       <LineId Id="11" Count="0" />
     </LineIds>

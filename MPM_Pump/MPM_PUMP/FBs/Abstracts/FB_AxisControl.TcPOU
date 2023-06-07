@@ -529,10 +529,17 @@ END_VAR]]></Declaration>
 	RETURN;
 END_IF
 
-IF _fbResult.P_MethodResult = E_Result.S_OK THEN
+	fbMCPower(axis := axisRef);
+
+IF _fbResult.P_MethodResult = E_Result.S_OK  AND Enable = TRUE AND fbMCPower.Busy = TRUE THEN //if running allready return S_OK
+	_fbResult.P_MethodResult := E_Result.S_WORKING;
+	RETURN;
+ELSIF _fbResult.P_MethodResult = E_Result.S_OK THEN 	
 	_state := 0;
 	fbMCPower(axis := axisRef,Enable := FALSE);
 END_IF
+
+
 
 _fbResult.P_MethodResult := E_Result.S_WORKING;
 
@@ -775,9 +782,16 @@ END_CASE]]></ST>
     </LineIds>
     <LineIds Name="FB_AxisControl.MC_Power">
       <LineId Id="6" Count="0" />
-      <LineId Id="27" Count="4" />
+      <LineId Id="27" Count="1" />
+      <LineId Id="115" Count="1" />
+      <LineId Id="29" Count="1" />
       <LineId Id="34" Count="0" />
+      <LineId Id="117" Count="0" />
       <LineId Id="32" Count="0" />
+      <LineId Id="114" Count="0" />
+      <LineId Id="113" Count="0" />
+      <LineId Id="112" Count="0" />
+      <LineId Id="109" Count="1" />
       <LineId Id="8" Count="1" />
       <LineId Id="57" Count="0" />
       <LineId Id="13" Count="0" />

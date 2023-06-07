@@ -132,8 +132,11 @@ IF index = 0 THEN
 	
 	FOR x := 0 TO 2 BY 1 DO
 		FOR y := 0 TO a_pFBConfigJson[x]^.P_GetNumOfEvents - 1 BY 1 DO
-			a_pFBConfigJson[x]^.M_GetEvent(ADR(ap_fbEvents[index]),y);
-			index := index + 1;		
+			IF a_pFBConfigJson[x]^.M_GetEvent(ADR(ap_fbEvents[index]),y) = E_Result.S_OK THEN
+				index := index + 1;	
+			ELSE
+				CONTINUE;
+			END_IF	
 		END_FOR
 	END_FOR
 END_IF	]]></ST>
@@ -194,7 +197,10 @@ END_IF	]]></ST>
       <LineId Id="6" Count="0" />
       <LineId Id="11" Count="0" />
       <LineId Id="15" Count="0" />
-      <LineId Id="13" Count="1" />
+      <LineId Id="13" Count="0" />
+      <LineId Id="18" Count="1" />
+      <LineId Id="21" Count="0" />
+      <LineId Id="14" Count="0" />
       <LineId Id="12" Count="0" />
       <LineId Id="17" Count="0" />
     </LineIds>
