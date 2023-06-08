@@ -13,9 +13,12 @@ VAR
 	state_idle : DINT;
 	state_starting : DINT;
 	state_execute : DINT;	
+	state_completing : DINT;			
+	state_complete : DINT;		
 	start : BOOL;
 	complete : BOOL;
 	stateMachineResult : HResult;
+	packMLStop : BOOL;
 END_VAR
 ]]></Declaration>
     <Implementation>
@@ -42,6 +45,7 @@ END_VAR
     <Method Name="M_Complete" Id="{144f328d-5a96-4fd8-b49f-8b1cb5677afc}">
       <Declaration><![CDATA[METHOD PUBLIC ABSTRACT M_Complete : HResult
 VAR_INPUT
+	lastResult : HResult;
 END_VAR
 VAR_OUTPUT
 	abort : BOOL;
@@ -53,6 +57,7 @@ END_VAR]]></Declaration>
     <Method Name="M_Completing" Id="{aa4afca2-d4dc-438c-b0db-f8757335e3e8}">
       <Declaration><![CDATA[METHOD PUBLIC ABSTRACT M_Completing : HREsult
 VAR_INPUT
+	lastResult : HResult;
 END_VAR
 VAR_OUTPUT
 	abort : BOOL;	
@@ -131,7 +136,6 @@ VAR_INPUT
 END_VAR
 VAR_OUTPUT
 	abort : BOOL;
-	stop : BOOL;
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[]]></ST>

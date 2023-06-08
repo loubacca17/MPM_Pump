@@ -14,7 +14,7 @@ VAR
 END_VAR
 ]]></Declaration>
     <Implementation>
-      <ST><![CDATA[]]></ST>
+      <ST><![CDATA[gh]]></ST>
     </Implementation>
     <LineIds Name="FB_EventScheduler">
       <LineId Id="9" Count="0" />
