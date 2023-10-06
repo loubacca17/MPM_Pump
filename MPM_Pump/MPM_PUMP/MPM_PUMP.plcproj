@@ -17,6 +17,9 @@
     <LibraryReferences>{8eac3bfb-93e0-4987-80ba-c825e42abf74}</LibraryReferences>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Class Diagram.TcCD">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="FBs\Abstracts\FB_AxisControl.TcPOU">
       <SubType>Code</SubType>
       <LinkAlways>true</LinkAlways>
@@ -88,6 +91,10 @@
     </Compile>
     <Compile Include="FBs\Main\FB_Pump.TcPOU">
       <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="FBs\Main\FB_Squeegee.TcPOU">
+      <SubType>Code</SubType>
+      <LinkAlways>true</LinkAlways>
     </Compile>
     <Compile Include="FBs\System\FB_ConfigControl.TcPOU">
       <SubType>Code</SubType>

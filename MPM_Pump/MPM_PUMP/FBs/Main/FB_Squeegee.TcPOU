@@ -1,0 +1,264 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TcPlcObject Version="1.1.0.1" ProductVersion="3.1.4024.12">
+  <POU Name="FB_Squeegee" Id="{97c02b6c-28dd-476b-9310-ee0b83b02fe8}" SpecialFunc="None">
+    <Declaration><![CDATA[FUNCTION_BLOCK FB_Squeegee EXTENDS FB_ConfigBase
+VAR_INPUT
+END_VAR
+VAR_OUTPUT
+END_VAR
+//axis
+VAR
+	axis : Tc2_MC2.AXIS_REF;	
+	stAxisParameterSet : Tc2_MC2.ST_AxisParameterSet;  
+	fbAxisControl : FB_AxisControl(axis);	
+	fbKinenmatics2 : FB_Kinenmatics_V2;		
+END_VAR
+//recipe
+VAR
+	passThru : LREAL;	
+	timeToClose : LREAL := 0.1; //100ms
+	timeToOpen : LREAL := 0.1;	//100ms
+END_VAR
+//IO
+VAR
+	bagPosition AT %I* : LREAL;
+	pullBeltVelocity AT %I*  : LREAL;
+	pullBeltAccel AT %I*  : LREAL;
+	pullBeltDecel AT %I* : LREAL;
+END_VAR
+]]></Declaration>
+    <Implementation>
+      <ST><![CDATA[]]></ST>
+    </Implementation>
+    <Folder Name="Events" Id="{da925e51-fe22-4854-94da-e8fbc2c09614}" />
+    <Method Name="_F_Axis" Id="{ebd9a956-feca-4bcb-8319-dc4705df836c}">
+      <Declaration><![CDATA[METHOD _F_Axis : HRESULT
+VAR_IN_OUT
+	a_pstAxisParameterSet : POINTER TO Tc2_MC2.ST_AxisParameterSet; //pointer to array
+	pstAxisMapping : UDINT;
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[stAxisParameterSet.AxisId := axis.NcToPlc.AxisId;
+a_pstAxisParameterSet := ADR(stAxisParameterSet);
+pstAxisMapping := SIZEOF(stAxisParameterSet);
+
+_F_Axis := MPM_FBResult.E_Result.S_OK;
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_F_IO" Id="{cab0c113-5c8e-45b5-b5fa-1b4bc690c579}">
+      <Declaration><![CDATA[METHOD PROTECTED  _F_IO : HResult
+VAR_IN_OUT
+	a_pstIOMappingJson : POINTER TO ST_IOMappingJson; //pointer to array
+	ustIOMappingJson : UDINT; 		
+END_VAR
+VAR_INST
+	stIOMappingJson : ARRAY [0..1] OF ST_IOMappingJson;
+END_VAR
+VAR
+	x : DINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//	ioVar : POINTER TO BOOL;
+//	ioVar2 : POINTER TO REAL;
+//F_Map_ST_IOMappingJson(ADR(a_pstIOMappingJson[F_Add1(x)]),'lowLevelSensor',ADR(lowLevelSensor));
+//F_Map_ST_IOMappingJson(ADR(a_pstIOMappingJson[F_Add1(x)]),'HighLevelSensor',ADR(HighLevelSensor));
+
+//a_pstIOMappingJson := ADR(stIOMappingJson);
+//ustIOMappingJson := SIZEOF(stIOMappingJson);
+
+
+
+
+_F_IO := MPM_FBResult.E_Result.S_OK;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_F_Recipe" Id="{11c85724-9b17-4d19-9bad-7db7b5da1473}">
+      <Declaration><![CDATA[(*
+return the list of vars that want to be saved and loaded 
+*)
+
+METHOD PROTECTED  _F_Recipe : HResult
+VAR_IN_OUT
+	a_pstAnyTypeUser : POINTER TO MPM_JsonParser.ST_AnyType_User; //pointer to array
+	uAnyTypeUser : UDINT; //size of array	
+END_VAR
+VAR_OUTPUT
+END_VAR
+VAR
+	x : DINT;
+END_VAR
+VAR_INST
+	a_stAnyTypeUser : ARRAY [0..0] OF MPM_JsonParser.ST_AnyType_User;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[MPM_JsonParser.F_Map_ST_AnyType_User('volume',passThru,a_stAnyTypeUser[F_Add1(x)]);
+//MPM_JsonParser.F_Map_ST_AnyType_User('timeToDispense',timeToDispense,a_stAnyTypeUser[F_Add1(x)]);
+
+
+a_pstAnyTypeUser := ADR(a_stAnyTypeUser);
+uAnyTypeUser := SIZEOF(a_stAnyTypeUser);
+
+_F_Recipe := MPM_FBResult.E_Result.S_OK;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="_F_System" Id="{73f4030a-aadf-4953-b121-aba52d078475}">
+      <Declaration><![CDATA[METHOD PROTECTED _F_System : HResult
+VAR_IN_OUT
+	a_pstAnyTypeUser : POINTER TO MPM_JsonParser.ST_AnyType_User; //pointer to array
+	uAnyTypeUser : UDINT; //size of array	
+END_VAR
+VAR_INST
+	a_stAnyTypeUser : ARRAY [0..0] OF MPM_JsonParser.ST_AnyType_User;
+END_VAR
+VAR
+	x : DINT;
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[//MPM_JsonParser.F_Map_ST_AnyType_User('volumePerRotation',volumePerRotation,a_stAnyTypeUser[F_Add1(x)]);
+
+
+//a_pstAnyTypeUser := ADR(a_stAnyTypeUser);
+//uAnyTypeUser := SIZEOF(a_stAnyTypeUser);
+
+_F_System := MPM_FBResult.E_Result.S_OK;]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Events" Id="{5a03c083-4810-4e1a-aa4b-c663c6bdb183}">
+      <Declaration><![CDATA[METHOD PUBLIC  M_Events : HResult
+VAR_INPUT
+	lastResult : HResult;
+	eventID : DINT;
+END_VAR
+VAR_INST
+	_fbResult : FB_ResultHelper_V2_1;
+	_lastResult : HResult;
+	openValve_Result : HRESULT;
+	closeValve_Result : HRESULT;
+	enablePump_Result : HRESULT;
+	homeDirect_Result : HRESULT; 
+	moveABS_Result : HRESULT; 	
+	moveInter_Result : HRESULT; 		
+	moveVelocity_Result : HRESULT; 		
+	halt_Result : HRESULT;
+END_VAR
+VAR 
+	HomingMode : Tc2_MC2.MC_HomingMode;
+	OptionsHomeing : Tc2_MC2.ST_HomingOptions;
+	BufferMode : Tc2_MC2.MC_BufferMode;
+	OptionsPower : Tc2_MC2.ST_PowerOptions;	
+	Options : Tc2_MC2.ST_MoveOptions;		
+END_VAR
+
+VAR_INST
+	executeDyn : BOOL;
+	VelocityDyn : LREAL := 10; 
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[CASE eventID OF 
+	3: //enable pump
+		IF _fbResult.M_MethodResult(M_Events,lastResult,ADR(enablePump_Result)) = FALSE THEN
+			RETURN;
+		END_IF	
+		_fbResult.P_MethodResult := fbAxisControl.MC_Power(_fbResult.P_MethodResult,TRUE,TRUE,TRUE,100.0,BufferMode,OptionsPower);
+	4: //Home Pump
+		IF _fbResult.M_MethodResult(M_Events,lastResult,ADR(homeDirect_Result)) = FALSE THEN
+			RETURN;
+		END_IF			
+		HomingMode := Tc2_MC2.MC_HomingMode.MC_Direct; 
+		_fbResult.P_MethodResult := fbAxisControl.MC_Home(_fbResult.P_MethodResult,0.0,HomingMode,BufferMode,OptionsHomeing);
+	6: //halt pump
+		IF _fbResult.M_MethodResult(M_Events,lastResult,ADR(halt_Result)) = FALSE THEN
+			RETURN;
+		END_IF			
+		_fbResult.P_MethodResult := fbAxisControl.MC_Halt(_fbResult.P_MethodResult,
+			1000.0,
+			1000.0);				
+	8: //pump_intermeate
+	fbKinenmatics2.jerkLimit := 100000;
+	fbKinenmatics2.accelLimit := 15000.0;	
+	fbKinenmatics2.decelLimit := 15000.0;	
+	fbKinenmatics2.velocityLimit := 2500;	
+	fbKinenmatics2.positionDelta := passThru;		
+	fbKinenmatics2.timeToComplete := timeToDispense;
+	fbKinenmatics2();
+	IF _fbResult.M_MethodResult(M_Events,lastResult,ADR(moveInter_Result)) = FALSE THEN
+			RETURN;
+		END_IF		
+		_fbResult.P_MethodResult := fbAxisControl.MC_MoveRelative(
+			_fbResult.P_MethodResult,
+			volume,
+			fbKinenmatics2.velocityOutput,
+			fbKinenmatics2.accelOutput,			
+			fbKinenmatics2.decelLimit,		
+			fbKinenmatics2.jerkOutput,		
+			BufferMode,
+			Options);			
+END_CASE
+]]></ST>
+      </Implementation>
+    </Method>
+    <Method Name="M_Execute" Id="{ded97935-3c6d-4065-bf02-1342ae430d76}">
+      <Declaration><![CDATA[METHOD PUBLIC M_Execute : HRESULT
+VAR_INPUT
+END_VAR
+]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[fbAxisControl.M_Execute();]]></ST>
+      </Implementation>
+    </Method>
+    <LineIds Name="FB_Squeegee">
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Squeegee._F_Axis">
+      <LineId Id="27" Count="0" />
+      <LineId Id="22" Count="2" />
+      <LineId Id="7" Count="0" />
+      <LineId Id="25" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Squeegee._F_IO">
+      <LineId Id="21" Count="0" />
+      <LineId Id="19" Count="0" />
+      <LineId Id="32" Count="0" />
+      <LineId Id="36" Count="2" />
+      <LineId Id="15" Count="0" />
+      <LineId Id="39" Count="2" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Squeegee._F_Recipe">
+      <LineId Id="12" Count="0" />
+      <LineId Id="16" Count="0" />
+      <LineId Id="18" Count="1" />
+      <LineId Id="17" Count="0" />
+      <LineId Id="20" Count="0" />
+      <LineId Id="22" Count="0" />
+      <LineId Id="21" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Squeegee._F_System">
+      <LineId Id="8" Count="0" />
+      <LineId Id="10" Count="4" />
+      <LineId Id="7" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Squeegee.M_Events">
+      <LineId Id="234" Count="0" />
+      <LineId Id="251" Count="10" />
+      <LineId Id="275" Count="3" />
+      <LineId Id="280" Count="2" />
+      <LineId Id="285" Count="0" />
+      <LineId Id="345" Count="5" />
+      <LineId Id="344" Count="0" />
+      <LineId Id="353" Count="1" />
+      <LineId Id="352" Count="0" />
+      <LineId Id="335" Count="6" />
+      <LineId Id="343" Count="0" />
+      <LineId Id="334" Count="0" />
+      <LineId Id="286" Count="0" />
+      <LineId Id="177" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Squeegee.M_Execute">
+      <LineId Id="5" Count="0" />
+    </LineIds>
+  </POU>
+</TcPlcObject>

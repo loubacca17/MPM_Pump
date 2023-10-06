@@ -302,6 +302,7 @@ FOR x := 0 TO uSizeOfArray BY 1 DO
 	lastResult := pFBConfigJson^^.F_System(lastResult,fbSystemJson.P_sJsonValues.jsonValue,ADR(fbSystemJson),FALSE);
 END_FOR
 
+
 fbSystemJson.CopyDocument(pDoc,SIZEOF(pDoc));]]></ST>
       </Implementation>
     </Method>
@@ -385,6 +386,7 @@ fbSystemJson.CopyDocument(pDoc,SIZEOF(pDoc));]]></ST>
       <LineId Id="15" Count="6" />
       <LineId Id="5" Count="0" />
       <LineId Id="36" Count="0" />
+      <LineId Id="68" Count="0" />
       <LineId Id="35" Count="0" />
     </LineIds>
   </POU>

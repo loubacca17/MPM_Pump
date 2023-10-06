@@ -3,13 +3,14 @@
   <POU Name="MAIN" Id="{b8c91cec-6df0-47d4-9266-f4db1361059c}" SpecialFunc="None">
     <Declaration><![CDATA[PROGRAM MAIN
 VAR
-	ap_fbEvents : ARRAY [0..1023] OF POINTER TO FB_DiscreteEvents;
+	ap_fbEvents : ARRAY [0..1023] OF POINTER TO FB_DiscreteEvents; //All assest events combinded
 	index : UDINT;
 	//machine assets
 	fbPump : FB_Pump('fbName');
 	fbPump1 : FB_Pump('fbName1');
 	fbPump2 : FB_Pump('fbName2');	
-	a_pFBConfigJson : ARRAY [0..2] OF POINTER TO FB_ConfigBase;
+	fbPump3 : FB_Pump('fbName3');	
+	a_pFBConfigJson : ARRAY [0..3] OF POINTER TO FB_ConfigBase;
 
 	//config control
 	fbConfigControl : FB_ConfigControl;
@@ -66,7 +67,8 @@ fbPackMLControlAuto.M_ExecuteControl();]]></ST>
       <Implementation>
         <ST><![CDATA[
 
-fbConfigControl.a_pFBConfigJson := ADR(a_pFBConfigJson);fbConfigControl.ua_pFBConfigJson := SIZEOF(a_pFBConfigJson); //Mapping machine assest
+fbConfigControl.a_pFBConfigJson := ADR(a_pFBConfigJson);
+fbConfigControl.ua_pFBConfigJson := SIZEOF(a_pFBConfigJson); //Mapping machine assest
 //Set json files
 fbConfigControl.M_SetJsonRecipe(fbConfigControl_JsonRecipeResult,jsonRecipeDoc);
 fbConfigControl.M_SetJsonSystem(fbConfigControl_JsonSystemResult,jsonSystemDoc);
@@ -129,8 +131,9 @@ IF index = 0 THEN
 	a_pFBConfigJson[0] := ADR(fbPump);
 	a_pFBConfigJson[1] := ADR(fbPump1);
 	a_pFBConfigJson[2] := ADR(fbPump2);
+	a_pFBConfigJson[3] := ADR(fbPump3);	
 	
-	FOR x := 0 TO 2 BY 1 DO
+	FOR x := 0 TO 3 BY 1 DO
 		FOR y := 0 TO a_pFBConfigJson[x]^.P_GetNumOfEvents - 1 BY 1 DO
 			IF a_pFBConfigJson[x]^.M_GetEvent(ADR(ap_fbEvents[index]),y) = E_Result.S_OK THEN
 				index := index + 1;	
@@ -153,7 +156,9 @@ END_IF	]]></ST>
     </LineIds>
     <LineIds Name="MAIN.A_ConfigControl">
       <LineId Id="22" Count="1" />
-      <LineId Id="1" Count="2" />
+      <LineId Id="1" Count="0" />
+      <LineId Id="24" Count="0" />
+      <LineId Id="2" Count="1" />
       <LineId Id="5" Count="0" />
       <LineId Id="7" Count="1" />
       <LineId Id="10" Count="2" />
@@ -194,6 +199,7 @@ END_IF	]]></ST>
       <LineId Id="16" Count="0" />
       <LineId Id="1" Count="0" />
       <LineId Id="8" Count="2" />
+      <LineId Id="22" Count="0" />
       <LineId Id="6" Count="0" />
       <LineId Id="11" Count="0" />
       <LineId Id="15" Count="0" />

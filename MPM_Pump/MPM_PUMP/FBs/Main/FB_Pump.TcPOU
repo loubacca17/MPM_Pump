@@ -361,6 +361,25 @@ END_VAR
 END_CASE]]></ST>
       </Implementation>
     </Method>
+    <Method Name="M_HMI_SET_VOLUME" Id="{a59ae9e6-0ebd-4960-a256-9ceb45bb06d7}">
+      <Declaration><![CDATA[{attribute 'TcRpcEnable'}
+METHOD PUBLIC M_HMI_SET_VOLUME : HRESULT
+VAR_INPUT
+	value : LREAL;
+END_VAR
+VAR_OUTPUT
+	errorMsg : STRING(256);
+END_VAR]]></Declaration>
+      <Implementation>
+        <ST><![CDATA[IF value < 0 THEN
+	M_HMI_SET_VOLUME := E_Result.S_FAILED;
+	errorMsg := 'value cant be less than 0';
+	RETURN;
+ELSE
+	volume := value;
+END_IF]]></ST>
+      </Implementation>
+    </Method>
     <Method Name="M_OpenValve" Id="{1d61b728-5b23-417e-8cf6-8a998ec2c686}" FolderPath="Events\">
       <Declaration><![CDATA[METHOD PROTECTED M_OpenValve : HResult
 VAR_INPUT
@@ -487,6 +506,13 @@ END_VAR
       <LineId Id="17" Count="9" />
       <LineId Id="32" Count="1" />
       <LineId Id="9" Count="0" />
+    </LineIds>
+    <LineIds Name="FB_Pump.M_HMI_SET_VOLUME">
+      <LineId Id="5" Count="0" />
+      <LineId Id="10" Count="0" />
+      <LineId Id="13" Count="1" />
+      <LineId Id="9" Count="0" />
+      <LineId Id="15" Count="1" />
     </LineIds>
     <LineIds Name="FB_Pump.M_OpenValve">
       <LineId Id="12" Count="17" />

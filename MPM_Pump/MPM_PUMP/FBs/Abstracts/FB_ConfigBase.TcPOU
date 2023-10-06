@@ -242,8 +242,9 @@ IF bGet = FALSE THEN
 		FOR x := 0 TO uSizeOfArray BY 1 DO //loop through all items 
 			pstIOMappingJson := a_pstIOMappingJson + uSizeOfStAnyType*x; // get array position
 			sJson := pfbJsonSchema^.M_SetJsonMember(sJson,pstIOMappingJson^.name); //set json value
+			pfbJsonSchema^.M_SetJsonMemberValue(sJson,'deviceNum',pstIOMappingJson^.deviceNum); //set json value			
 			pfbJsonSchema^.M_SetJsonMemberValue(sJson,'channel',pstIOMappingJson^.channel); //set json value
-			pfbJsonSchema^.M_SetJsonMemberValue(sJson,'deviceNum',pstIOMappingJson^.deviceNum); //set json value
+			//IO-link
 			pfbJsonSchema^.M_SetJsonMemberValue(sJson,'ethercatDeviceNum',pstIOMappingJson^.ethercatDeviceNum); //set json value
 			pfbJsonSchema^.M_SetJsonMemberValue(sJson,'ioLinkDevice',pstIOMappingJson^.ioLinkDevice); //set json value
 			pfbJsonSchema^.M_SetJsonMemberValue(sJson,'ioLinkSlaveChannel',pstIOMappingJson^.ioLinkSlaveChannel); //set json value
@@ -568,7 +569,10 @@ END_VAR
       <LineId Id="126" Count="0" />
       <LineId Id="59" Count="4" />
       <LineId Id="65" Count="0" />
-      <LineId Id="95" Count="4" />
+      <LineId Id="173" Count="0" />
+      <LineId Id="95" Count="0" />
+      <LineId Id="174" Count="0" />
+      <LineId Id="97" Count="2" />
       <LineId Id="67" Count="2" />
       <LineId Id="56" Count="1" />
       <LineId Id="147" Count="0" />

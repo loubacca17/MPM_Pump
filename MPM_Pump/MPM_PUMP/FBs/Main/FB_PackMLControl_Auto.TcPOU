@@ -115,6 +115,7 @@ VAR_INST
 	_lastResult : HRESULT;
 	_state : POINTER TO DINT;
 	_ap_fbEventsExecute0_Result : HResult;
+	_ap_fbEventsExecute1_Result : HResult;	
 END_VAR]]></Declaration>
       <Implementation>
         <ST><![CDATA[_state := ADR(state_execute);
@@ -127,7 +128,6 @@ IF _fbResult.P_MethodResult = E_Result.S_OK THEN
 END_IF
 
 _fbResult.P_MethodResult := ap_fbEventsExecute[0]^.M_Execute(_fbResult.P_MethodResult);
-
 ]]></ST>
       </Implementation>
     </Method>
@@ -387,8 +387,7 @@ END_VAR]]></Declaration>
     <LineIds Name="FB_PackMLControl_Auto.M_Execute">
       <LineId Id="24" Count="7" />
       <LineId Id="80" Count="0" />
-      <LineId Id="15" Count="0" />
-      <LineId Id="79" Count="0" />
+      <LineId Id="99" Count="0" />
       <LineId Id="45" Count="0" />
     </LineIds>
     <LineIds Name="FB_PackMLControl_Auto.M_ExecuteControl">
